@@ -46,7 +46,7 @@ function log() {
       default:
         text = String(arg); break;
     }
-    const p = $new({ tag: 'pre', class: 'log-entry type-' + logLevel, text });
+    const p = $new({ tag: 'p', class: 'log-entry type-' + logLevel, text });
     logs.append(p);
   });
 }

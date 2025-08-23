@@ -30,11 +30,14 @@
 }
 
 .log-entry {
+  font-family: 'Courier New', Courier, monospace;
+  line-height: 1.5;
   background-color: #333;
   font-size: 20px;
   padding: 4px;
   margin-bottom: 4px;
   color: white;
+  white-space: pre;
 }
 
 .log-entry.type-info {

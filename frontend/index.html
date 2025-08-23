@@ -1,48 +1,49 @@
 <!DOCTYPE html>
 <html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gym Track</title>
+    <meta name="description" content="Te ayuda en el entreno" />
 
-  <title>Gym Track</title>
-  <meta name="description" content="Te ayuda en el entreno" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
 
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-
-  <!-- <link rel="manifest" href="static/manifest.json" />
+    <!-- <link rel="manifest" href="static/manifest.json" />
   <link rel="icon" type="image/png" sizes="32x32" href="static/icons/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="static/icons/favicon-16x16.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="static/icons/apple-touch-icon.png" /> -->
 
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/classes.css" />
-  <link rel="stylesheet" href="css/logger.css" />
-  <link rel="stylesheet" href="css/cache-control.css" />
-  <link rel="stylesheet" href="css/btn.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/classes.css" />
+    <link rel="stylesheet" href="css/logger.css" />
+    <link rel="stylesheet" href="css/cache-control.css" />
+    <link rel="stylesheet" href="css/btn.css" />
 
-  <script src="js/app.js" type="module" defer></script>
-</head>
+    <script src="js/app.js" type="module" defer></script>
+  </head>
 
-<body>
-  <div id="app">
-    <div id="welcome">
-      <h1>Holis (:</h1>
+  <body>
+    <!-- Application -->
+    <div id="app">
+      <div id="welcome">
+        <h1>Holis (:</h1>
+      </div>
     </div>
-  </div>
 
-  <div id="updateBanner" class="folded">
-    <p>Hay una nueva versión disponible</p>
-    <button id="refreshPageBtn">Refrescá la página para actualizar</button>
-  </div>
-
-  <div id="logger" class="display-none">
-    <div id="closeLogsBtn">
-      <h4>Cerrar logs</h4>
+    <!-- Cache update banner -->
+    <div id="updateBanner" class="folded">
+      <p>Hay una nueva versión disponible</p>
+      <button id="refreshPageBtn">Refrescá la página para actualizar</button>
     </div>
-    <div id="logs"></div>
-  </div>
-</body>
 
+    <!-- Logger -->
+    <div id="logger" class="display-none">
+      <div id="closeLogsBtn">
+        <h4>Cerrar logs</h4>
+      </div>
+      <div id="logs"></div>
+    </div>
+  </body>
 </html>

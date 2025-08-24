@@ -1,23 +1,24 @@
-import { testButton } from "./lib/dom.js";
+import { $, $button, $form, $queryOne, testButton } from "./lib/dom.js";
 import { testWhoami, testLogin } from "./api-caller/apiCaller.js";
 import { initializeCache } from "./initializeCache.js";
 import { _info, _log, closeLogs, openLogs } from "./lib/logger.js";
 import { getAll, getOne, initializeIndexedDb, putOne } from "./lib/indexedDb.js";
-import { createExercise, testLocalDbEndpoint } from "./local-db/endpoints.js";
+import { testLocalDbEndpoint } from "./local-db/exercise.js";
+import { initUi } from "./ui/ui.js";
+import { initAppState } from "./common/common.js";
 
 
 _info(' (!) App started');
 
 initializeCache();
-initializeIndexedDb()
+initializeIndexedDb();
 
-openLogs();
+// openLogs();
 
 setTimeout(async () => {
     // closeLogs();
-    testLocalDbEndpoint()
+    // testLocalDbEndpoint()
 }, 1000);
 
-// testButton();
-// await testLogin()
-// await testWhoami()
+initAppState()
+initUi()

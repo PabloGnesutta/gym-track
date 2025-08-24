@@ -27,6 +27,15 @@ function $(id) { // @ts-ignore
   return document.getElementById(id);
 }
 
+/**
+ * Gets an HTML element by its ID
+ * @param {string} id
+ * @returns {HTMLFormElement}
+ */
+function $form(id) { // @ts-ignore
+  return $(id);
+}
+
 
 /**
  * Wrapper around querySelectorAll
@@ -247,7 +256,7 @@ function testButton() {
 
 
 export {
-  $, $queryAll, $queryOne, $new, $newInput, $getChild, getCssVar, setCssVar,
+  $, $form, $queryAll, $queryOne, $new, $newInput, $getChild, getCssVar, setCssVar,
   toggleFullScreen, show, hide, display, undisplay, $display, $undisplay,
   $button, $getInner, select, unselect, fold, unfold, testButton
 };

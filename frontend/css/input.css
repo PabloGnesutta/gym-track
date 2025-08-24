@@ -1,0 +1,43 @@
+.base-form {
+  --title-bg: violet;
+  --content-bg: aqua;
+  --control-bg: rgba(0, 0, 0, 0.17);
+}
+
+.base-form {
+}
+
+.form-title {
+  font-size: 2rem;
+  padding: 1rem;
+  background-color: var(--title-bg);
+}
+
+.form-content {
+  background-color: var(--content-bg);
+  padding: 1rem;
+}
+
+.form-control {
+  background-color: var(--control-bg);
+  padding: .75rem;
+  /* custom: */
+  margin-bottom: 1rem;
+}
+
+.form-control label {
+  color: black;
+  font-weight: bold;
+  display: block;
+  font-size: 20px;
+  padding: 4px 0;
+}
+
+.form-control input {
+  width: 100%;
+  outline: none;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  font-size: 24px;
+  padding: 4px;
+}

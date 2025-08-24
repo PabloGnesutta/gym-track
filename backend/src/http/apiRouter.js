@@ -16,8 +16,7 @@ export async function apiRouter(req) {
   // Non-authenticated routes:
   // -------------------------
   switch (req.url) {
-    case '/api/login':
-      return login(req.body);
+    case '/api/login': return login(req.body);
     default: break;
   }
 
@@ -32,11 +31,8 @@ export async function apiRouter(req) {
   }
 
   switch (req.url) {
-    case '/api/test':
-      return { data: { test: 'OK' } };
-    case '/api/whoami':
-      return { data: req.user };
-    default:
-      return { error: 'Route not found' };
+    case '/api/test': return { data: { test: 'OK' } };
+    case '/api/whoami': return { data: req.user };
+    default: return { error: 'Route not found' };
   }
 }

@@ -1,49 +1,76 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Gym Track</title>
-    <meta name="description" content="Te ayuda en el entreno" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Gym Track</title>
+  <meta name="description" content="Te ayuda en el entreno" />
 
-    <!-- <link rel="manifest" href="static/manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+
+  <!-- <link rel="manifest" href="static/manifest.json" />
   <link rel="icon" type="image/png" sizes="32x32" href="static/icons/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="static/icons/favicon-16x16.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="static/icons/apple-touch-icon.png" /> -->
 
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/classes.css" />
-    <link rel="stylesheet" href="css/logger.css" />
-    <link rel="stylesheet" href="css/cache-control.css" />
-    <link rel="stylesheet" href="css/btn.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/classes.css" />
+  <link rel="stylesheet" href="css/logger.css" />
+  <link rel="stylesheet" href="css/cache-control.css" />
+  <link rel="stylesheet" href="css/btn.css" />
+  <link rel="stylesheet" href="css/input.css" />
 
-    <script src="js/app.js" type="module" defer></script>
-  </head>
+  <script src="js/app.js" type="module" defer></script>
+</head>
 
-  <body>
-    <!-- Application -->
-    <div id="app">
-      <div id="welcome">
-        <h1>Holis (:</h1>
+<body>
+  <!-- Application -->
+
+  <div id="app">
+    <div id="welcome">
+      <h1>Holis (:</h1>
+    </div>
+
+    <div id="main-screen">
+      <!--  -->
+    </div>
+
+    <div id="main-modal" class="modal">
+      <div class="backdrop"></div>
+      <div class="content">
+        <form id="createExerciseForm" class="base-form">
+          <h3 class="form-title">Nuevo Ejercicio</h3>
+          <div class="form-content">
+            <div class="form-control">
+              <label for="exerciseName">Nombre del ejercicio:</label>
+              <input type="text" name="exerciseName">
+            </div>
+            <div class="form-control">
+              <label for="muscles">Músculos (separados por coma):</label>
+              <input type="text" name="muscles">
+            </div>
+          </div>
+        </form>
       </div>
     </div>
+  </div>
 
-    <!-- Cache update banner -->
-    <div id="updateBanner" class="folded">
-      <p>Hay una nueva versión disponible</p>
-      <button id="refreshPageBtn">Refrescá la página para actualizar</button>
-    </div>
+  <!-- Cache update banner -->
+  <div id="updateBanner" class="folded">
+    <p>Hay una nueva versión disponible</p>
+    <button id="refreshPageBtn">Refrescá la página para actualizar</button>
+  </div>
 
-    <!-- Logger -->
-    <div id="logger" class="display-none">
-      <div id="closeLogsBtn">
-        <h4>Cerrar logs</h4>
-      </div>
-      <div id="logs"></div>
+  <!-- Logger -->
+  <div id="logger" class="display-none">
+    <div id="closeLogsBtn">
+      <h4>Cerrar logs</h4>
     </div>
-  </body>
+    <div id="logs"></div>
+  </div>
+</body>
+
 </html>

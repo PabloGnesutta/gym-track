@@ -7,8 +7,10 @@
   gap: 8px;
   padding: 6px;
   border-radius: 10%;
+  color: cyan;
   background-color: rgba(0, 0, 0, 0.185);
   user-select: none;
+
 }
 
 .base-button.horizontal {
@@ -17,7 +19,6 @@
 
 
 .base-button .label {
-  color: cyan
 }
 
 .base-button .icon {
@@ -42,4 +43,12 @@
 
 .base-button .overlay:active {
   background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* CUSTOM */
+.submit-btn {
+  width: 100%;
+  background-color: pink;
+  color: red;
+  padding: 1rem;
 }

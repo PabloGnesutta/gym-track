@@ -22,3 +22,39 @@ body {
   padding: 10dvw;
   background: #00000099;
 }
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 10;
+  
+  display: flex;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 5dvw;
+}
+
+.modal .backdrop {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.modal .content {
+  position: relative;
+  background-color: green;
+}
+
+/* Styles derived by application sate: */
+
+#app[data-creating-exercise="true"] .modal {
+  display: flex;
+}
+#app[data-creating-exercise="false"] #createExerciseForm {
+  display: none;
+}

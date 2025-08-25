@@ -63,7 +63,7 @@ async function deleteOldCaches(CACHE_WHITELIST) {
  * After a few moments, it folds it back, and then removes it from the DOM.
  */
 function showUpdateBanner() {
-  $('refreshPageBtn').addEventListener('click', () => window.location.reload());
+  $('refreshPageBtn').addEventListener('pointerup', () => window.location.reload());
   const banner = $('updateBanner');
   display(banner);
   requestAnimationFrame(() => {

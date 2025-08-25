@@ -7,7 +7,7 @@ var logLevel = 'log';
 const logger = $('logger');
 const logs = $('logs');
 
-$('closeLogsBtn').addEventListener('click', closeLogs);
+$('closeLogsBtn').addEventListener('pointerup', closeLogs);
 
 
 function openLogs() {

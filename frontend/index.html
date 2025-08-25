@@ -28,18 +28,20 @@
 
 <body>
   <!-- Application -->
-
   <div id="app">
-    <div id="welcome">
-      <h1>Holis (:</h1>
-    </div>
+    <header id="main-header">
+      <!--  -->
+    </header>
 
     <div id="main-screen">
       <!--  -->
     </div>
 
+    <!-- Modal where stuff happens -->
     <div id="main-modal" class="modal">
-      <div class="backdrop"></div>
+      <div class="backdrop">
+        <div class="close-modal">&times;</div>
+      </div>
       <div class="content">
         <form id="createExerciseForm" class="base-form">
           <h3 class="form-title">Nuevo Ejercicio</h3>
@@ -51,6 +53,22 @@
             <div class="form-control">
               <label for="muscles">Músculos (separados por coma):</label>
               <input type="text" name="muscles">
+            </div>
+          </div>
+        </form>
+
+        <form id="createSetForm" class="base-form">
+          <h3 class="form-title">Nuevo Set</h3>
+          <div class="debug" id="exerciseName" style="padding: 0.5rem;"></div>
+          <div class="debug" id="exerciseId" style="padding: 0.5rem;"></div>
+          <div class="form-content">
+            <div class="form-control">
+              <label for="weight">Peso (kg):</label>
+              <input type="number" step="1" name="weight" value="5">
+            </div>
+            <div class="form-control">
+              <label for="reps">Reps:</label>
+              <input type="number" step="1" name="reps" value="7">
             </div>
           </div>
         </form>

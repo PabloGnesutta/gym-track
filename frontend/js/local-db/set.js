@@ -10,8 +10,8 @@ import { _info, _log, _warn } from "../lib/logger.js";
 
 
 /**
- * @typedef {object} Exercise
- * @property {string} name
+ * @typedef {object} Set
+ * @property {TODO::} name
  * @property {string[]} muscles
  * @property {IDBValidKey} [_key]
  */
@@ -22,15 +22,15 @@ import { _info, _log, _warn } from "../lib/logger.js";
  * @param {string[]} muscles 
  * @returns {ServiceReturn<Exercise>} The exercise object with its key
  */
-async function createExercise(name, muscles = []) {
-  name = name.trim();
-  const nameExists = await getOneWithIndex('exercises', 'excerisesNameIdx', name);
-  if (nameExists) {
-    return { errorMsg: `El ejercicio "${name}" ya existe` };
-  }
+async function createSet(name, muscles = []) {
+  // name = name.trim();
+  // const nameExists = await getOneWithIndex('sets', 'setsExerciseIdIdx', name);
+  // if (nameExists) {
+  //   return { errorMsg: `El ejercicio "${name}" ya existe` };
+  // }
 
-  /** @type {Exercise} */
-  const exercise = { name, muscles };
+  /** @type {Set} */
+  const set = { name, muscles };
   const _key = await putOne('exercises', exercise);
   exercise._key = _key;
 
@@ -39,12 +39,12 @@ async function createExercise(name, muscles = []) {
 
 
 /** TODO: Cache */
-async function fetchExercises() {
-  const exercises = await getAll('exercises')
+async function fetchSets() {
+  const sets = await getAll('sets')
   // TODO: Use helper functions like clear array and clear obj
   // @ts-ignore
-  dbStore.exercises = exercises
+  dbStore.sets = sets
 }
 
 
-export { createExercise, fetchExercises };
+export { createSet, fetchSets };

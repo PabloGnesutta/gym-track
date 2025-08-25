@@ -1,4 +1,5 @@
 import { svg_logs, svg_play } from "../svg/svgFn.js";
+import { _log } from "./logger.js";
 
 /**
  * @typedef {{
@@ -67,7 +68,7 @@ function $new(args) {
   if (args.class) el.className = args.class;
   if (args.text) el.innerText = args.text;
   if (args.html) el.innerHTML = args.html;
-  if (args.listener) el.addEventListener(args.listener.event || 'touchend', args.listener.fn);
+  if (args.listener) el.addEventListener(args.listener.event || 'pointerup', args.listener.fn);
   if (args.dataset)
     args.dataset.forEach(([key, value]) => {
       el.dataset[key] = value;
@@ -187,7 +188,7 @@ function $button(args) {
   children.push($new({ class: 'overlay' }));
 
   const button = $new({
-    class: 'base-button ' + args.class,
+    class: 'btn base-button ' + (args.class || ''),
     dataset: args.dataset,
     listener: args.listener,
     children
@@ -244,12 +245,7 @@ function testButton() {
       label: 'Button ' + i,
       svgFn: (i % 2 === 0) ? svg_logs : svg_play,
       appendTo: container,
-      listener: {
-        event: 'click',
-        fn: (e) => {
-          console.log('clicked', e.currentTarget);
-        }
-      }
+      listener: { fn: e => _log('clicked', e.currentTarget) }
     });
   }
 }

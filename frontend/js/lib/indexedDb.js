@@ -2,8 +2,10 @@ import { _error, _info, _warn } from './logger.js';
 
 
 /**
- * @typedef {'exercises'} ObjectStores
- * @typedef {'nameIndex'} Indexes
+ * Enums
+ * @typedef {'exercises'|'sets'} ObjectStores
+ * @typedef {'excerisesNameIdx'|'setsExerciseIdIdx'} Indexes
+ * 
  * @typedef {IDBValidKey | IDBKeyRange} StoreKey
  * @typedef {{ _key: StoreKey, [field: string]: * }}  DbRecord
  */
@@ -15,6 +17,7 @@ const dbVersion = 99;
 /** @type {Record<ObjectStores, ObjectStores>} */
 const _stores = {
   exercises: 'exercises',
+  sets: 'sets',
 };
 
 /** @type {IDBOpenDBRequest} */
@@ -190,7 +193,7 @@ async function getAll(storeName) {
       const cursor = getAllCursor.result;
       if (cursor) {
         const record = cursor.value
-        record.id = cursor.primaryKey
+        record._key = cursor.primaryKey
         records.push(record)
         cursor.continue();
       } else {

@@ -6,9 +6,9 @@
   justify-content: center;
   gap: 8px;
   padding: 6px;
-  border-radius: 10%;
+  border-radius: 6px;
   color: cyan;
-  background-color: rgba(0, 0, 0, 0.185);
+  background-color: rgba(0, 0, 0, 0.5);
   user-select: none;
 
 }
@@ -51,4 +51,20 @@
   background-color: pink;
   color: red;
   padding: 1rem;
+}
+
+
+#main-screen {
+  padding: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.main-btn {
+  /* width: 40%; */
+  width: 50dvw;
+  padding: 2rem;
 }

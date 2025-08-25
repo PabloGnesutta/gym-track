@@ -1,24 +1,20 @@
-import { $, $button, $form, $queryOne, testButton } from "./lib/dom.js";
-import { testWhoami, testLogin } from "./api-caller/apiCaller.js";
 import { initializeCache } from "./initializeCache.js";
-import { _info, _log, closeLogs, openLogs } from "./lib/logger.js";
-import { getAll, getOne, initializeIndexedDb, putOne } from "./lib/indexedDb.js";
-import { testLocalDbEndpoint } from "./local-db/exercise.js";
-import { initUi } from "./ui/ui.js";
-import { initAppState } from "./common/common.js";
+import { _info, _log } from "./lib/logger.js";
+import { initializeIndexedDb } from "./lib/indexedDb.js";
+import { initUi, openSetCreate } from "./ui/ui.js";
+import { dbStore, initAppState } from "./common/state.js";
+import { fetchExercises } from "./local-db/exercise.js";
 
 
 _info(' (!) App started');
 
 initializeCache();
-initializeIndexedDb();
-
-// openLogs();
+initializeIndexedDb(); // <--- todo: somehow await for this (event bus)
 
 setTimeout(async () => {
-    // closeLogs();
-    // testLocalDbEndpoint()
-}, 1000);
+    await fetchExercises()
+    openSetCreate()
+}, 100);
 
 initAppState()
 initUi()

@@ -1,7 +1,7 @@
 .base-form {
   --title-bg: violet;
   --content-bg: aqua;
-  --control-bg: rgba(0, 0, 0, 0.17);
+  --control-bg: rgba(0, 0, 0, 0.25);
 }
 
 .base-form {
@@ -20,7 +20,7 @@
 
 .form-control {
   background-color: var(--control-bg);
-  padding: .75rem;
+  padding: 0.75rem;
   /* custom: */
   margin-bottom: 1rem;
 }
@@ -40,4 +40,12 @@
   border-radius: 6px;
   font-size: 24px;
   padding: 4px;
+}
+
+/* custom */
+#createExerciseForm {
+  --title-bg: violet;
+}
+#createSetForm {
+  --title-bg: black;
 }

@@ -68,7 +68,7 @@ function $new(args) {
   if (args.class) el.className = args.class;
   if (args.text) el.innerText = args.text;
   if (args.html) el.innerHTML = args.html;
-  if (args.listener) el.addEventListener(args.listener.event || 'pointerup', args.listener.fn);
+  if (args.listener) el.addEventListener(args.listener.event || 'click', args.listener.fn);
   if (args.dataset)
     args.dataset.forEach(([key, value]) => {
       el.dataset[key] = value;

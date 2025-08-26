@@ -3,23 +3,30 @@ import { _log } from "../lib/logger.js";
 
 
 /**
- * 
- * @typedef {object} DBStore
- * @property {import("../local-db/exercise.js").Exercise[]} exercises
- * @property {import("../local-db/set.js").Set[]} sets
+ * @typedef {import("../local-db/exercise-db.js").Exercise} Exercise
+ * @typedef {import("../local-db/set-db.js").Set} Set
  */
-
 /**
  * Main state of the application
  * @typedef {object} AppState
  * @property {boolean} creatingExercise
  * @property {boolean} creatingSet
+ * @property {boolean} viewingExercises
+ * @property {boolean} viewingSingleExercise
  */
+
+/**
+ * 
+ * @typedef {object} DBStore
+ * @property {Exercise[]} exercises
+ * @property {Record<string, Set[]>} setsForExercise
+ */
+
 
 /** @type {DBStore} - Cached records from the db */
 const dbStore = {
     exercises: [],
-    sets: []
+    setsForExercise: {},
 };
 
 
@@ -28,6 +35,8 @@ const dbStore = {
 const appState = {
     creatingExercise: false,
     creatingSet: false,
+    viewingExercises: false,
+    viewingSingleExercise: false,
 };
 
 /** 
@@ -76,7 +85,10 @@ function revertHistory(steps = 1) {
 
 function initAppState() {
     setStateField('creatingExercise', false, false);
-    setStateField('creatingSet', false);
+    setStateField('viewingExercises', false, false);
+    setStateField('viewingSingleExercise', false, false);
+    setStateField('creatingSet', false, false);
+    recordHistory()
 }
 
 export { appState, stateHistory, setStateField, initAppState, revertHistory, dbStore };

@@ -21,8 +21,7 @@ const MISC_CACHE = 'misc_' + MAJOR_VERSION + '--0.0.1';
 const CACHE_WHITELIST = [MISC_CACHE];
 
 if (INTERCEPT_FETCH_REQUESTS) {
-  // TODO: Don't attempt to cache API calls
-
+  // NOTE: We should not try to cache API calls
   /** Fetch event listener */
   self.addEventListener('fetch', e =>
     // @ts-ignore

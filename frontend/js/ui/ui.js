@@ -1,14 +1,18 @@
 import { dbStore, revertHistory, setStateField, stateHistory } from "../common/state.js";
-import { $, $button, $form, $queryOne } from "../lib/dom.js";
+import { $, $button, $queryOne } from "../lib/dom.js";
 import { _log, openLogs } from "../lib/logger.js";
 import { randomInt } from "../lib/utils.js";
-import { createExercise, fetchExercises } from "../local-db/exercise.js";
-import { createSet, fetchSets, setsForExercise } from "../local-db/set.js";
+import { setsForExercise } from "../local-db/set-db.js";
+import { submitExercise, submitSet } from "./exercise-ui.js";
 
 
 function initUi() {
   createHeaderBtns();
-  createMainBtns();
+  $button({
+    label: 'Nuevo ejercicio',
+    appendTo: $('newExerciseBtnContainer'),
+    listener: { fn: openExerciseCreate }
+  });
   craeteFormButtons();
   addModalBackdropHandler();
 }
@@ -72,34 +76,15 @@ function createHeaderBtns() {
     prependTo: mainHeader,
     listener: { fn: e => _log(stateHistory) }
   });
+  $button({
+    label: 'DBStore',
+    appendTo: mainHeader,
+    listener: { fn: e => _log(dbStore) }
+  });
 }
-
-async function openExerciseList() {
-  await fetchExercises();
-  await fetchSets();
-  console.log(dbStore);
-}
-
 
 function createMainBtns() {
-  $button({
-    label: 'Nuevo ejercicio',
-    class: 'main-btn',
-    appendTo: $('main-screen'),
-    listener: { fn: openExerciseCreate, event: 'click' }
-  });
-  $button({
-    label: 'Ver ejercicios',
-    class: 'main-btn',
-    appendTo: $('main-screen'),
-    listener: { fn: openExerciseList }
-  });
-  $button({
-    label: 'Nuevo set',
-    class: 'main-btn',
-    appendTo: $('main-screen'),
-    listener: { fn: openSetCreate, event: 'click' }
-  });
+
 }
 
 /**
@@ -108,7 +93,6 @@ function createMainBtns() {
 function craeteFormButtons() {
   $button({
     label: 'Crear Ejercicio',
-    class: 'submit-btn',
     appendTo: $queryOne('#createExerciseForm .form-content'),
     listener: { fn: submitExercise }
   });
@@ -120,53 +104,7 @@ function craeteFormButtons() {
   });
 }
 
-/**
- * @param {Event} e 
- */
-async function submitExercise(e) {
-  e.preventDefault();
-  const form = $form('createExerciseForm');
-  const formData = new FormData(form);
 
-  // @ts-ignore
-  const result = await createExercise(formData.get('exerciseName') || '', formData.get('muscles') || '');
-  _log(result);
-  if (result.errorMsg) {
-    alert(result.errorMsg);
-    setStateField('creatingExercise', false);
-  } else {
-    alert('Ejercicio creado exitosamente');
-    form.reset();
-    setStateField('creatingExercise', false);
-  }
-}
-
-/**
- * @param {Event} e 
- */
-async function submitSet(e) {
-  e.preventDefault();
-  const form = $form('createSetForm');
-  const formData = new FormData(form);
-  const weight = formData.get('weight');
-  const reps = formData.get('reps');
-  if (!weight || typeof weight !== 'string' || !reps || typeof reps !== 'string') {
-    return;
-  }
-
-  const exerciseId = $('exerciseId').dataset.exerciseId || 0;
-
-  const result = await createSet(+exerciseId, +weight, +reps);
-  if (result.errorMsg) {
-    alert(result.errorMsg);
-    setStateField('creatingSet', false);
-  } else {
-    alert('Set creado exitosamente:');
-    _log(result);
-    form.reset();
-    setStateField('creatingSet', false);
-  }
-}
 
 
 export { initUi, openSetCreate };

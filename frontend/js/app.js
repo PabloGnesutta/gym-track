@@ -1,26 +1,27 @@
 import { initializeCache } from "./initializeCache.js";
 import { _info, _log } from "./lib/logger.js";
 import { initializeIndexedDb } from "./lib/indexedDb.js";
-import { initUi, openSetCreate } from "./ui/ui.js";
-import { dbStore, initAppState } from "./common/state.js";
-import { fetchExercises } from "./local-db/exercise.js";
+import { initUi } from "./ui/ui.js";
+import { initAppState } from "./common/state.js";
 import { seedDb } from "./local-db/seed.js";
-import { fetchSets } from "./local-db/set.js";
+import { eventBus } from "./lib/utils.js";
+import { fillExerciseList, openExerciseList } from "./ui/exercise-ui.js";
+import { fetchExercises } from "./local-db/exercise-db.js";
 
 
 _info(' (!) App started');
 
 initializeCache();
-initializeIndexedDb(); // <--- todo: somehow await for this (event bus)
 
-setTimeout(async () => {
+initializeIndexedDb();
+/** Callback for Indexed DB initialization */
+eventBus.on('IndexedDbInited', async () => {
+    _info(' (!) DB Callback')
     // await seedDb();
     await fetchExercises();
-    // todo: at first load, only fetch the last set for each exercises, 
-    // or potentially have it stored in the exercise
-    // then, when one exercise is selected, fetch all its sets
-    await fetchSets();
-}, 100);
+    fillExerciseList()
+    openExerciseList()
+})
 
 initAppState();
 initUi();

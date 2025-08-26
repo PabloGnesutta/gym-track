@@ -1,3 +1,5 @@
+import { _log } from "./logger.js";
+
 /**
  * Returns a random integer between min and max (both inclusive).
  * @param {number} min - The minimum value.
@@ -31,5 +33,50 @@ function clearObj(obj, omit = []) {
   }
 }
 
+/**
+ * @typedef {'IndexedDbInited'} Events
+ */
 
-export { randomInt, clearArray, clearObj };
+const eventBus = {
+  subs: {},
+  /**
+   * @param {Events} name 
+   * @param {(payload)=>void} cb 
+   */
+  on(name, cb) {
+    if (typeof name !== "string")
+      return console.error("Event name must be a string");
+    const n_ = name.toLowerCase();
+    if (!this.subs[n_]) this.subs[n_] = [];
+    this.subs[n_].push(cb);
+  },
+  /**
+   * @param {Events} name 
+   * @param {(payload)=>void} cb 
+   */
+  off(name, cb) {
+    if (typeof name !== "string")
+      return console.error("Event name must be a string");
+    const n_ = name.toLowerCase();
+    const callbacks = this.subs[n_];
+    if (!callbacks?.length) return _log("[off] No callbacks registered for", name);
+    const index = callbacks.findIndex((callback) => callback.name === cb.name);
+    if (index !== -1) callbacks.splice(index, 1);
+  },
+  /**
+   * @param {Events} name 
+   */
+  emit(name, payload) {
+    if (typeof name !== "string")
+      return console.error("Event name must be a string");
+    const n_ = name.toLowerCase();
+    const callbacks = this.subs[n_];
+    if (!callbacks?.length) return _log("[emit] No callbacks registered for", name);
+    callbacks.forEach((cb) => {
+      cb(payload);
+    });
+  },
+};
+
+
+export { eventBus, randomInt, clearArray, clearObj };

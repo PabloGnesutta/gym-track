@@ -1,4 +1,5 @@
 import { _error, _info, _warn } from './logger.js';
+import { eventBus } from './utils.js';
 
 
 /**
@@ -11,7 +12,7 @@ import { _error, _info, _warn } from './logger.js';
  */
 
 const dbName = 'TestDB';
-const dbVersion = 92;
+const dbVersion = 88;
 
 
 /** @type {Record<ObjectStores, ObjectStores>} */
@@ -38,7 +39,6 @@ function initializeIndexedDb() {
 
 /**
  * Initialize Object Stores
- * Note: It will delete old ones on each new version
  */
 function onDbUpgradeNeeded(e) {
   _info(' __ Updating IndexedDB');
@@ -58,12 +58,17 @@ function onDbUpgradeNeeded(e) {
     );
     store.createIndex('setsExerciseKeyIdx', 'exerciseKey', { unique: false });
   }
+
+  _info(db.objectStoreNames)
 }
 
-/** Database opened successfully */
+/** 
+ * Database opened successfully 
+ */
 function onDbOpenSuccess(e) {
   db = openDbRequest.result;
   _info(' __ Base de datos abierta - Versión ' + db.version);
+  eventBus.emit('IndexedDbInited', { version: dbVersion })
 }
 
 
@@ -112,7 +117,7 @@ async function putOne(storeName, value, key) {
     if (!db) return rej('No database found');
     const tx = db.transaction(storeName, 'readwrite');
     const store = tx.objectStore(storeName);
-
+    _warn({ storeName, value, key })
     const putRequest = store.put(value, key);
     putRequest.onsuccess = e => {
       // @ts-ignore
@@ -218,7 +223,7 @@ async function getAll(storeName) {
         records.push(record);
         cursor.continue();
       } else {
-        _info(' __ IndexedDB entries read');
+        _info(' __ GetAll: ' + storeName);
         return res(records);
       }
     };
@@ -260,7 +265,7 @@ async function getAllWithIndex(storeName, indexName, indexValue) {
         records.push(record);
         cursor.continue();
       } else {
-        _info(' __ IndexedDB entries read');
+        _info(' __ GetAllWithIndex: ' + storeName);
         return res(records);
       }
     };

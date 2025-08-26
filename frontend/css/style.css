@@ -5,8 +5,8 @@
 }
 
 :root {
-  --main-bg: rgba(2, 89, 89, 0.55);
-  --header-bg: cyan;
+  --app-bg: #111;
+  --header-bg: black;
 }
 
 body {
@@ -15,7 +15,7 @@ body {
 }
 
 #app {
-  background-color: var(--main-bg);
+  background-color: var(--app-bg);
   color: white;
 }
 
@@ -30,6 +30,67 @@ body {
 
 #main-header .btn {
   padding: 3dvw;
+  background-color: cornflowerblue;
+  color: black;
+}
+
+#exerciseListView {
+  --list-bg: #7f031c;
+  --title-bg: crimson;
+  --row-bg: rgba(0, 0, 0, 0.8);
+}
+
+#exerciseListView .title {
+  background-color: var(--title-bg);
+  padding: 2rem 1rem;
+}
+
+#exerciseListView .list {
+  color: black;
+  padding: 0.5rem;
+  background: var(--list-bg);
+}
+
+#newExerciseBtnContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+}
+
+#newExerciseBtnContainer .btn {
+  padding: 2rem 2.5rem;
+  background-color: var(--list-bg);
+  color: white;
+  font-size: 18px;
+}
+
+#singleExerciseView .name {
+  font-size: 26px;
+  background-color: #7f031c;
+  padding: 1rem;
+}
+
+/* Generic for lists */
+.list .row {
+  color: white;
+  background-color: var(--row-bg);
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.list .row:last-child {
+  margin-bottom: 0;
+}
+
+.list .row .exerciseName {
+  font-size: 24px;
+}
+.list .row .last-set-data {
+  font-size: 20px;
 }
 
 .modal {
@@ -56,29 +117,38 @@ body {
 
 .modal .close-modal {
   position: absolute;
-  font-size: 20px;
+  font-size: 26px;
   top: 2dvw;
   right: 2dvw;
   padding: 2dvw 2dvh;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.2);
   border-radius: 8px;
 }
 
 .modal .content {
   position: relative;
-  background-color: green;
+  /* color: black; */
+  /* padding: 1rem; */
+  border-radius: 8px;
+  max-height: 85dvh;
+  overflow-x: auto;
 }
 
-/* Styles derived by application sate: */
+/* State Machine */
 
+/* Things that would open the modal */
 #app[data-creating-exercise='true'] .modal,
-#app[data-creating-set='true'] .modal {
+#app[data-viewing-single-exercise='true'] .modal {
   display: flex;
 }
 
+/* Things that will be displayed or not based on status */
 #app[data-creating-exercise='false'] #createExerciseForm {
   display: none;
 }
-#app[data-creating-set='false'] #createSetForm {
+#app[data-viewing-exercises='false'] #exerciseListView {
+  display: none;
+}
+#app[data-viewing-single-exercise='false'] #singleExerciseView {
   display: none;
 }

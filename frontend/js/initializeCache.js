@@ -2,6 +2,9 @@ import { $, display, fold, undisplay, unfold } from './lib/dom.js';
 import { _log, _error, _info, _warn } from './lib/logger.js';
 
 
+/**
+ * Registers a bunch of events and will post messages to the caller with updates
+ */
 function initializeCache() {
   _info(' - initializeCache');
   const installedCache = localStorage.getItem('installedCache');

@@ -5,8 +5,9 @@ import { _info, _log, _warn } from "../lib/logger.js";
 
 /**
  * @template T
- * @typedef {import("../common/common.js").ServiceReturn<T>} ServiceReturn<T>
+ * @typedef {import("../common/types.js").ServiceReturn<T>} ServiceReturn<T>
 */
+
 /**
  * @typedef {import("../lib/indexedDb.js").StoreKey} StoreKey
  */
@@ -16,8 +17,9 @@ import { _info, _log, _warn } from "../lib/logger.js";
  * @typedef {object} Exercise
  * @property {string} name
  * @property {string[]} muscles
- * @property {StoreKey|null} lastSetKey
+ * @property {import("./set-db.js").Set} [lastSet]
  * @property {IDBValidKey} [_key]
+ * @property {Date} [createdAt]
  */
 
 
@@ -28,13 +30,20 @@ import { _info, _log, _warn } from "../lib/logger.js";
  */
 async function createExercise(name, muscles = []) {
   name = name.trim();
+  if (!name) {
+    return { errorMsg: 'Ingresar nombre' }
+  }
   const nameExists = await getOneWithIndex('exercises', 'excerisesNameIdx', name);
   if (nameExists) {
     return { errorMsg: `El ejercicio "${name}" ya existe` };
   }
 
   /** @type {Exercise} */
-  const exercise = { name, muscles, lastSetKey: null };
+  const exercise = {
+    name,
+    muscles,
+    createdAt: new Date(),
+  };
   const _key = await putOne('exercises', exercise);
   exercise._key = _key;
 
@@ -43,7 +52,7 @@ async function createExercise(name, muscles = []) {
 }
 
 
-/** TODO: Cache */
+
 async function fetchExercises() {
   const exercises = await getAll('exercises');
   // @ts-ignore

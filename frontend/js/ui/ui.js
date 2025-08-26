@@ -45,17 +45,11 @@ async function openSetCreate() {
     return alert('Ningún ejercicio seleccionado');
   }
 
-
-
   const exerciseSets = await setsForExercise(exercise._key || 0);
   _log('exerciseSets', exerciseSets);
 
   $('exerciseName').innerText = exercise.name + '  | _key:' + exercise._key;
   $('exerciseId').dataset.exerciseId = exercise._key?.toString();
-
-  // TODO: Set input values as the last stored.
-  // Also, focus input on open
-  // Also, do the above in the exercise form
 
   setStateField('creatingSet', true);
   const weightInput = $queryOne('#createSetForm input[name="weight"]');
@@ -74,18 +68,15 @@ function createHeaderBtns() {
   $button({
     label: 'History',
     prependTo: mainHeader,
-    listener: { fn: e => _log(stateHistory) }
+    listener: { fn: e => { _log(stateHistory); openLogs() } }
   });
   $button({
     label: 'DBStore',
     appendTo: mainHeader,
-    listener: { fn: e => _log(dbStore) }
+    listener: { fn: e => { _log(dbStore); openLogs() } }
   });
 }
 
-function createMainBtns() {
-
-}
 
 /**
  * Creates the buttons that will interact with the forms (submit, etc)
@@ -97,8 +88,7 @@ function craeteFormButtons() {
     listener: { fn: submitExercise }
   });
   $button({
-    label: 'Crear Set',
-    class: 'cancel-btn',
+    label: 'Agregar Set',
     appendTo: $queryOne('#createSetForm .form-content'),
     listener: { fn: submitSet }
   });

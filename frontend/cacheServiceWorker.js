@@ -1,7 +1,7 @@
 /**
  * false for hot reloading, could use environment variable
  */
-const INTERCEPT_FETCH_REQUESTS = false;
+const INTERCEPT_FETCH_REQUESTS = true;
 
 /**
  * @typedef {{

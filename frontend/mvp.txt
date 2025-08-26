@@ -1,0 +1,4 @@
+lo más minimalista es que apenas abris se vea una lista de ejercicios
+cada item tiene info sucinta: nombre, datos del último set (fecha, peso, reps)
+haces click en uno y te abre la vista de ejercicio donde se pueden agregar sets
+acá tenés más detalle sobre el ejercicio, básicamente visualización de historial de progreso

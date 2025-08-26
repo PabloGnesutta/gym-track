@@ -6,13 +6,17 @@ import { _info, _log, _warn } from "../lib/logger.js";
 /**
  * @template T
  * @typedef {import("../common/common.js").ServiceReturn<T>} ServiceReturn<T>
+*/
+/**
+ * @typedef {import("../lib/indexedDb.js").StoreKey} StoreKey
  */
 
-
 /**
+ * 
  * @typedef {object} Exercise
  * @property {string} name
  * @property {string[]} muscles
+ * @property {StoreKey|null} lastSetKey
  * @property {IDBValidKey} [_key]
  */
 
@@ -30,20 +34,20 @@ async function createExercise(name, muscles = []) {
   }
 
   /** @type {Exercise} */
-  const exercise = { name, muscles };
+  const exercise = { name, muscles, lastSetKey: null };
   const _key = await putOne('exercises', exercise);
   exercise._key = _key;
 
+  dbStore.exercises.push(exercise);
   return { data: exercise };
 }
 
 
 /** TODO: Cache */
 async function fetchExercises() {
-  const exercises = await getAll('exercises')
-  // TODO: Use helper functions like clear array and clear obj
+  const exercises = await getAll('exercises');
   // @ts-ignore
-  dbStore.exercises = exercises
+  dbStore.exercises = exercises;
 }
 
 

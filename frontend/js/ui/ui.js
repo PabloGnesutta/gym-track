@@ -1,49 +1,67 @@
 import { dbStore, revertHistory, setStateField, stateHistory } from "../common/state.js";
 import { $, $button, $form, $queryOne } from "../lib/dom.js";
 import { _log, openLogs } from "../lib/logger.js";
-import { randomInt } from "../lib/math.js";
+import { randomInt } from "../lib/utils.js";
 import { createExercise, fetchExercises } from "../local-db/exercise.js";
+import { createSet, fetchSets, setsForExercise } from "../local-db/set.js";
 
 
 function initUi() {
-  createHeaderBtns()
+  createHeaderBtns();
   createMainBtns();
   craeteFormButtons();
-  configureModalBackdrop()
+  addModalBackdropHandler();
 }
 
-function configureModalBackdrop() {
-  $queryOne('#main-modal .backdrop').addEventListener('pointerup', e => {
+/** Reverts history 1 step */
+function addModalBackdropHandler() {
+  $queryOne('#main-modal .backdrop').addEventListener('click', e => {
     /** @type {boolean} */ // @ts-ignore
-    const clickedBackdrop = e.target.classList.contains('backdrop') || e.currentTarget.classList.contains('backdrop')
+    const clickedBackdrop = e.target.classList.contains('backdrop') || e.currentTarget.classList.contains('backdrop');
     if (clickedBackdrop) {
-      console.log('clicked backdrop')
-      revertHistory()
+      revertHistory();
     }
   });
 }
 
 function openExerciseCreate() {
-  setStateField('creatingExercise', true)
+  setStateField('creatingExercise', true);
+  const nameInput = $queryOne('#createExerciseForm input[name="exerciseName"]');
+  nameInput.focus();
+  // @ts-ignore
+  nameInput.select();
 }
 
 /**
  */
-function openSetCreate() {
+async function openSetCreate() {
   // simulate selecting an exercise
-  const exercise = dbStore.exercises[randomInt(0, dbStore.exercises.length - 1)]
+  const exercise = dbStore.exercises[randomInt(0, dbStore.exercises.length - 1)];
   if (!exercise) {
-    return alert('Ningún ejercicio seleccionado')
+    return alert('Ningún ejercicio seleccionado');
   }
-  _log('exercise', exercise)
-  $('exerciseName').innerText = exercise.name + '  | _key:' + exercise._key
-  $('exerciseId').dataset.exerciseId = exercise._key
 
-  setStateField('creatingSet', true)
+
+
+  const exerciseSets = await setsForExercise(exercise._key || 0);
+  _log('exerciseSets', exerciseSets);
+
+  $('exerciseName').innerText = exercise.name + '  | _key:' + exercise._key;
+  $('exerciseId').dataset.exerciseId = exercise._key?.toString();
+
+  // TODO: Set input values as the last stored.
+  // Also, focus input on open
+  // Also, do the above in the exercise form
+
+  setStateField('creatingSet', true);
+  const weightInput = $queryOne('#createSetForm input[name="weight"]');
+  weightInput.focus();
+  // @ts-ignore
+  weightInput.select();
 }
 
 function createHeaderBtns() {
-  const mainHeader = $('main-header')
+  const mainHeader = $('main-header');
   $button({
     label: 'Logs',
     appendTo: mainHeader,
@@ -56,8 +74,10 @@ function createHeaderBtns() {
   });
 }
 
-function openExerciseList() {
-  fetchExercises()
+async function openExerciseList() {
+  await fetchExercises();
+  await fetchSets();
+  console.log(dbStore);
 }
 
 
@@ -66,10 +86,8 @@ function createMainBtns() {
     label: 'Nuevo ejercicio',
     class: 'main-btn',
     appendTo: $('main-screen'),
-    listener: { fn: openExerciseCreate }
+    listener: { fn: openExerciseCreate, event: 'click' }
   });
-
-
   $button({
     label: 'Ver ejercicios',
     class: 'main-btn',
@@ -80,7 +98,7 @@ function createMainBtns() {
     label: 'Nuevo set',
     class: 'main-btn',
     appendTo: $('main-screen'),
-    listener: { fn: openSetCreate }
+    listener: { fn: openSetCreate, event: 'click' }
   });
 }
 
@@ -127,23 +145,27 @@ async function submitExercise(e) {
  * @param {Event} e 
  */
 async function submitSet(e) {
-  console.log('submit set')
   e.preventDefault();
   const form = $form('createSetForm');
   const formData = new FormData(form);
-  _log(formData.get('weight'))
-  _log(formData.get('reps'))
-  // @ts-ignore
-  // const result = await createSet(formData.get('SetName') || '', formData.get('muscles') || '');
-  // _log(result);
-  // if (result.errorMsg) {
-  //   alert(result.errorMsg);
-  //   setStateField('creatingSet', false);
-  // } else {
-  //   alert('Ejercicio creado exitosamente');
-  //   form.reset();
-  //   setStateField('creatingSet', false);
-  // }
+  const weight = formData.get('weight');
+  const reps = formData.get('reps');
+  if (!weight || typeof weight !== 'string' || !reps || typeof reps !== 'string') {
+    return;
+  }
+
+  const exerciseId = $('exerciseId').dataset.exerciseId || 0;
+
+  const result = await createSet(+exerciseId, +weight, +reps);
+  if (result.errorMsg) {
+    alert(result.errorMsg);
+    setStateField('creatingSet', false);
+  } else {
+    alert('Set creado exitosamente:');
+    _log(result);
+    form.reset();
+    setStateField('creatingSet', false);
+  }
 }
 
 

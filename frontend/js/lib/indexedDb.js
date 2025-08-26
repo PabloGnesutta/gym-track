@@ -4,14 +4,14 @@ import { _error, _info, _warn } from './logger.js';
 /**
  * Enums
  * @typedef {'exercises'|'sets'} ObjectStores
- * @typedef {'excerisesNameIdx'|'setsExerciseIdIdx'} Indexes
+ * @typedef {'excerisesNameIdx'|'setsExerciseKeyIdx'} Indexes
  * 
  * @typedef {IDBValidKey | IDBKeyRange} StoreKey
  * @typedef {{ _key: StoreKey, [field: string]: * }}  DbRecord
  */
 
 const dbName = 'TestDB';
-const dbVersion = 99;
+const dbVersion = 92;
 
 
 /** @type {Record<ObjectStores, ObjectStores>} */
@@ -48,7 +48,15 @@ function onDbUpgradeNeeded(e) {
       _stores.exercises,
       { autoIncrement: true }
     );
-    store.createIndex('nameIndex', 'name', { unique: true })
+    store.createIndex('excerisesNameIdx', 'name', { unique: true });
+  }
+
+  if (!db.objectStoreNames.contains(_stores.sets)) {
+    const store = db.createObjectStore(
+      _stores.sets,
+      { autoIncrement: true }
+    );
+    store.createIndex('setsExerciseKeyIdx', 'exerciseKey', { unique: false });
   }
 }
 
@@ -80,7 +88,9 @@ function onDbOpenError(e) {
       openDbRequest.onsuccess = onDbOpenSuccess;
     };
     deleteDbRequest.onerror = e => {
-      _error(' __ Error al borrar base de datos', e);
+      _error(' __ Error al borrar base de datos');
+      // @ts-ignore
+      _error(e.target.error.message);
     };
   } else {
     _error(' __ Error al abrir base de datos', e);
@@ -106,10 +116,12 @@ async function putOne(storeName, value, key) {
     const putRequest = store.put(value, key);
     putRequest.onsuccess = e => {
       // @ts-ignore
-      return res(e.target.result)
+      return res(e.target.result);
     };
     putRequest.onerror = e => {
       _error(' __ Error putting record');
+      // @ts-ignore
+      _error(e.target.error.message);
       return rej(e);
     };
   });
@@ -126,19 +138,22 @@ async function getOne(storeName, key) {
     if (!db) return rej('No database found');
     const tx = db.transaction(storeName, 'readonly');
     const store = tx.objectStore(storeName);
+
     const getRequest = store.get(key);
     getRequest.onsuccess = e => {
       /** @type {DbRecord} */ // @ts-ignore
-      const record = e.target.result
+      const record = e.target.result;
       if (!record) {
-        _warn(` __ Item with key: ${key} not found in store ${storeName}`)
-        return res(null)
+        _warn(` __ Item with key: ${key} not found in store ${storeName}`);
+        return res(null);
       }
-      record.id = key
+      record.id = key;
       return res(record);
     };
     getRequest.onerror = e => {
       _error(' __ Error getting record from IndexedDB');
+      // @ts-ignore
+      _error(e.target.error.message);
       return rej(e);
     };
   });
@@ -157,19 +172,21 @@ async function getOneWithIndex(storeName, indexName, indexValue) {
     const store = tx.objectStore(storeName);
     const index = store.index(indexName);
 
-    const getRequest = index.get(indexValue)
+    const getRequest = index.get(indexValue);
     getRequest.onsuccess = e => {
       // @ts-ignore
-      const record = e.target.result
+      const record = e.target.result;
       if (!record) {
-        _warn(` __ Item with index key: "${indexValue}" not found in store "${storeName}"`)
-        return res(null)
+        _warn(` __ Item with index key: "${indexValue}" not found in store "${storeName}"`);
+        return res(null);
       }
       return res(record);
     };
 
     getRequest.onerror = e => {
       _error(' __ Error geting record from IndexedDB using index');
+      // @ts-ignore
+      _error(e.target.error.message);
       return rej(e);
     };
   });
@@ -185,16 +202,20 @@ async function getAll(storeName) {
     if (!db) { return rej('IndexedDB not initialized'); }
     const tx = db.transaction(storeName, 'readwrite');
     const store = tx.objectStore(storeName);
-    const getAllCursor = store.openCursor();
+    /** 
+     * using direction: 'prev' so latest records comes first
+     * (starting from the end)
+     */
+    const getAllCursor = store.openCursor(null);
 
     /** @type {Array<DbRecord>} */
     const records = [];
     getAllCursor.onsuccess = e => {
       const cursor = getAllCursor.result;
       if (cursor) {
-        const record = cursor.value
-        record._key = cursor.primaryKey
-        records.push(record)
+        const record = cursor.value;
+        record._key = cursor.primaryKey;
+        records.push(record);
         cursor.continue();
       } else {
         _info(' __ IndexedDB entries read');
@@ -203,10 +224,54 @@ async function getAll(storeName) {
     };
     getAllCursor.onerror = e => {
       _error(' __ Error geting IndexedDB entries');
+      // @ts-ignore
+      _error(e.target.error.message);
+      return rej(e);
+    };
+  });
+}
+
+/**
+ * @param {ObjectStores} storeName 
+ * @param {Indexes} indexName 
+ * @param {StoreKey} indexValue 
+ * @returns {Promise<DbRecord[]>}
+ */
+async function getAllWithIndex(storeName, indexName, indexValue) {
+  console.log('getallwithindex');
+  return new Promise((res, rej) => {
+    if (!db) { return rej('IndexedDB not initialized'); }
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const index = store.index(indexName);
+    /** 
+     * using direction: 'prev' so latest records comes first
+     * (starting from the end)
+     */
+    const getAllCursor = index.openCursor(indexValue, 'prev');
+
+    /** @type {Array<DbRecord>} */
+    const records = [];
+    getAllCursor.onsuccess = e => {
+      const cursor = getAllCursor.result;
+      if (cursor) {
+        const record = cursor.value;
+        record._key = cursor.primaryKey;
+        records.push(record);
+        cursor.continue();
+      } else {
+        _info(' __ IndexedDB entries read');
+        return res(records);
+      }
+    };
+    getAllCursor.onerror = e => {
+      _error(' __ Error geting IndexedDB entries');
+      // @ts-ignore
+      _error(e.target.error.message);
       return rej(e);
     };
   });
 }
 
 
-export { initializeIndexedDb, putOne, getOne, getAll, getOneWithIndex }
+export { initializeIndexedDb, putOne, getOne, getAll, getOneWithIndex, getAllWithIndex };

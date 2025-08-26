@@ -1,5 +1,5 @@
 import { dbStore } from "../common/state.js";
-import { getAll, getOneWithIndex, putOne } from "../lib/indexedDb.js";
+import { getAll, getAllWithIndex, getOneWithIndex, putOne } from "../lib/indexedDb.js";
 import { _info, _log, _warn } from "../lib/logger.js";
 
 
@@ -11,40 +11,66 @@ import { _info, _log, _warn } from "../lib/logger.js";
 
 /**
  * @typedef {object} Set
- * @property {TODO::} name
- * @property {string[]} muscles
+ * @property {IDBValidKey} exerciseKey
+ * @property {number} weight
+ * @property {number} reps
+ * @property {Date} [date]
+ * @property {number} [volume] Result of computing weight*reps
  * @property {IDBValidKey} [_key]
  */
 
 
 /**
- * @param {string} name 
- * @param {string[]} muscles 
- * @returns {ServiceReturn<Exercise>} The exercise object with its key
+ * @param {IDBValidKey} exerciseKey 
+ * @param {number} weight 
+ * @param {number} reps
+ * @returns {ServiceReturn<Set>} The exercise object with its key
  */
-async function createSet(name, muscles = []) {
-  // name = name.trim();
-  // const nameExists = await getOneWithIndex('sets', 'setsExerciseIdIdx', name);
-  // if (nameExists) {
-  //   return { errorMsg: `El ejercicio "${name}" ya existe` };
-  // }
-
+async function createSet(exerciseKey, weight, reps) {
+  _log({ exerciseKey, weight, reps });
+  if (!exerciseKey || !weight || !reps) {
+    return { errorMsg: 'Completar todos los campos' };
+  }
   /** @type {Set} */
-  const set = { name, muscles };
-  const _key = await putOne('exercises', exercise);
-  exercise._key = _key;
-
-  return { data: exercise };
+  const set = {
+    exerciseKey,
+    weight,
+    reps,
+    volume: weight * reps,
+    date: new Date(),
+  };
+  const _key = await putOne('sets', set);
+  set._key = _key;
+  dbStore.sets.push(set);
+  return { data: set };
 }
 
 
 /** TODO: Cache */
 async function fetchSets() {
-  const sets = await getAll('sets')
-  // TODO: Use helper functions like clear array and clear obj
-  // @ts-ignore
-  dbStore.sets = sets
+  /**@type {Set[]} */ // @ts-ignore
+  const sets = await getAll('sets');
+  dbStore.sets = sets;
 }
 
+/**
+ * 
+ * @param {import("../lib/indexedDb.js").StoreKey[]} setKeys 
+ */
+async function fetchLastSets(setKeys) {
+  
+}
+/**
+ * @param {import("./exercise.js").StoreKey} exerciseKey 
+ * @returns {Promise<null | Array<import("../lib/indexedDb.js").DbRecord>>}
+ */
+async function setsForExercise(exerciseKey) {
+  if (!dbStore.sets.length) {
+    return null;
+  }
+  const data = await getAllWithIndex('sets', 'setsExerciseKeyIdx', exerciseKey);
+  _log(data);
+  return data;
+}
 
-export { createSet, fetchSets };
+export { createSet, fetchSets, setsForExercise };

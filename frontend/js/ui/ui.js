@@ -1,24 +1,28 @@
-import { dbStore, revertHistory, setStateField, stateHistory } from "../common/state.js";
+import { dbStore, revertHistory, stateHistory } from "../common/state.js";
 import { $, $button, $queryOne } from "../lib/dom.js";
 import { _log, openLogs } from "../lib/logger.js";
-import { randomInt } from "../lib/utils.js";
-import { setsForExercise } from "../local-db/set-db.js";
-import { submitExercise, submitSet } from "./exercise-ui.js";
+import { openExerciseCreate, submitExercise, submitSet } from "./exercise-ui.js";
 
 
 function initUi() {
-  createHeaderBtns();
   $button({
-    label: 'Nuevo ejercicio',
-    appendTo: $('newExerciseBtnContainer'),
-    listener: { fn: openExerciseCreate }
+    listener: { fn: submitExercise },
+    label: 'Crear Ejercicio',
+    appendTo: $queryOne('#createExerciseForm .btns'),
   });
-  craeteFormButtons();
-  addModalBackdropHandler();
+
+  $button({
+    listener: { fn: submitSet },
+    label: 'Agregar Set',
+    appendTo: $queryOne('#createSetForm .btns'),
+  });
+
+  $('newExerciseBtn').addEventListener('click', openExerciseCreate);
+  modalBackdropHandler();
 }
 
 /** Reverts history 1 step */
-function addModalBackdropHandler() {
+function modalBackdropHandler() {
   $queryOne('#main-modal .backdrop').addEventListener('click', e => {
     /** @type {boolean} */ // @ts-ignore
     const clickedBackdrop = e.target.classList.contains('backdrop') || e.currentTarget.classList.contains('backdrop');
@@ -28,73 +32,25 @@ function addModalBackdropHandler() {
   });
 }
 
-function openExerciseCreate() {
-  setStateField('creatingExercise', true);
-  const nameInput = $queryOne('#createExerciseForm input[name="exerciseName"]');
-  nameInput.focus();
-  // @ts-ignore
-  nameInput.select();
-}
 
-/**
- */
-async function openSetCreate() {
-  // simulate selecting an exercise
-  const exercise = dbStore.exercises[randomInt(0, dbStore.exercises.length - 1)];
-  if (!exercise) {
-    return alert('Ningún ejercicio seleccionado');
-  }
-
-  const exerciseSets = await setsForExercise(exercise._key || 0);
-  _log('exerciseSets', exerciseSets);
-
-  $('exerciseName').innerText = exercise.name + '  | _key:' + exercise._key;
-  $('exerciseId').dataset.exerciseId = exercise._key?.toString();
-
-  setStateField('creatingSet', true);
-  const weightInput = $queryOne('#createSetForm input[name="weight"]');
-  weightInput.focus();
-  // @ts-ignore
-  weightInput.select();
-}
-
-function createHeaderBtns() {
-  const mainHeader = $('main-header');
+function dbugBtns() {
+  const mainFooter = $('mainFooter');
   $button({
     label: 'Logs',
-    appendTo: mainHeader,
+    appendTo: mainFooter,
     listener: { fn: e => openLogs() }
   });
   $button({
     label: 'History',
-    prependTo: mainHeader,
-    listener: { fn: e => { _log(stateHistory); openLogs() } }
+    appendTo: mainFooter,
+    listener: { fn: e => { _log(stateHistory); openLogs(); } }
   });
   $button({
     label: 'DBStore',
-    appendTo: mainHeader,
-    listener: { fn: e => { _log(dbStore); openLogs() } }
+    appendTo: mainFooter,
+    listener: { fn: e => { _log(dbStore); openLogs(); } }
   });
 }
 
 
-/**
- * Creates the buttons that will interact with the forms (submit, etc)
- */
-function craeteFormButtons() {
-  $button({
-    label: 'Crear Ejercicio',
-    appendTo: $queryOne('#createExerciseForm .form-content'),
-    listener: { fn: submitExercise }
-  });
-  $button({
-    label: 'Agregar Set',
-    appendTo: $queryOne('#createSetForm .form-content'),
-    listener: { fn: submitSet }
-  });
-}
-
-
-
-
-export { initUi, openSetCreate };
+export { initUi, dbugBtns };

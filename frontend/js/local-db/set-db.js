@@ -1,5 +1,5 @@
 import { dbStore } from "../common/state.js";
-import { getAll, getAllWithIndex, getOneWithIndex, putOne } from "../lib/indexedDb.js";
+import { deleteOne, getAllWithIndex, putOne } from "../lib/indexedDb.js";
 import { _info, _log, _warn } from "../lib/logger.js";
 
 
@@ -12,8 +12,8 @@ import { _info, _log, _warn } from "../lib/logger.js";
  * @typedef {import("./exercise-db.js").StoreKey} StoreKey
  */
 
-
 /**
+ * Set
  * @typedef {object} Set
  * @property {StoreKey} exerciseKey
  * @property {number} weight
@@ -25,6 +25,8 @@ import { _info, _log, _warn } from "../lib/logger.js";
 
 
 /**
+ * Creates a Set. Puts it into the cache.
+ * Updates Exercise with last set data.
  * @param {import("./exercise-db.js").Exercise} exercise 
  * @param {number} weight 
  * @param {number} reps
@@ -34,9 +36,14 @@ async function createSet(exercise, weight, reps) {
   if (!weight || !reps) {
     return { errorMsg: 'Completar todos los campos' };
   }
+  const exerciseKey = exercise._key || 0;
+  if (!exerciseKey) {
+    return { errorMsg: 'Falta la llave del ejercicio (wtf)' };
+  }
+
   /** @type {Set} */
   const set = {
-    exerciseKey: exercise._key || '',
+    exerciseKey,
     weight,
     reps,
     volume: weight * reps,
@@ -45,36 +52,46 @@ async function createSet(exercise, weight, reps) {
   const _key = await putOne('sets', set);
   set._key = _key;
 
-  // TODO: Update set history
-  const stringKey = _key.toString()
+  /** string Exercise key for dbStore cache */
+  const stringKey = exerciseKey.toString();
   if (!dbStore.setsForExercise[stringKey]) {
-    dbStore.setsForExercise[stringKey] = []
+    dbStore.setsForExercise[stringKey] = [];
   }
-  dbStore.setsForExercise[stringKey].push(set)
+  dbStore.setsForExercise[stringKey].unshift(set);
 
-
-  exercise.lastSet = set
-  await putOne('exercises', exercise, exercise._key)
-  // TODO: Update exercise row (make an updateExerciseRow funtion that does all)
+  exercise.lastSet = set;
+  await putOne('exercises', exercise, exercise._key);
+  // TODO: Update exercise row with last set data
 
   return { data: set };
 }
 
 
 /**
+ * Returns the sets for the given exercise.
+ * If they are cached, return the cache, otherwise fetch and cache.
  * @param {import("./exercise-db.js").StoreKey} exerciseKey 
  * @returns {Promise<Array<Set>>}
  */
-async function setsForExercise(exerciseKey) {
-  const cachedSetsForExercise = dbStore.setsForExercise[exerciseKey.toString()]
-  if (cachedSetsForExercise) {
-    // Sets already fetched for exercise
-    return cachedSetsForExercise;
+async function getSetsForExercise(exerciseKey) {
+  const stringKey = exerciseKey.toString();
+  if (dbStore.setsForExercise[stringKey]) {
+    // cached
+    return dbStore.setsForExercise[stringKey];
   }
   const data = await getAllWithIndex('sets', 'setsExerciseKeyIdx', exerciseKey);
-  _log(data);
+  // @ts-ignore - cache the value: 
+  dbStore.setsForExercise[stringKey] = data;
   // @ts-ignore
-  return data;
+  return dbStore.setsForExercise[stringKey];
 }
 
-export { createSet, setsForExercise };
+/**
+ * Delete one Set
+ * @param {StoreKey} key 
+ */
+async function deleteSet(key) {
+  return await deleteOne('sets', key);
+}
+
+export { createSet, getSetsForExercise, deleteSet };

@@ -10,7 +10,7 @@ const INTERCEPT_FETCH_REQUESTS = true;
  */
 
 
-const MAJOR_VERSION = 'v001';
+const MAJOR_VERSION = 'v002';
 const JS_CACHE = 'js_' + MAJOR_VERSION + '--0.0.1';
 const CSS_CACHE = 'css_' + MAJOR_VERSION + '--0.0.1';
 const MISC_CACHE = 'misc_' + MAJOR_VERSION + '--0.0.1';

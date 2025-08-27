@@ -14,24 +14,30 @@ body {
   background-color: #222;
 }
 
+div {
+  user-select: none;
+}
+
 #app {
   background-color: var(--app-bg);
   color: white;
 }
 
-#main-header {
+#mainFooter {
+  margin-top: 10vh;
   background-color: var(--header-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1dvw;
+  gap: 2rem;
   padding: 1dvw;
 }
 
-#main-header .btn {
+#mainFooter .btn {
   padding: 3dvw;
-  background-color: cornflowerblue;
-  color: black;
+  background-color: rgb(14, 38, 82);
+  color: white;
+  font-size: 18px;
 }
 
 #exerciseListView {
@@ -51,14 +57,15 @@ body {
   background: var(--list-bg);
 }
 
-#newExerciseBtnContainer {
+#exerciseListView .btns {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0.5rem;
+  background-color: #002929;
 }
 
-#newExerciseBtnContainer .btn {
+#newExerciseBtn {
   padding: 2rem 2.5rem;
   background-color: var(--list-bg);
   color: white;
@@ -80,15 +87,18 @@ body {
   font-size: 18px;
   padding: 0.25rem;
 }
+
 .set-history-container .row {
   background-color: rgba(255, 255, 255, 0.121);
   padding: 0.25rem;
   border-radius: 4px;
   margin-bottom: 4px;
 }
+
 .set-history-container .row:last-child {
   margin-bottom: 0;
 }
+
 /* Generic for lists */
 .list .row {
   color: white;
@@ -100,6 +110,7 @@ body {
   justify-content: space-between;
   align-items: center;
 }
+
 .list .row:last-child {
   margin-bottom: 0;
 }
@@ -107,6 +118,7 @@ body {
 .list .row .exerciseName {
   font-size: 24px;
 }
+
 .list .row .last-set-data {
   font-size: 20px;
 }
@@ -164,9 +176,11 @@ body {
 #app[data-creating-exercise='false'] #createExerciseForm {
   display: none;
 }
+
 #app[data-viewing-exercises='false'] #exerciseListView {
   display: none;
 }
+
 #app[data-viewing-single-exercise='false'] #singleExerciseView {
   display: none;
 }

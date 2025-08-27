@@ -59,7 +59,7 @@ function onDbUpgradeNeeded(e) {
     store.createIndex('setsExerciseKeyIdx', 'exerciseKey', { unique: false });
   }
 
-  _info(db.objectStoreNames)
+  _info(db.objectStoreNames);
 }
 
 /** 
@@ -68,7 +68,7 @@ function onDbUpgradeNeeded(e) {
 function onDbOpenSuccess(e) {
   db = openDbRequest.result;
   _info(' __ Base de datos abierta - Versión ' + db.version);
-  eventBus.emit('IndexedDbInited', { version: dbVersion })
+  eventBus.emit('IndexedDbInited', { version: dbVersion });
 }
 
 
@@ -117,7 +117,7 @@ async function putOne(storeName, value, key) {
     if (!db) return rej('No database found');
     const tx = db.transaction(storeName, 'readwrite');
     const store = tx.objectStore(storeName);
-    _warn({ storeName, value, key })
+    _warn({ storeName, value, key });
     const putRequest = store.put(value, key);
     putRequest.onsuccess = e => {
       // @ts-ignore
@@ -278,5 +278,32 @@ async function getAllWithIndex(storeName, indexName, indexValue) {
   });
 }
 
+/**
+ * Get one record from a store using the key
+ * @param {ObjectStores} storeName
+ * @param {StoreKey} key
+ * @returns {Promise<StoreKey>}
+ */
+async function deleteOne(storeName, key) {
+  return new Promise((res, rej) => {
+    if (!db) return rej('No database found');
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
 
-export { initializeIndexedDb, putOne, getOne, getAll, getOneWithIndex, getAllWithIndex };
+    const deleteRequest = store.delete(key);
+    deleteRequest.onsuccess = e => {
+      // @ts-ignore
+      console.log('result', e.target.result);
+      return res(key);
+    };
+    deleteRequest.onerror = e => {
+      _error(' __ Error deleting record from IndexedDB');
+      // @ts-ignore
+      _error(e.target.error.message);
+      return rej(e);
+    };
+  });
+}
+
+
+export { initializeIndexedDb, putOne, getOne, getAll, getOneWithIndex, getAllWithIndex, deleteOne };

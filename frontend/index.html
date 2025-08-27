@@ -1,114 +1,128 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
 
-    <title>Gym Track</title>
-    <meta name="description" content="Te ayuda en el entreno" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
 
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Gym Track</title>
+  <meta name="description" content="Te ayuda en el entreno" />
 
-    <!-- <link rel="manifest" href="static/manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+
+  <!-- <link rel="manifest" href="static/manifest.json" />
   <link rel="icon" type="image/png" sizes="32x32" href="static/icons/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="static/icons/favicon-16x16.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="static/icons/apple-touch-icon.png" /> -->
 
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/classes.css" />
-    <link rel="stylesheet" href="css/logger.css" />
-    <link rel="stylesheet" href="css/cache-control.css" />
-    <link rel="stylesheet" href="css/btn.css" />
-    <link rel="stylesheet" href="css/input.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/classes.css" />
+  <link rel="stylesheet" href="css/logger.css" />
+  <link rel="stylesheet" href="css/cache-control.css" />
+  <link rel="stylesheet" href="css/btn.css" />
+  <link rel="stylesheet" href="css/input.css" />
 
-    <script src="js/app.js" type="module" defer></script>
-  </head>
+  <script src="js/app.js" type="module" defer></script>
+</head>
 
-  <body>
-    <!-- Application -->
-    <div id="app">
-      <header id="main-header">
+<body>
+  <!-- Application -->
+  <div id="app">
+    <header id="main-header">
+      <!--  -->
+    </header>
+
+    <div id="exerciseListView">
+      <h3 class="title">Ejercicios</h3>
+      <div class="list">
         <!--  -->
-      </header>
+      </div>
+      <div class="btns">
+        <div id="newExerciseBtn" role="button" class="base-button">Nuevo Ejercicio</div>
+      </div>
+    </div>
 
-      <div id="exerciseListView">
-        <h3 class="title">Ejercicios</h3>
-        <div class="list">
-          <!--  -->
-        </div>
-        <div id="newExerciseBtnContainer"></div>
+    <!-- Modal where stuff happens -->
+    <div id="main-modal" class="modal">
+      <div class="backdrop">
+        <div class="close-modal">&times;</div>
       </div>
 
-      <!-- Modal where stuff happens -->
-      <div id="main-modal" class="modal">
-        <div class="backdrop">
-          <div class="close-modal">&times;</div>
-        </div>
+      <div class="content">
+        <!-- Create Exercise -->
+        <form id="createExerciseForm" class="base-form">
+          <h3 class="form-title">Nuevo Ejercicio</h3>
+          <div class="form-content">
+            <div class="form-control">
+              <label for="exerciseName">Nombre del ejercicio:</label>
+              <input type="text" name="exerciseName" />
+            </div>
+            <div class="form-control">
+              <label for="muscles">Músculos (separados por coma):</label>
+              <input type="text" name="muscles" />
+            </div>
+            <div class="btns">
+              <!--  -->
+            </div>
+          </div>
+        </form>
 
-        <div class="content">
-          <!-- Create Exercise -->
-          <form id="createExerciseForm" class="base-form">
-            <h3 class="form-title">Nuevo Ejercicio</h3>
+        <!-- Single Exercise View -->
+        <div id="singleExerciseView">
+          <div class="name-container">
+            <h3 class="name">
+              <!-- Exercise name -->
+            </h3>
+          </div>
+
+          <form id="createSetForm" class="base-form" data-exercise-id="">
+            <!-- Set input -->
             <div class="form-content">
-              <div class="form-control">
-                <label for="exerciseName">Nombre del ejercicio:</label>
-                <input type="text" name="exerciseName" />
+              <div class="numeric-inputs">
+                <div class="form-control">
+                  <label for="weight">Peso (kg):</label>
+                  <input type="number" step="1" name="weight" value="5" />
+                </div>
+                <div class="form-control">
+                  <label for="reps">Reps:</label>
+                  <input type="number" step="1" name="reps" value="7" />
+                </div>
               </div>
-              <div class="form-control">
-                <label for="muscles">Músculos (separados por coma):</label>
-                <input type="text" name="muscles" />
+              <div class="btns">
+                <!--  -->
               </div>
             </div>
           </form>
 
-          <!-- Single Exercise View -->
-          <div id="singleExerciseView">
-            <div class="name-container">
-              <h3 class="name">
-                <!-- Exercise name -->
-              </h3>
-            </div>
-
-            <form id="createSetForm" class="base-form" data-exercise-id="">
-              <!-- Set input -->
-              <div class="form-content">
-                <div class="numeric-inputs">
-                  <div class="form-control">
-                    <label for="weight">Peso (kg):</label>
-                    <input type="number" step="1" name="weight" value="5" />
-                  </div>
-                  <div class="form-control">
-                    <label for="reps">Reps:</label>
-                    <input type="number" step="1" name="reps" value="7" />
-                  </div>
-                </div>
-              </div>
-            </form>
-
-            <div class="set-history-container">
-              <h4>Historial</h4>
-              <div class="set-history">
-                <!--  -->
-              </div>
+          <div class="set-history-container">
+            <h4>Historial</h4>
+            <div class="set-history">
+              <!--  -->
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Cache update banner -->
-    <div id="updateBanner" class="folded">
-      <p>Hay una nueva versión disponible</p>
-      <button id="refreshPageBtn">Refrescá la página para actualizar</button>
+    <div id="mainFooter">
+      <!--  -->
     </div>
+  </div>
 
-    <!-- Logger -->
-    <div id="logger" class="display-none">
-      <div id="closeLogsBtn">
-        <h4>Cerrar logs</h4>
-      </div>
-      <div id="logs"></div>
+  <!-- Cache update banner -->
+  <div id="updateBanner" class="folded">
+    <p>Hay una nueva versión disponible</p>
+    <button id="refreshPageBtn">Refrescá la página para actualizar</button>
+  </div>
+
+  <!-- Logger -->
+  <div id="logger" class="display-none">
+    <div id="closeLogsBtn">
+      <h4>Cerrar logs</h4>
     </div>
-  </body>
+    <div id="logs"></div>
+  </div>
+</body>
+
 </html>

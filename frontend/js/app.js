@@ -1,7 +1,7 @@
 import { initializeCache } from "./initializeCache.js";
 import { _info, _log } from "./lib/logger.js";
 import { initializeIndexedDb } from "./lib/indexedDb.js";
-import { initUi } from "./ui/ui.js";
+import { dbugBtns, initUi } from "./ui/ui.js";
 import { initAppState } from "./common/state.js";
 import { seedDb } from "./local-db/seed.js";
 import { eventBus } from "./lib/utils.js";
@@ -17,7 +17,6 @@ initializeIndexedDb();
 /** Callback for Indexed DB initialization */
 eventBus.on('IndexedDbInited', async () => {
     _info(' (!) DB Callback')
-    // await seedDb();
     await fetchExercises();
     fillExerciseList()
     openExerciseList()
@@ -25,3 +24,4 @@ eventBus.on('IndexedDbInited', async () => {
 
 initAppState();
 initUi();
+dbugBtns()

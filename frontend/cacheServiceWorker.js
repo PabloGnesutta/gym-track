@@ -11,10 +11,11 @@
 const INTERCEPT_FETCH_REQUESTS = true;
 
 
-const MAJOR_VERSION = 'v004';
+const MAJOR_VERSION = 'v1';
 const JS_CACHE = 'js_' + MAJOR_VERSION + '--0.0.1';
 const CSS_CACHE = 'css_' + MAJOR_VERSION + '--0.0.1';
 const MISC_CACHE = 'misc_' + MAJOR_VERSION + '--0.0.1';
+
 /** 
  * (*) Using only one cache for easier development. 
  * Probably a good idea to use different ones:
@@ -75,6 +76,7 @@ self.addEventListener('activate', () => {
   sendToClients({
     status: 'ACTIVATING',
     CACHE_WHITELIST,
+    MAJOR_VERSION,
   });
 });
 

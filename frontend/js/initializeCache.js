@@ -25,6 +25,8 @@ function initializeCache() {
             navigator.serviceWorker.onmessage = e => {
               _log(' - msg received from worker:', e.data.msg);
               deleteOldCaches(e.data.msg.CACHE_WHITELIST);
+              localStorage.setItem('cacheMajorVersion', e.data.msg.MAJOR_VERSION)
+              $('cacheMajorVersion').innerText = e.data.msg.MAJOR_VERSION
             };
           }
         });

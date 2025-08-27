@@ -1,21 +1,23 @@
 /**
- * false for hot reloading, could use environment variable
- */
-const INTERCEPT_FETCH_REQUESTS = true;
-
-/**
  * @typedef {{
  *  postMessage: (message: *, transfer?: Transferable[]) => void
  * }} Client
  */
 
 
-const MAJOR_VERSION = 'v002';
+/**
+ * false for hot reloading, could use environment variable
+ */
+const INTERCEPT_FETCH_REQUESTS = true;
+
+
+const MAJOR_VERSION = 'v003';
 const JS_CACHE = 'js_' + MAJOR_VERSION + '--0.0.1';
 const CSS_CACHE = 'css_' + MAJOR_VERSION + '--0.0.1';
 const MISC_CACHE = 'misc_' + MAJOR_VERSION + '--0.0.1';
 /** 
- * (*) Using only one cache for easier development. Probably a good idea to use different ones:
+ * (*) Using only one cache for easier development. 
+ * Probably a good idea to use different ones:
  * @example const CACHE_WHITELIST = [JS_CACHE, CSS_CACHE, MISC_CACHE] 
  */
 const CACHE_WHITELIST = [MISC_CACHE];

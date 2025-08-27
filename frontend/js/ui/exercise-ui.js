@@ -5,6 +5,11 @@ import { createExercise } from "../local-db/exercise-db.js";
 import { createSet, deleteSet, getSetsForExercise } from "../local-db/set-db.js";
 
 
+/**
+ * @typedef {import("../local-db/exercise-db.js").Exercise} Exercise
+ */
+
+
 const exercoseList = $queryOne('#exerciseListView .list');
 const exerciseForm = $form('createExerciseForm');
 
@@ -61,11 +66,12 @@ function fillExerciseList() {
  */
 function appendExerciseRow(container, exercise) {
     const key = (exercise._key || '').toString();
-    const item = $new({
+    const row = $new({
         class: 'row',
-        dataset: [['exerciseKey', key]],
-        // TODO: Use event delegation
-        listener: { fn: () => openSingleExercise(exercise) },
+        dataset: [
+            ['clickAction', 'openSingleExercise'],
+            ['exerciseKey', key],
+        ],
         children: [
             $new({ class: 'exerciseName', text: exercise.name })
         ],
@@ -74,10 +80,10 @@ function appendExerciseRow(container, exercise) {
     const lastSet = exercise.lastSet;
     if (lastSet) {
         const lastSetData = $new({ class: 'last-set-data', text: `${lastSet.weight} kg X ${lastSet.reps} reps` });
-        item.appendChild(lastSetData);
+        row.appendChild(lastSetData);
     }
 
-    container.append(item);
+    container.append(row);
 }
 
 
@@ -85,10 +91,14 @@ function appendExerciseRow(container, exercise) {
  * Opens single exercise view.
  * Populates Set fields with last set data. 
  * Fills out set history.
- * @param {import("../local-db/exercise-db.js").Exercise} exercise 
+ * @param {string} exerciseKey 
  */
-async function openSingleExercise(exercise) {
+async function openSingleExercise(exerciseKey) {
     setStateField('viewingSingleExercise', true);
+
+    const exercise = dbStore.exercises.find(e => e._key === +exerciseKey);
+    if (!exercise) { return; }
+
     exerciseName.innerText = exercise.name;
 
     setInput: {
@@ -153,25 +163,10 @@ function appendSetHistoryRow(container, set, prepend = false) {
     const row = $new({
         class: 'row',
         text,
-        dataset: [['setKey', (set._key || '').toString()]],
-        // TODO: Use event delegation
-        listener: {
-            /** Delete Set listener */
-            fn: async e => {
-                /** @type {HTMLDivElement} */ // @ts-ignore
-                const setRow = e.target.closest('.row');
-                if (!setRow) { return; }
-                const setKey = +(setRow.dataset.setKey || 0);
-                const doit = confirm('Querés borrar este set? ' + text);
-                if (!doit) { return; }
-                await deleteSet(setKey);
-                setHistory.removeChild(setRow);
-                _log({ html: setHistory.innerHTML });
-                if (setHistory.innerHTML === '') {
-                    setHistory.innerHTML = 'No hay sets registrados para este ejercicio';
-                }
-            }
-        }
+        dataset: [
+            ['clickAction', 'tryDeleteSet'],
+            ['setKey', (set._key || '').toString()],
+        ],
     });
     if (setHistory.innerHTML === 'No hay sets registrados para este ejercicio') {
         setHistory.innerHTML = '';
@@ -183,5 +178,25 @@ function appendSetHistoryRow(container, set, prepend = false) {
     }
 }
 
+/**
+ * 
+ * @param {Event} e 
+ * @returns {Promise<void>}
+ */
+async function tryDeleteSet(e) {
+    /** @type {HTMLDivElement} */ // @ts-ignore
+    const setRow = e.target.closest('.row');
+    if (!setRow) { return; }
+    const setKey = +(setRow.dataset.setKey || 0);
+    const doit = confirm('Querés borrar este set?');
+    if (!doit) { return; }
+    await deleteSet(setKey);
+    setHistory.removeChild(setRow);
+    _log({ html: setHistory.innerHTML });
+    if (setHistory.innerHTML === '') {
+        setHistory.innerHTML = 'No hay sets registrados para este ejercicio';
+    }
+}
 
-export { fillExerciseList, openExerciseList, openExerciseCreate, appendExerciseRow, submitExercise, submitSet };
+
+export { fillExerciseList, openExerciseList, openSingleExercise, openExerciseCreate, appendExerciseRow, submitExercise, submitSet, tryDeleteSet };

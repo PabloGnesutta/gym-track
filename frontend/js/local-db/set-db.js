@@ -92,6 +92,7 @@ async function getSetsForExercise(exerciseKey) {
  */
 async function deleteSet(key) {
   return await deleteOne('sets', key);
+  // TODO: Remove from dbStore cache
 }
 
 export { createSet, getSetsForExercise, deleteSet };

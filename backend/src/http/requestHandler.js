@@ -44,10 +44,14 @@ export async function handleRequest(req, res) {
     else if (pathBase === 'cacheServiceWorker.js') {
       return sendAssetFile(res, ['cacheServiceWorker.js'], 'application/javascript');
     }
+    else if (pathBase === 'favicon.ico') {
+      return sendAssetFile(res, ['static', pathBase], 'image/x-icon');
+    }
 
     else if (pathBase === 'api') {
       return await handleApiRequest(req, res);
     }
+
 
     // 404
     return errorResponse(res, 'Resource not found ' + _url, 404);

@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "serve": "nodemon ./src/index.js"
+    "serve": "nodemon ./src/index.gym-track.js"
   },
   "type": "module",
   "devDependencies": {

@@ -3,7 +3,6 @@ import { deleteOne, getAllWithIndex, putOne } from "../lib/indexedDb.js";
 import { _info, _log, _warn } from "../lib/logger.js";
 import { updateExercise } from "./exercise-db.js";
 
-
 /**
  * @template T
  * @typedef {import("../common/types.js").ServiceReturn<T>} ServiceReturn<T>
@@ -23,7 +22,6 @@ import { updateExercise } from "./exercise-db.js";
  * @property {number} [volume] Result of computing weight*reps
  * @property {StoreKey} [_key]
  */
-
 
 /**
  * Creates a Set. Puts it into the cache.
@@ -50,8 +48,7 @@ async function createSet(exercise, weight, reps) {
     volume: weight * reps,
     date: new Date(),
   };
-  const _key = await putOne('sets', set);
-  set._key = _key;
+  set._key = await putOne('sets', set);
 
   /** string Exercise key for dbStore cache */
   const stringKey = exerciseKey.toString();
@@ -65,7 +62,6 @@ async function createSet(exercise, weight, reps) {
 
   return { data: set };
 }
-
 
 /**
  * Returns the sets for the given exercise.
@@ -106,12 +102,12 @@ async function getSetsForExercise(exerciseKey) {
 }
 
 /**
- * Delete one Set
+ * Delete one Set from DB 
+ * TODO: Remove from dbStore cache
  * @param {StoreKey} key 
  */
 async function deleteSet(key) {
   return await deleteOne('sets', key);
-  // TODO: Remove from dbStore cache
 }
 
 export { createSet, getSetsForExercise, deleteSet };

@@ -4,7 +4,6 @@ import { _log, openLogs } from "../lib/logger.js";
 import { openExerciseCreate, openSingleExercise, submitExercise } from "./exercise-ui.js";
 import { submitSet, tryDeleteSet } from "./set-ui.js";
 
-
 /**
  * TODO (event delegation): Use some kind of map for events so it grabs the 
  * function using the clickAction dataset point as the function name.

@@ -16,7 +16,6 @@ const singleExerciseView = $('singleExerciseView');
 const exerciseName = $getInner(singleExerciseView, '.name');
 
 
-
 /** Open create exercise modal and focus name input */
 function openExerciseCreate() {
     setStateField('creatingExercise', true);
@@ -44,7 +43,6 @@ async function submitExercise(e) {
     exerciseForm.reset();
     setStateField('creatingExercise', false);
 }
-
 
 /** Open exercise list view */
 async function openExerciseList() {
@@ -75,6 +73,7 @@ function appendExerciseRow(container, exercise) {
         ],
     });
 
+    // TODO: Rework this when new set structure is applied
     const lastSet = exercise.lastSet;
     if (lastSet) {
         const lastSetData = $new({ class: 'last-set-data', text: `${lastSet.weight} kg X ${lastSet.reps} reps` });
@@ -83,7 +82,6 @@ function appendExerciseRow(container, exercise) {
 
     container.append(exerciseRow);
 }
-
 
 /**
  * Opens single exercise view.
@@ -98,13 +96,12 @@ async function openSingleExercise(exerciseKey) {
         return _log('current exercise already cached');
     }
 
-    const exercise = dbStore.exercises.find(e => e._key === +exerciseKey);
+    const exercise = dbStore.exercises.find(e => e._key === key);
     if (!exercise) { return _warn('Exercise not found'); }
     dataState.currentExercise = exercise;
     exerciseName.innerText = exercise.name;
     populateSetData(exercise);
 }
-
 
 
 export { fillExerciseList, openExerciseList, openSingleExercise, openExerciseCreate, appendExerciseRow, submitExercise };

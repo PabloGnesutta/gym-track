@@ -23,6 +23,14 @@ div {
   color: white;
 }
 
+#cacheMajorVersion {
+  background-color: white;
+  color: black;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
 #mainFooter {
   margin-top: 10vh;
   background-color: var(--header-bg);
@@ -80,15 +88,7 @@ div {
 
 #singleExerciseView .set-history-container {
   background-color: #45000e;
-  padding: 0.5rem;
-}
-
-#cacheMajorVersion {
-  background-color: white;
-  color: black;
-  padding: 4px;
-  border-radius: 4px;
-  font-size: 16px;
+  padding: 0.25rem;
 }
 
 .set-history-container h4 {
@@ -96,20 +96,31 @@ div {
   padding: 0.25rem;
 }
 
-.set-history-container .row {
+.set-history .row:last-child {
+  margin-bottom: 0;
+}
+.set-history .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 4px;
   background-color: rgba(255, 255, 255, 0.121);
-  padding: 0.25rem;
   border-radius: 4px;
   margin-bottom: 4px;
 }
 
-
-.set-history-container .row:last-child {
-  margin-bottom: 0;
+.row .weight-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 0.75rem;
 }
-
-.set-history .weight {
- padding: 2px 0 2px 1rem;
+.weight-container .weight {
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 2px;
+  border-radius: 4px;
 }
 
 /* Generic for lists */
@@ -148,7 +159,7 @@ div {
   display: none;
   justify-content: center;
   align-items: center;
-  padding: 5dvw;
+  padding: 1dvw;
 }
 
 .modal .backdrop {

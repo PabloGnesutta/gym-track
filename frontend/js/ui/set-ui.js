@@ -1,4 +1,5 @@
 import { appState, dbStore } from "../common/state.js";
+import { timeAgo } from "../lib/date.js";
 import { $, $form, $getInner, $new } from "../lib/dom.js";
 import { _error, _log } from "../lib/logger.js";
 import { createSet, deleteSet, getSetsForExercise } from "../local-db/set-db.js";
@@ -23,9 +24,12 @@ async function populateSetData(exercise) {
     if (exercise.lastSet) {
       setForm.elements['weight'].value = exercise.lastSet.weight;
       setForm.elements['reps'].value = exercise.lastSet.reps;
+      setForm.elements['reps'].focus();
+      setForm.elements['reps'].select();
+    } else {
+      setForm.elements['weight'].focus();
+      setForm.elements['weight'].select();
     }
-    setForm.elements['reps'].focus();
-    setForm.elements['reps'].select();
   }
 
   setHistory: {
@@ -40,19 +44,22 @@ async function populateSetData(exercise) {
     groupByDate: {
       const grouped = dbStore.setsForExerciseByDate[(exercise._key || '').toString()];
       for (const date in grouped) {
+        const _weightConainer = $new({ class: 'weight-container' })
+        const _date = $new({ class: 'date', text: timeAgo(date) })
         const _row = $new({
           class: 'row',
-          children: [
-            $new({ class: 'date', text: date })
-          ]
+          children: [_weightConainer, _date]
         });
+
         for (const weight in grouped[date]) {
-          const _weight = $new({ class: 'weight', text: `${weight} kg >>> ` });
+          const _weight = $new({ class: 'weight', text: `${weight}kg X ` });
           grouped[date][weight].forEach(reps => {
-            _weight.innerText += reps + ', ';
+            _weight.innerText += reps + ',';
           });
-          _weight.innerText = _weight.innerText.substring(0, _weight.innerText.length - 2) + '.';
-          _row.append(_weight);
+          _weight.innerText = _weight.innerText.substring(0, _weight.innerText.length - 1);
+          _weightConainer.prepend(_weight);
+          // DEBUG
+          // _weight.innerText = '*'
         }
         setHistory.append(_row);
       }
@@ -84,7 +91,7 @@ async function submitSet(e) {
   const result = await createSet(exercise, +weight, +reps);
   if (result.data) {
     appendSetHistoryRow(setHistory, result.data, true);
-    // TODO: Update exercise row
+    // TODO: Update exercise row, update history row
   } else {
     _error(result.errorMsg);
   }

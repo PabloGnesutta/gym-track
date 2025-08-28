@@ -19,7 +19,7 @@ const MISC_CACHE = 'misc_' + MAJOR_VERSION + '--0.0.1';
 /** 
  * (*) Using only one cache for easier development. 
  * Probably a good idea to use different ones:
- * @example const CACHE_WHITELIST = [JS_CACHE, CSS_CACHE, MISC_CACHE] 
+ * @example const CACHE_WHITELIST = [JS_CACHE, CSS_CACHE, SVG_CACHE] 
  */
 const CACHE_WHITELIST = [MISC_CACHE];
 

@@ -6,6 +6,7 @@ import { _log } from "../lib/logger.js";
  * @typedef {import("../local-db/exercise-db.js").Exercise} Exercise
  * @typedef {import("../local-db/set-db.js").Set} Set
  */
+
 /**
  * Main state of the application
  * @typedef {object} AppState
@@ -13,6 +14,9 @@ import { _log } from "../lib/logger.js";
  * @property {boolean} creatingSet
  * @property {boolean} viewingExercises
  * @property {boolean} viewingSingleExercise
+ * 
+ * @typedef {object} DataState
+ * @property {Exercise|null} currentExercise
  */
 
 /**
@@ -20,6 +24,7 @@ import { _log } from "../lib/logger.js";
  * @typedef {object} DBStore
  * @property {Exercise[]} exercises
  * @property {Record<string, Set[]>} setsForExercise
+ * @property {Record<string, *>} setsForExerciseByDate
  */
 
 
@@ -27,6 +32,7 @@ import { _log } from "../lib/logger.js";
 const dbStore = {
     exercises: [],
     setsForExercise: {},
+    setsForExerciseByDate: {},
 };
 
 
@@ -39,6 +45,10 @@ const appState = {
     viewingSingleExercise: false,
 };
 
+/** @type {DataState} State of data stored in memory */
+const dataState = {
+    currentExercise: null,
+};
 /** 
  * State history. Enables certain "undo" operations
  * @type {Array<AppState & {historyId:number}>} 
@@ -88,7 +98,7 @@ function initAppState() {
     setStateField('viewingExercises', false, false);
     setStateField('viewingSingleExercise', false, false);
     setStateField('creatingSet', false, false);
-    recordHistory()
+    recordHistory();
 }
 
-export { appState, stateHistory, setStateField, initAppState, revertHistory, dbStore };
+export { appState, dataState, stateHistory, setStateField, initAppState, revertHistory, dbStore };

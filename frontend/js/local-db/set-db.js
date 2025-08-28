@@ -1,6 +1,7 @@
 import { dbStore } from "../common/state.js";
 import { deleteOne, getAllWithIndex, putOne } from "../lib/indexedDb.js";
 import { _info, _log, _warn } from "../lib/logger.js";
+import { updateExercise } from "./exercise-db.js";
 
 
 /**
@@ -60,8 +61,7 @@ async function createSet(exercise, weight, reps) {
   dbStore.setsForExercise[stringKey].unshift(set);
 
   exercise.lastSet = set;
-  await putOne('exercises', exercise, exercise._key);
-  // TODO: Update exercise row with last set data
+  await updateExercise(exercise);
 
   return { data: set };
 }
@@ -74,16 +74,35 @@ async function createSet(exercise, weight, reps) {
  * @returns {Promise<Array<Set>>}
  */
 async function getSetsForExercise(exerciseKey) {
-  const stringKey = exerciseKey.toString();
-  if (dbStore.setsForExercise[stringKey]) {
+  const _exerciseKey = exerciseKey.toString();
+  if (dbStore.setsForExercise[_exerciseKey]) {
     // cached
-    return dbStore.setsForExercise[stringKey];
+    return dbStore.setsForExercise[_exerciseKey];
   }
-  const data = await getAllWithIndex('sets', 'setsExerciseKeyIdx', exerciseKey);
-  // @ts-ignore - cache the value: 
-  dbStore.setsForExercise[stringKey] = data;
+
+  const nodeForExercise = {};
+
+  const data = await getAllWithIndex('sets', 'setsExerciseKeyIdx', exerciseKey,
+    (set) => {
+      // Group by date:
+      const date = set.date.toLocaleDateString();
+      if (!nodeForExercise[date]) {
+        nodeForExercise[date] = {};
+      }
+      if (!nodeForExercise[date][set.weight]) {
+        nodeForExercise[date][set.weight] = [];
+      }
+      nodeForExercise[date][set.weight].unshift(set.reps);
+    }
+  );
+
+  dbStore.setsForExerciseByDate[_exerciseKey] = nodeForExercise;
+
+  // cache the value: 
+  // @ts-ignore 
+  dbStore.setsForExercise[_exerciseKey] = data;
   // @ts-ignore
-  return dbStore.setsForExercise[stringKey];
+  return dbStore.setsForExercise[_exerciseKey];
 }
 
 /**

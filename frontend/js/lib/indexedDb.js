@@ -153,6 +153,7 @@ async function getOne(storeName, key) {
         return res(null);
       }
       record.id = key;
+      _info(' __ GetOne: ' + storeName, record);
       return res(record);
     };
     getRequest.onerror = e => {
@@ -185,6 +186,7 @@ async function getOneWithIndex(storeName, indexName, indexValue) {
         _warn(` __ Item with index key: "${indexValue}" not found in store "${storeName}"`);
         return res(null);
       }
+      _info(' __ GetOneWithIndex: ' + storeName, record);
       return res(record);
     };
 
@@ -200,9 +202,11 @@ async function getOneWithIndex(storeName, indexName, indexValue) {
 /**
  * Gets all the records for a given store
  * @param {ObjectStores} storeName
+ * @param {Function} [cb] Callback to be executed for each record in the cursor.
+ *   The record will be passed as an argument to the function.
  * @returns {Promise<DbRecord[]>}
  */
-async function getAll(storeName) {
+async function getAll(storeName, cb) {
   return new Promise((res, rej) => {
     if (!db) { return rej('IndexedDB not initialized'); }
     const tx = db.transaction(storeName, 'readwrite');
@@ -221,9 +225,12 @@ async function getAll(storeName) {
         const record = cursor.value;
         record._key = cursor.primaryKey;
         records.push(record);
+        if (cb) {
+          cb(record);
+        }
         cursor.continue();
       } else {
-        _info(' __ GetAll: ' + storeName);
+        _info(' __ GetAll: ' + storeName, records);
         return res(records);
       }
     };
@@ -239,11 +246,12 @@ async function getAll(storeName) {
 /**
  * @param {ObjectStores} storeName 
  * @param {Indexes} indexName 
- * @param {StoreKey} indexValue 
+ * @param {StoreKey} indexValue
+ * @param {Function} [cb] Callback to be executed for each record in the cursor.
+ *   The record will be passed as an argument to the function.
  * @returns {Promise<DbRecord[]>}
  */
-async function getAllWithIndex(storeName, indexName, indexValue) {
-  console.log('getallwithindex');
+async function getAllWithIndex(storeName, indexName, indexValue, cb) {
   return new Promise((res, rej) => {
     if (!db) { return rej('IndexedDB not initialized'); }
     const tx = db.transaction(storeName, 'readwrite');
@@ -263,9 +271,12 @@ async function getAllWithIndex(storeName, indexName, indexValue) {
         const record = cursor.value;
         record._key = cursor.primaryKey;
         records.push(record);
+        if (cb) {
+          cb(record);
+        }
         cursor.continue();
       } else {
-        _info(' __ GetAllWithIndex: ' + storeName);
+        _info(' __ GetAllWithIndex: ' + storeName, records);
         return res(records);
       }
     };

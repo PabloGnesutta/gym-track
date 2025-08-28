@@ -1,26 +1,12 @@
-exercise:
+TODO: JSDoc this
+byDate:
 {
-    id
-    name
-    muscles
-}
-
-
-set: 
-{
-    id
-    exerciseId
-    reps
-    weight
-    duration?
-}
-
-
-session: 
-{
-    date
-    sets: [id]
-    startAt
-    endAt
-    duration
+    exerciseId {
+        date {
+            weight {
+                [reps]
+            }
+            
+        }
+    }
 }

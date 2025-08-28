@@ -1,7 +1,8 @@
 import { dbStore, revertHistory, stateHistory } from "../common/state.js";
 import { $, $button, $queryOne } from "../lib/dom.js";
 import { _log, openLogs } from "../lib/logger.js";
-import { openExerciseCreate, openSingleExercise, submitExercise, submitSet, tryDeleteSet } from "./exercise-ui.js";
+import { openExerciseCreate, openSingleExercise, submitExercise } from "./exercise-ui.js";
+import { submitSet, tryDeleteSet } from "./set-ui.js";
 
 
 /**

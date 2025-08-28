@@ -1,8 +1,8 @@
-import { dbStore, setStateField } from "../common/state.js";
+import { dataState, dbStore, setStateField } from "../common/state.js";
 import { $, $form, $getInner, $new, $queryOne } from "../lib/dom.js";
-import { _error, _log } from "../lib/logger.js";
+import { _error, _log, _warn } from "../lib/logger.js";
 import { createExercise } from "../local-db/exercise-db.js";
-import { createSet, deleteSet, getSetsForExercise } from "../local-db/set-db.js";
+import { populateSetData } from "./set-ui.js";
 
 
 /**
@@ -12,11 +12,9 @@ import { createSet, deleteSet, getSetsForExercise } from "../local-db/set-db.js"
 
 const exercoseList = $queryOne('#exerciseListView .list');
 const exerciseForm = $form('createExerciseForm');
-
 const singleExerciseView = $('singleExerciseView');
 const exerciseName = $getInner(singleExerciseView, '.name');
-const setHistory = $getInner(singleExerciseView, '.set-history');
-const setForm = $form('createSetForm');
+
 
 
 /** Open create exercise modal and focus name input */
@@ -66,7 +64,7 @@ function fillExerciseList() {
  */
 function appendExerciseRow(container, exercise) {
     const key = (exercise._key || '').toString();
-    const row = $new({
+    const exerciseRow = $new({
         class: 'row',
         dataset: [
             ['clickAction', 'openSingleExercise'],
@@ -80,10 +78,10 @@ function appendExerciseRow(container, exercise) {
     const lastSet = exercise.lastSet;
     if (lastSet) {
         const lastSetData = $new({ class: 'last-set-data', text: `${lastSet.weight} kg X ${lastSet.reps} reps` });
-        row.appendChild(lastSetData);
+        exerciseRow.appendChild(lastSetData);
     }
 
-    container.append(row);
+    container.append(exerciseRow);
 }
 
 
@@ -95,108 +93,18 @@ function appendExerciseRow(container, exercise) {
  */
 async function openSingleExercise(exerciseKey) {
     setStateField('viewingSingleExercise', true);
+    const key = +exerciseKey;
+    if (key === dataState.currentExercise?._key) {
+        return _log('current exercise already cached');
+    }
 
     const exercise = dbStore.exercises.find(e => e._key === +exerciseKey);
-    if (!exercise) { return; }
-
+    if (!exercise) { return _warn('Exercise not found'); }
+    dataState.currentExercise = exercise;
     exerciseName.innerText = exercise.name;
-
-    setInput: {
-        setForm.dataset.exerciseId = (exercise._key || '').toString();
-        if (exercise.lastSet) {
-            setForm.elements['weight'].value = exercise.lastSet.weight;
-            setForm.elements['reps'].value = exercise.lastSet.reps;
-        }
-        setForm.elements['reps'].focus();
-        setForm.elements['reps'].select();
-    }
-
-    setHistory: {
-        const sets = await getSetsForExercise((exercise._key || ''));
-        if (!sets.length) {
-            setHistory.innerHTML = 'No hay sets registrados para este ejercicio';
-        } else {
-            setHistory.innerHTML = '';
-        }
-        sets.forEach(set => {
-            appendSetHistoryRow(setHistory, set);
-        });
-    }
-}
-
-/**
- * Stores Set in DB and appends HTML row
- * @param {Event} e 
- */
-async function submitSet(e) {
-    e.preventDefault();
-    const formData = new FormData(setForm);
-    const weight = formData.get('weight');
-    const reps = formData.get('reps');
-    if (!weight || typeof weight !== 'string' || !reps || typeof reps !== 'string') {
-        return;
-    }
-
-    const exerciseId = setForm.dataset.exerciseId || 0;
-    const exercise = dbStore.exercises.find(e => e._key == exerciseId);
-    if (!exercise) {
-        return _error('No hay ejercicio seleccionado');
-    }
-
-    const result = await createSet(exercise, +weight, +reps);
-    if (result.data) {
-        appendSetHistoryRow(setHistory, result.data, true);
-        // TODO: Update exercise row
-        _log({ exercise });
-    } else {
-        _error(result.errorMsg);
-    }
-}
-
-/**
- * Creates and appends Set row. 
- * @param {HTMLElement} container 
- * @param {import("../local-db/set-db.js").Set} set 
- */
-function appendSetHistoryRow(container, set, prepend = false) {
-    const text = `${set.weight} kg X ${set.reps} reps`;
-    const row = $new({
-        class: 'row',
-        text,
-        dataset: [
-            ['clickAction', 'tryDeleteSet'],
-            ['setKey', (set._key || '').toString()],
-        ],
-    });
-    if (setHistory.innerHTML === 'No hay sets registrados para este ejercicio') {
-        setHistory.innerHTML = '';
-    }
-    if (prepend) {
-        container.prepend(row);
-    } else {
-        container.append(row);
-    }
-}
-
-/**
- * 
- * @param {Event} e 
- * @returns {Promise<void>}
- */
-async function tryDeleteSet(e) {
-    /** @type {HTMLDivElement} */ // @ts-ignore
-    const setRow = e.target.closest('.row');
-    if (!setRow) { return; }
-    const setKey = +(setRow.dataset.setKey || 0);
-    const doit = confirm('Querés borrar este set?');
-    if (!doit) { return; }
-    await deleteSet(setKey);
-    setHistory.removeChild(setRow);
-    _log({ html: setHistory.innerHTML });
-    if (setHistory.innerHTML === '') {
-        setHistory.innerHTML = 'No hay sets registrados para este ejercicio';
-    }
+    populateSetData(exercise);
 }
 
 
-export { fillExerciseList, openExerciseList, openSingleExercise, openExerciseCreate, appendExerciseRow, submitExercise, submitSet, tryDeleteSet };
+
+export { fillExerciseList, openExerciseList, openSingleExercise, openExerciseCreate, appendExerciseRow, submitExercise };

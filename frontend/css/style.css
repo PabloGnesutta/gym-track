@@ -103,8 +103,13 @@ div {
   margin-bottom: 4px;
 }
 
+
 .set-history-container .row:last-child {
   margin-bottom: 0;
+}
+
+.set-history .weight {
+ padding: 2px 0 2px 1rem;
 }
 
 /* Generic for lists */

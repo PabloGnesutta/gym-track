@@ -21,7 +21,6 @@ eventBus.on('IndexedDbInited', async () => {
     fillExerciseList()
     openExerciseList()
     $('cacheMajorVersion').innerText = localStorage.getItem('cacheMajorVersion') || ''
-
 })
 
 initAppState();

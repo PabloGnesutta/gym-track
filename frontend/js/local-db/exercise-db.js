@@ -31,7 +31,7 @@ import { _info, _log, _warn } from "../lib/logger.js";
 async function createExercise(name, muscles = []) {
   name = name.trim();
   if (!name) {
-    return { errorMsg: 'Ingresar nombre' }
+    return { errorMsg: 'Ingresar nombre' };
   }
   const nameExists = await getOneWithIndex('exercises', 'excerisesNameIdx', name);
   if (nameExists) {
@@ -52,7 +52,15 @@ async function createExercise(name, muscles = []) {
 }
 
 
+/**
+ * @param {Exercise} exercise 
+ */
+async function updateExercise(exercise) {
+  await putOne('exercises', exercise, exercise._key);
 
+}
+
+/** */
 async function fetchExercises() {
   const exercises = await getAll('exercises');
   // @ts-ignore
@@ -60,4 +68,4 @@ async function fetchExercises() {
 }
 
 
-export { createExercise, fetchExercises };
+export { createExercise, fetchExercises, updateExercise };

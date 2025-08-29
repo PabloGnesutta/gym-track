@@ -1,12 +1,39 @@
+import { putOne } from "../lib/indexedDb.js";
 import { createExercise } from "./exercise-db.js";
 
 
 async function seedDb() {
-  await Promise.all([
-    createExercise('ex1', ['biceps']),
-    createExercise('ex2', ['quads']),
-    createExercise('ex3', ['triceps']),
-  ]);
+  const ex = await createExercise('ejercicio 1', ['biceps'])
+  await Promise.all(
+    _createSets(ex.data?._key, [
+      { weight: 8, reps: 13, days: -8 },
+      { weight: 8, reps: 14, days: -8 },
+      { weight: 8, reps: 11, days: -8 },
+    ])
+  )
+  await Promise.all(
+    _createSets(ex.data?._key, [
+      { weight: 9, reps: 11, days: -1 },
+      { weight: 9, reps: 13, days: -1 },
+      { weight: 9, reps: 12, days: -1 },
+    ])
+  )
 }
 
+
+function _createSets(exerciseKey, args) {
+  const promises = []
+  args.forEach(({ weight, reps, days }) => {
+    const date = new Date()
+    date.setDate(date.getDate() + days)
+    promises.push(putOne('sets', {
+      exerciseKey,
+      weight,
+      reps,
+      volume: 0,
+      date
+    }))
+  })
+  return promises
+}
 export { seedDb };

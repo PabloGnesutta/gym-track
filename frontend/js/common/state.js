@@ -24,7 +24,9 @@ import { _log } from "../lib/logger.js";
  * @typedef {object} DBStore
  * @property {Exercise[]} exercises
  * @property {Record<string, Set[]>} setsForExercise
- * @property {Record<string, *>} setsForExerciseByDate
+ * @property {Record<string, *>} dataStructure1
+ * @property {Record<string, *>} dataStructure2
+ * @property {Record<string, *>} dataStructure3
  */
 
 
@@ -32,7 +34,9 @@ import { _log } from "../lib/logger.js";
 const dbStore = {
     exercises: [],
     setsForExercise: {},
-    setsForExerciseByDate: {},
+    dataStructure1: {},
+    dataStructure2: {},
+    dataStructure3: {},
 };
 
 

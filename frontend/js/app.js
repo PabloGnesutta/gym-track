@@ -7,7 +7,7 @@ import { eventBus } from "./lib/utils.js";
 import { fillExerciseList, openExerciseList, openSingleExercise } from "./ui/exercise-ui.js";
 import { fetchExercises } from "./local-db/exercise-db.js";
 import { $ } from "./lib/dom.js";
-import { createSet } from "./local-db/set-db.js";
+import { seedDb } from "./local-db/seed.js";
 
 
 _info(' (!) App started');
@@ -17,14 +17,15 @@ initializeCache();
 initializeIndexedDb();
 /** Callback for Indexed DB initialization */
 eventBus.on('IndexedDbInited', async () => {
+    // await seedDb()
+    // return
     _info(' (!) DB Callback')
     await fetchExercises();
     fillExerciseList()
     openExerciseList()
-    // openSingleExercise('1')
-
-    // await createSet()
+    openSingleExercise('1')
     $('cacheMajorVersion').innerText = localStorage.getItem('cacheMajorVersion') || ''
+    
 })
 
 initAppState();

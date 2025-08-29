@@ -91,6 +91,17 @@ div {
   padding: 0.25rem;
 }
 
+.set-history {
+  margin-bottom: 12px;
+}
+
+.history-data-structure-3 {
+  background-color: green;
+}
+.history-data-structure-2 {
+  background-color: teal;
+}
+
 .set-history-container h4 {
   font-size: 18px;
   padding: 0.25rem;

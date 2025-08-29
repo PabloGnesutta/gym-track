@@ -1,16 +1,19 @@
+import { _log } from "./logger.js";
 
 /**
- * Returns a human-readable "time ago" string.
+ * Returns a "time ago" string.
  * @param {string} input 
  * @returns {string}
  */
-function timeAgo(input) {
+function timeAgo(input = '') {
+    _log({ input })
     const date = new Date(input);
     const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
     if (isNaN(seconds)) { return "¡!"; }
     const daysPassed = Math.floor(seconds / 60 / 60 / 24)
 
     if (daysPassed < 1) { return "hoy" }
+    if (daysPassed === 1) { return "ayer" }
     const labels = [
         { label: 'año', days: 365 },
         { label: 'mes', pl: 'es', days: 30 },

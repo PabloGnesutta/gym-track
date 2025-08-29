@@ -12,7 +12,7 @@ import { eventBus } from './utils.js';
  */
 
 const dbName = 'TestDB';
-const dbVersion = 88;
+const dbVersion = 100;
 
 
 /** @type {Record<ObjectStores, ObjectStores>} */
@@ -120,6 +120,8 @@ async function putOne(storeName, value, key) {
     _warn({ storeName, value, key });
     const putRequest = store.put(value, key);
     putRequest.onsuccess = e => {
+      // @ts-ignore
+      _info(' __ PutOne: ' + storeName, e.target.result);
       // @ts-ignore
       return res(e.target.result);
     };
@@ -247,11 +249,11 @@ async function getAll(storeName, cb) {
  * @param {ObjectStores} storeName 
  * @param {Indexes} indexName 
  * @param {StoreKey} indexValue
- * @param {Function} [cb] Callback to be executed for each record in the cursor.
+ * @param {Function[]} [cbs] Callback to be executed for each record in the cursor.
  *   The record will be passed as an argument to the function.
  * @returns {Promise<DbRecord[]>}
  */
-async function getAllWithIndex(storeName, indexName, indexValue, cb) {
+async function getAllWithIndex(storeName, indexName, indexValue, cbs) {
   return new Promise((res, rej) => {
     if (!db) { return rej('IndexedDB not initialized'); }
     const tx = db.transaction(storeName, 'readwrite');
@@ -271,8 +273,8 @@ async function getAllWithIndex(storeName, indexName, indexValue, cb) {
         const record = cursor.value;
         record._key = cursor.primaryKey;
         records.push(record);
-        if (cb) {
-          cb(record);
+        if (cbs) {
+          cbs.forEach(cb => cb(record));
         }
         cursor.continue();
       } else {
@@ -304,7 +306,7 @@ async function deleteOne(storeName, key) {
     const deleteRequest = store.delete(key);
     deleteRequest.onsuccess = e => {
       // @ts-ignore
-      console.log('result', e.target.result);
+      _info(' __ DeleteOne: ' + storeName, key);
       return res(key);
     };
     deleteRequest.onerror = e => {

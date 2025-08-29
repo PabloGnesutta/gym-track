@@ -2,12 +2,11 @@ import { _log } from "./logger.js";
 
 /**
  * Returns a "time ago" string.
- * @param {string} input 
+ * @param {string | Date} input 
  * @returns {string}
  */
 function timeAgo(input = '') {
-    _log({ input })
-    const date = new Date(input);
+    const date = (input instanceof Date) ? input : new Date(input);
     const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
     if (isNaN(seconds)) { return "¡!"; }
     const daysPassed = Math.floor(seconds / 60 / 60 / 24)

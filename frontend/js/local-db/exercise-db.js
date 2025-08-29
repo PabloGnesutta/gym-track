@@ -18,6 +18,7 @@ import { _info, _log, _warn } from "../lib/logger.js";
  * @property {string} name
  * @property {string[]} muscles
  * @property {import("./set-db.js").Set} [lastSet]
+ * @property {import("./set-db.js").ExerciseSession | null} lastSession
  * @property {IDBValidKey} [_key]
  * @property {Date} [createdAt]
  */
@@ -43,6 +44,7 @@ async function createExercise(name, muscles = []) {
     name,
     muscles,
     createdAt: new Date(),
+    lastSession: null,
   };
   const _key = await putOne('exercises', exercise);
   exercise._key = _key;
@@ -51,13 +53,11 @@ async function createExercise(name, muscles = []) {
   return { data: exercise };
 }
 
-
 /**
  * @param {Exercise} exercise 
  */
 async function updateExercise(exercise) {
   await putOne('exercises', exercise, exercise._key);
-
 }
 
 /** */

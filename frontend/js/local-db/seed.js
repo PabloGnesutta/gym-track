@@ -18,6 +18,13 @@ async function seedDb() {
       { weight: 9, reps: 12, days: -1 },
     ])
   )
+  await Promise.all(
+    _createSets(ex.data?._key, [
+      { weight: 12, reps: 8, days: 0 },
+      { weight: 12, reps: 7, days: 0 },
+      { weight: 12, reps: 9, days: 0 },
+    ])
+  )
 }
 
 

@@ -19,13 +19,14 @@ initializeIndexedDb();
 eventBus.on('IndexedDbInited', async () => {
     // await seedDb()
     // return
+
     _info(' (!) DB Callback')
     await fetchExercises();
     fillExerciseList()
     openExerciseList()
     openSingleExercise('1')
     $('cacheMajorVersion').innerText = localStorage.getItem('cacheMajorVersion') || ''
-    
+
 })
 
 initAppState();

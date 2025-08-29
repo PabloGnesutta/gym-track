@@ -5,8 +5,6 @@ import { _info, _log, _warn } from "../lib/logger.js";
 import { updateExercise } from "./exercise-db.js";
 
 
-const SHOW_TODAY_IN_DS_HISTORY = true
-
 /**
  * @template T
  * @typedef {import("../common/types.js").ServiceReturn<T>} ServiceReturn<T>
@@ -17,28 +15,64 @@ const SHOW_TODAY_IN_DS_HISTORY = true
  */
 
 /**
- * @typedef {[number, number[]]} DS2Unit
- * @typedef {Record<
- *  string, 
- *  Array<DS2Unit>
- * >} DS2
- *
- * @typedef {{ w: number, r: number[] }} DS3Unit
+ * Amount of reps done for a given weight
+ * @typedef {object} WeightAndReps
+ * @property {number} w - The weight
+ * @property {number[]} r - Reps for that weight
+ * 
  * @typedef {Record<
  *  string,
- *  Array<DS3Unit>
- * >} DS3
+ *  Array<WeightAndReps>
+ * >} WeightAndRepsByDate
+ * @example {
+ *  '2025-01-01': [
+ *    {w:8, r:[13,12,12]},
+ *    {w:9, r:[8,8,7]},
+ *  ],
+ *  '2025-8-01': [
+ *    {w:9, r:[10,10,10]},
+ *    {w:10, r:[8,7,7]},
+ *  ],
+ * }
  */
+
+
+/**
+ * ExerciseSession
+ * @typedef {object} ExerciseSession Potential DB Model
+ * @property {IDBValidKey} exerciseKey
+ * @property {Date} date
+ * @property {SetData[]} sets
+ * @property {IDBValidKey} [_key]
+ * 
+ * @typedef {object} SetData
+ * @property {number} w Weight
+ * @property {number} r Reps
+ * 
+*/
+
+/**
+ * @type {ExerciseSession}
+ */
+let ExerciseSession = {
+  exerciseKey: 1,
+  date: new Date(),
+  sets: [
+    { w: 9, r: 10 },
+    { w: 9, r: 10 },
+    { w: 9, r: 10 },
+  ]
+}
 
 /**
  * Set
- * @typedef {object} Set
- * @property {StoreKey} exerciseKey
+ * @typedef {object} Set - DB Model
+ * @property {IDBValidKey} exerciseKey
  * @property {number} weight
  * @property {number} reps
  * @property {Date} [date]
- * @property {number} [volume] Result of computing weight*reps
- * @property {StoreKey} [_key]
+ * @property {number} [volume] weight*reps
+ * @property {IDBValidKey} [_key]
  */
 
 /**
@@ -47,166 +81,74 @@ const SHOW_TODAY_IN_DS_HISTORY = true
  * @param {import("./exercise-db.js").Exercise} exercise 
  * @param {number} weight 
  * @param {number} reps
- * @returns {ServiceReturn<Set>} The exercise object with its key
+ * @returns {ServiceReturn<ExerciseSession>}
  */
 async function createSet(exercise, weight, reps) {
   const exerciseKey = exercise._key || 0;
-  /** @type {Set} */
-  const set = {
-    exerciseKey,
-    weight,
-    reps,
-    volume: weight * reps,
-    date: new Date(),
-  };
 
-  set._key = await putOne('sets', set);
-
-  const stringExerciseKey = exerciseKey.toString();
-  if (!dbStore.setsForExercise[stringExerciseKey]) {
-    dbStore.setsForExercise[stringExerciseKey] = [];
+  /** @type {ExerciseSession | null} */
+  let session = exercise.lastSession
+  if (!session) {
+    session = {
+      exerciseKey,
+      date: new Date(),
+      sets: [],
+    }
+    exercise.lastSession = session
   }
-  dbStore.setsForExercise[stringExerciseKey].unshift(set);
+  session.sets.push({ w: weight, r: reps })
 
-  exercise.lastSet = set;
+  session._key = await putOne('sessions', session, session._key);
+
   await updateExercise(exercise);
 
-  return { data: set };
+  return { data: session };
 }
 
 /**
  * Returns the sets for the given exercise.
  * If they are cached, return the cache, otherwise fetch and cache.
  * @param {import("./exercise-db.js").StoreKey} exerciseKey 
- * @returns {Promise<Array<Set>>}
+ * @returns {Promise<Array<ExerciseSession>>}
  */
-async function getSetsForExercise(exerciseKey) {
+async function getSessionsForExercise(exerciseKey) {
   const strExerciseKey = exerciseKey.toString();
-  if (dbStore.setsForExercise[strExerciseKey]) {
+  if (dbStore.sessions[strExerciseKey]) {
     // cached
-    return dbStore.setsForExercise[strExerciseKey];
+    return dbStore.sessions[strExerciseKey];
   }
-  // This all also is grouped at the top by Exercise Key
 
-  /**
-   * DS1: No va porque no quedan en orden los ejercicios
-   * (las keys se ordenan numéricamente cuando se iteran)
-   * @example 
-   *  2025-01-01: {
-   *    8: [1,2,3],
-   *    9: [2,3,4],
-   *  }
-   */
-  const dataStructure1 = {};
+  const sessions = await getAllWithIndex('sessions', 'exerciseKey', exerciseKey)
 
-  /**
-   * @type {DS2}
-   * @example
-   *  2025-01-01: [
-   *    [8, [1,2,3]],
-   *    [9, [2,3,4]],
-   *  ]
-   */
-  const dataStructure2 = {};
-
-  /**
-   * @type {DS3}
-   * @example
-   *  2025-01-01: [
-   *    {w:8, s:[1,2,3]},
-   *    {w:9, s:[2,3,4]},
-   *  ]
-   */
-  const dataStructure3 = {}
-
-  const sets = await getAllWithIndex('sets', 'setsExerciseKeyIdx', exerciseKey, [
-    (set) => convertToDataStructure1(set, dataStructure1),
-    (set) => convertToDataStructure2(set, dataStructure2),
-    (set) => convertToDataStructure3(set, dataStructure3),
-  ]);
-
-  _log({ sets })
-  _log({ dataStructure2 })
-  _log({ dataStructure3 })
-
-  // cache values: 
-  dbStore.dataStructure1[strExerciseKey] = dataStructure1;
-  dbStore.dataStructure2[strExerciseKey] = dataStructure2;
-  dbStore.dataStructure3[strExerciseKey] = dataStructure3;
-  // @ts-ignore 
-  dbStore.setsForExercise[strExerciseKey] = sets;
+  // cache all sessions for exercise: 
+  dbStore.sessions[strExerciseKey] = sessions;
   // @ts-ignore
-  return dbStore.setsForExercise[strExerciseKey];
+  return sessions
 }
 
 
 /**
  * @param {Set} set
- * @param {DS3} obj
+ * @param {WeightAndRepsByDate} obj
 */
-function convertToDataStructure3(set, obj) {
+function convertSessionData(set, obj) {
+  // TODO: MAKE THIS WORK
   if (!set.date) { return }
-  const today = toYYYYMMDD(new Date())
   const date = toYYYYMMDD(set.date)
-  if (date === today && !SHOW_TODAY_IN_DS_HISTORY) { return }
   if (!obj[date]) {
     obj[date] = [];
   }
-  /** weight and sets for a date */
+
+  /** weight and reps for the date */
   const workForDate = obj[date];
-  const weightAndSets = workForDate
-  let weightRow = weightAndSets.find(row => row.w === set.weight)
-  if (!weightRow) {
-    weightRow = { w: set.weight, r: [] }
-    workForDate.unshift(weightRow)
+  let weightAndReps = workForDate.find(row => row.w === set.weight)
+  if (!weightAndReps) {
+    weightAndReps = { w: set.weight, r: [] }
+    workForDate.unshift(weightAndReps)
   }
-  weightRow.r.push(set.reps)
+  weightAndReps.r.push(set.reps)
 }
 
-
-/**
- * @param {Set} set
- * @param {DS2} obj
-*/
-function convertToDataStructure2(set, obj) {
-  if (!set.date) { return }
-  const today = toYYYYMMDD(new Date())
-  const date = toYYYYMMDD(set.date)
-  if (date === today && !SHOW_TODAY_IN_DS_HISTORY) { return }
-  if (!obj[date]) {
-    obj[date] = [];
-  }
-  /** weight and sets for a date */
-  const workForDate = obj[date];
-
-  const weightAndSets = workForDate
-  let weightRow = weightAndSets.find(row => row[0] === set.weight)
-  if (!weightRow) {
-    weightRow = [set.weight, []]
-    workForDate.unshift(weightRow)
-  }
-  weightRow[1].push(set.reps)
-}
-
-/**
- * Canceled due to sorting weight
- * @param {Set} set
- * @param {Record<string, *>} obj
-*/
-function convertToDataStructure1(set, obj) {
-  if (!set.date) { return }
-  const today = toYYYYMMDD(new Date())
-  const date = toYYYYMMDD(set.date)
-  if (date === today && !SHOW_TODAY_IN_DS_HISTORY) { return }
-
-  if (!obj[date]) {
-    obj[date] = {};
-  }
-  if (!obj[date][set.weight]) {
-    obj[date][set.weight] = [];
-  }
-  obj[date][set.weight].unshift(set.reps);
-}
 
 /**
  * Delete one Set from DB 
@@ -217,4 +159,4 @@ async function deleteSet(key) {
   return await deleteOne('sets', key);
 }
 
-export { createSet, getSetsForExercise, deleteSet };
+export { createSet, getSessionsForExercise, deleteSet, convertSessionData };

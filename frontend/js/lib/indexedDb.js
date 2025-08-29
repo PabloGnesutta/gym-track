@@ -4,21 +4,22 @@ import { eventBus } from './utils.js';
 
 /**
  * Enums
- * @typedef {'exercises'|'sets'} ObjectStores
- * @typedef {'excerisesNameIdx'|'setsExerciseKeyIdx'} Indexes
+ * @typedef {'exercises'|'sessions'} ObjectStores
+ * @typedef {'excerisesNameIdx'|'setsExerciseKeyIdx'|'exerciseKey'} Indexes
  * 
  * @typedef {IDBValidKey | IDBKeyRange} StoreKey
  * @typedef {{ _key: StoreKey, [field: string]: * }}  DbRecord
  */
 
 const dbName = 'TestDB';
-const dbVersion = 100;
+const dbVersion = 94;
 
 
 /** @type {Record<ObjectStores, ObjectStores>} */
 const _stores = {
   exercises: 'exercises',
   sets: 'sets',
+  sessions: 'sessions',
 };
 
 /** @type {IDBOpenDBRequest} */
@@ -57,6 +58,14 @@ function onDbUpgradeNeeded(e) {
       { autoIncrement: true }
     );
     store.createIndex('setsExerciseKeyIdx', 'exerciseKey', { unique: false });
+  }
+
+  if (!db.objectStoreNames.contains(_stores.sessions)) {
+    const store = db.createObjectStore(
+      _stores.sessions,
+      { autoIncrement: true }
+    );
+    store.createIndex('exerciseKey', 'exerciseKey', { unique: false });
   }
 
   _info(db.objectStoreNames);

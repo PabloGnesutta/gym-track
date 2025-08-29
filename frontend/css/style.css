@@ -87,19 +87,9 @@ div {
 }
 
 #singleExerciseView .set-history-container {
-  background-color: #45000e;
-  padding: 0.25rem;
-}
-
-.set-history {
-  margin-bottom: 12px;
-}
-
-.history-data-structure-3 {
-  background-color: green;
-}
-.history-data-structure-2 {
-  background-color: teal;
+  background-color: #1c0006;
+  padding-bottom: 1rem;
+  padding-top: 0.25rem;
 }
 
 .set-history-container h4 {
@@ -107,17 +97,23 @@ div {
   padding: 0.25rem;
 }
 
-.set-history .row:last-child {
-  margin-bottom: 0;
+.set-history {
+  margin-bottom: 12px;
+  font-family: 'Courier New', Courier, monospace;
 }
+
+.set-history.history-og {
+  background-color: #002d00;
+  font-size: 1.25rem;
+}
+
 .set-history .row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  font-family: 'Courier New', Courier, monospace;
   padding: 4px;
-  background-color: rgba(255, 255, 255, 0.121);
+  background-color: rgba(255, 255, 255, 0.12);
   border-radius: 4px;
   margin-bottom: 4px;
 }
@@ -129,7 +125,7 @@ div {
   gap: 0.75rem;
 }
 .weight-container .weight {
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.5);
   padding: 2px;
   border-radius: 4px;
 }

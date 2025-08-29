@@ -5,6 +5,7 @@ import { _log } from "../lib/logger.js";
 /**
  * @typedef {import("../local-db/exercise-db.js").Exercise} Exercise
  * @typedef {import("../local-db/set-db.js").Set} Set
+ * @typedef {import("../local-db/set-db.js").ExerciseSession} ExerciseSession
  */
 
 /**
@@ -24,9 +25,8 @@ import { _log } from "../lib/logger.js";
  * @typedef {object} DBStore
  * @property {Exercise[]} exercises
  * @property {Record<string, Set[]>} setsForExercise
- * @property {Record<string, *>} dataStructure1
- * @property {Record<string, *>} dataStructure2
- * @property {Record<string, *>} dataStructure3
+ * @property {Record<string, ExerciseSession[]>} sesionsForExercise
+ * @property {ExerciseSession[]} sessions RARO ESTO
  */
 
 
@@ -34,9 +34,7 @@ import { _log } from "../lib/logger.js";
 const dbStore = {
     exercises: [],
     setsForExercise: {},
-    dataStructure1: {},
-    dataStructure2: {},
-    dataStructure3: {},
+    sessions: [],
 };
 
 

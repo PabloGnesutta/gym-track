@@ -3,29 +3,24 @@ import { createSet } from "./set-db.js";
 
 
 async function seedDb() {
-  const ex = await createExercise('ejercicio 1', ['biceps']);
-  if (!ex.data) { return; }
-  const date = new Date();
+  const minus2 = new Date()
+  minus2.setDate(minus2.getDate() - 2)
+
+  const minus1 = new Date()
+  minus1.setDate(minus1.getDate() - 1)
 
   let w = 8;
-  date.setDate(date.getDate() - 8);
-  await createSet(ex.data, w, 13, date);
-  await createSet(ex.data, w, 14, date);
-  await createSet(ex.data, w, 11, date);
 
-  ex.data.lastSession = null
-  w = 9;
-  date.setDate(date.getDate() + 7);
-  await createSet(ex.data, w, 11, date);
-  await createSet(ex.data, w, 13, date);
-  await createSet(ex.data, w, 12, date);
+  const ex1 = await createExercise('antier con set ayer', [], minus2);
+  const ex2 = await createExercise('antier con set antier', [], minus2);
+  const ex3 = await createExercise('antier sin set', [], minus2);
+  const ex4 = await createExercise('ayer sin set', [], minus1);
+  if (!ex1.data || !ex2.data || !ex3.data || !ex4.data || !ex1.data) { return; }
+  
+  await createSet(ex1.data, w, 13, minus1);
 
-  ex.data.lastSession = null
-  w = 12;
-  date.setDate(date.getDate() + 1);
-  await createSet(ex.data, w, 8, date);
-  await createSet(ex.data, w, 7, date);
-  await createSet(ex.data, w, 9, date);
+  await createSet(ex2.data, w, 14, minus2);
+
 }
 
 

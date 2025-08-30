@@ -15,30 +15,27 @@ import { updateExercise } from "./exercise-db.js";
  */
 
 /**
- * ExerciseSession
- * @typedef {object} ExerciseSession Potential DB Model
+ * Exercise Session - DB Model
+ * @typedef {object} ExerciseSession
  * @property {IDBValidKey} exerciseKey
  * @property {Date} date
  * @property {WeightRow[]} sets
  * @property {IDBValidKey} [_key]
+ * @example 
+ * {
+ *   exerciseKey: 1,
+ *   date: new Date(),
+ *   sets: [
+ *     { w: 8, r: [1, 2, 3] },
+ *     { w: 9, r: [2, 3, 4] },
+ *   ]
+ * }
  * 
  * @typedef {object} WeightRow
  * @property {number} w Weight used with {r} reps
  * @property {number[]} r Amount of reps for each set, using {w} weight
  * 
 */
-
-/**
- * @type {ExerciseSession}
- */
-const ExerciseSession = {
-  exerciseKey: 1,
-  date: new Date(),
-  sets: [
-    { w: 8, r: [1, 2, 3] },
-    { w: 9, r: [2, 3, 4] },
-  ]
-};
 
 /**
  * Appends the number of reps to the sets array for the weight.
@@ -54,7 +51,7 @@ const ExerciseSession = {
  * @param {Date} date
  * @returns {ServiceReturn<ExerciseSession>}
  */
-async function createSet(exercise, weight, reps, date) {
+async function createSet(exercise, weight, reps, date = new Date()) {
   const exerciseKey = exercise._key || 0;
 
   /** @type {ExerciseSession | null} */
@@ -62,7 +59,7 @@ async function createSet(exercise, weight, reps, date) {
   if (!session) {
     session = {
       exerciseKey,
-      date: new Date(date || ''),
+      date,
       sets: [],
     };
     exercise.lastSession = session;
@@ -77,7 +74,7 @@ async function createSet(exercise, weight, reps, date) {
 
   session._key = await putOne('sessions', session, session._key);
 
-  await updateExercise(exercise);
+  await updateExercise(exercise, date);
 
   return { data: session };
 }

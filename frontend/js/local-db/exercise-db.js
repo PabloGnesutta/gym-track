@@ -20,6 +20,7 @@ import { _info, _log, _warn } from "../lib/logger.js";
  * @property {import("./set-db.js").ExerciseSession | null} lastSession
  * @property {IDBValidKey} [_key]
  * @property {Date} [createdAt]
+ * @property {Date} [updatedAt]
  */
 
 
@@ -28,7 +29,7 @@ import { _info, _log, _warn } from "../lib/logger.js";
  * @param {string[]} muscles 
  * @returns {ServiceReturn<Exercise>} The exercise object with its key
  */
-async function createExercise(name, muscles = []) {
+async function createExercise(name, muscles = [], date = new Date()) {
   name = name.trim();
   if (!name) {
     return { errorMsg: 'Ingresar nombre' };
@@ -42,7 +43,8 @@ async function createExercise(name, muscles = []) {
   const exercise = {
     name,
     muscles,
-    createdAt: new Date(),
+    createdAt: date,
+    updatedAt: date,
     lastSession: null,
   };
   const _key = await putOne('exercises', exercise);
@@ -55,15 +57,49 @@ async function createExercise(name, muscles = []) {
 /**
  * @param {Exercise} exercise 
  */
-async function updateExercise(exercise) {
+async function updateExercise(exercise, date = new Date()) {
+  exercise.updatedAt = date
   await putOne('exercises', exercise, exercise._key);
 }
 
-/** */
+/**
+ * Fetch all exercises,
+ * Store then sorted in dbStore.exercises
+ * @returns {Promise<void>}
+ */
 async function fetchExercises() {
-  const exercises = await getAll('exercises');
-  // @ts-ignore
-  dbStore.exercises = exercises;
+  /** @type {Exercise[]} */
+  const haveSet = []
+  /** @type {Exercise[]} */
+  const dontHaveSet = []
+
+  await getAll(
+    'exercises',
+    /**
+     * Splits the exercises into two arrays, 
+     * one for excersices with sets done, and the other not
+     * @param {Exercise} exercise 
+     */
+    (exercise) => {
+      if (exercise.lastSession) {
+        haveSet.push(exercise)
+      } else {
+        dontHaveSet.push(exercise)
+      }
+    }
+  );
+
+  haveSet.sort((a, b) => {
+    if (!a.updatedAt || !b.updatedAt) { return 0 }
+    return a.updatedAt <= b.updatedAt ? -1 : 1
+  })
+
+  dontHaveSet.sort((a, b) => {
+    if (!a.createdAt || !b.createdAt) { return 0 }
+    return a.createdAt <= b.createdAt ? -1 : 1
+  })
+
+  dbStore.exercises = haveSet.concat(dontHaveSet);
 }
 
 

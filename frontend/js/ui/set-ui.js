@@ -2,7 +2,8 @@ import { appState, dbStore } from "../common/state.js";
 import { timeAgo, toYYYYMMDD } from "../lib/date.js";
 import { $, $form, $getInner, $new } from "../lib/dom.js";
 import { _error, _log } from "../lib/logger.js";
-import { convertSessionData, createSet, deleteSet, getSessionsForExercise } from "../local-db/set-db.js";
+import { createSet, deleteSet, getSessionsForExercise } from "../local-db/set-db.js";
+import { setExerciseLastWeightRecord } from "./exercise-ui.js";
 
 
 /**
@@ -15,6 +16,8 @@ const previousDaysLog = $getInner(singleExerciseView, '.previous-days-log');
 const setForm = $form('createSetForm');
 
 
+// TODO: select() form fields on focus
+
 /**
  * Populates new set form and set history
  * @param {Exercise} exercise 
@@ -23,10 +26,11 @@ async function populateSetData(exercise) {
   setInput: {
     setForm.dataset.exerciseId = (exercise._key || '').toString();
     if (exercise.lastSet) {
-      setForm.elements['weight'].value = exercise.lastSet.weight;
-      setForm.elements['reps'].value = exercise.lastSet.reps;
-      setForm.elements['reps'].focus();
-      setForm.elements['reps'].select();
+      // todo:
+      // setForm.elements['weight'].value = exercise.lastSet.weight;
+      // setForm.elements['reps'].value = exercise.lastSet.reps;
+      // setForm.elements['reps'].focus();
+      // setForm.elements['reps'].select();
     } else {
       setForm.elements['weight'].focus();
       setForm.elements['weight'].select();
@@ -42,13 +46,15 @@ async function populateSetData(exercise) {
       currentDateLog.innerHTML = '';
     }
 
-    // TODO: Transform data from DB into weight x reps cards
-    for (const date in sessions) {
-      const today = toYYYYMMDD(new Date())
+    for (const session of sessions) {
+      const today = toYYYYMMDD(new Date());
+      const date = toYYYYMMDD(session.date);
+      _log({ today, date });
       if (date === today) {
-        appendSessionData(currentDateLog, sessions[date])
+        currentDateLog.innerHTML = '';
+        appendSessionData(currentDateLog, session);
       } else {
-        appendSessionData(previousDaysLog, sessions[date])
+        appendSessionData(previousDaysLog, session);
       }
     }
   }
@@ -59,28 +65,24 @@ async function populateSetData(exercise) {
  * @param {import("../local-db/set-db.js").ExerciseSession} session
  */
 function appendSessionData(container, session) {
-  _log({ session })
-
-  const _weightConainer = $new({ class: 'weight-container' })
-  const _date = $new({ class: 'date', text: timeAgo(session.date) })
+  const _weightConainer = $new({ class: 'weight-container' });
+  const _date = $new({ class: 'date', text: timeAgo(session.date) });
   const _row = $new({
     class: 'row',
     children: [_weightConainer, _date]
   });
 
   for (const { w, r } of session.sets) {
-    // TODO: GROUP BY WEIGHT
-    // const _weight = $new({ class: 'weight', text: `${w}kg X ` });
-    // r.forEach(reps => {
-    //   _weight.innerText += reps + ',';
-    // });
-    // _weight.innerText = _weight.innerText.substring(0, _weight.innerText.length - 1);
-    // _weightConainer.append(_weight);
+    const _weight = $new({ class: 'weight', text: `${w}kg X ` });
+    r.forEach(reps => {
+      _weight.innerText += reps + ',';
+    });
+    _weight.innerText = _weight.innerText.substring(0, _weight.innerText.length - 1);
+    _weightConainer.append(_weight);
   }
 
   container.append(_row);
 }
-
 
 
 /**
@@ -102,9 +104,11 @@ async function submitSet(e) {
     return _error('No hay ejercicio seleccionado');
   }
 
-  const result = await createSet(exercise, +weight, +reps);
+  const result = await createSet(exercise, +weight, +reps, new Date());
   if (result.data) {
-    // TODO: Update current session card
+    currentDateLog.innerHTML = '';
+    appendSessionData(currentDateLog, result.data);
+    setExerciseLastWeightRecord(exercise);
   } else {
     _error(result.errorMsg);
   }

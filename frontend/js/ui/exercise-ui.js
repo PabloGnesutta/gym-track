@@ -73,14 +73,29 @@ function appendExerciseRow(container, exercise) {
         ],
     });
 
-    // TODO: Rework this when new set structure is applied
-    const lastSet = exercise.lastSet;
-    if (lastSet) {
-        const lastSetData = $new({ class: 'last-set-data', text: `${lastSet.weight} kg X ${lastSet.reps} reps` });
+    setExerciseLastWeightRecord(exercise, exerciseRow);
+    container.append(exerciseRow);
+}
+
+/**
+ * @param {Exercise} exercise 
+ * @param {HTMLDivElement} [exerciseRow] 
+ */
+function setExerciseLastWeightRecord(exercise, exerciseRow) {
+    if (!exerciseRow) {
+        const exerciseKey = exercise._key;
+        exerciseRow = $queryOne(`.row[data-exercise-key="${exerciseKey}"]`);
+        _warn({ exerciseRow });
+    }
+    if (!exerciseRow) { return; }
+
+    // TODO: Needs moder HTML (appending two cards when it should only be the last one)
+    const lastSession = exercise.lastSession;
+    if (lastSession) {
+        const lastWeight = lastSession.sets[lastSession.sets.length - 1];
+        const lastSetData = $new({ class: 'last-set-data', text: `${lastWeight.w} kg X ${lastWeight.r[lastWeight.r.length - 1]} reps` });
         exerciseRow.appendChild(lastSetData);
     }
-
-    container.append(exerciseRow);
 }
 
 /**
@@ -104,4 +119,4 @@ async function openSingleExercise(exerciseKey) {
 }
 
 
-export { fillExerciseList, openExerciseList, openSingleExercise, openExerciseCreate, appendExerciseRow, submitExercise };
+export { fillExerciseList, openExerciseList, openSingleExercise, openExerciseCreate, appendExerciseRow, submitExercise, setExerciseLastWeightRecord };

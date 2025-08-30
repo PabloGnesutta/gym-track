@@ -5,20 +5,19 @@ import { eventBus } from './utils.js';
 /**
  * Enums
  * @typedef {'exercises'|'sessions'} ObjectStores
- * @typedef {'excerisesNameIdx'|'setsExerciseKeyIdx'|'exerciseKey'} Indexes
+ * @typedef {'name'|'exerciseKey'} Indexes
  * 
  * @typedef {IDBValidKey | IDBKeyRange} StoreKey
  * @typedef {{ _key: StoreKey, [field: string]: * }}  DbRecord
  */
 
-const dbName = 'TestDB';
-const dbVersion = 94;
+const dbName = 'GymTrack';
+const dbVersion = 100;
 
 
 /** @type {Record<ObjectStores, ObjectStores>} */
 const _stores = {
   exercises: 'exercises',
-  sets: 'sets',
   sessions: 'sessions',
 };
 
@@ -27,7 +26,6 @@ var openDbRequest;
 
 /** @type {IDBDatabase|null} */ // @ts-ignore
 var db = null;
-
 
 /** */
 function initializeIndexedDb() {
@@ -49,15 +47,7 @@ function onDbUpgradeNeeded(e) {
       _stores.exercises,
       { autoIncrement: true }
     );
-    store.createIndex('excerisesNameIdx', 'name', { unique: true });
-  }
-
-  if (!db.objectStoreNames.contains(_stores.sets)) {
-    const store = db.createObjectStore(
-      _stores.sets,
-      { autoIncrement: true }
-    );
-    store.createIndex('setsExerciseKeyIdx', 'exerciseKey', { unique: false });
+    store.createIndex('name', 'name', { unique: true });
   }
 
   if (!db.objectStoreNames.contains(_stores.sessions)) {
@@ -68,6 +58,7 @@ function onDbUpgradeNeeded(e) {
     store.createIndex('exerciseKey', 'exerciseKey', { unique: false });
   }
 
+  //todo: delete TestDB
   _info(db.objectStoreNames);
 }
 

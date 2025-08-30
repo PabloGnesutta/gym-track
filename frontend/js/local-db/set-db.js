@@ -15,88 +15,65 @@ import { updateExercise } from "./exercise-db.js";
  */
 
 /**
- * Amount of reps done for a given weight
- * @typedef {object} WeightAndReps
- * @property {number} w - The weight
- * @property {number[]} r - Reps for that weight
- * 
- * @typedef {Record<
- *  string,
- *  Array<WeightAndReps>
- * >} WeightAndRepsByDate
- * @example {
- *  '2025-01-01': [
- *    {w:8, r:[13,12,12]},
- *    {w:9, r:[8,8,7]},
- *  ],
- *  '2025-8-01': [
- *    {w:9, r:[10,10,10]},
- *    {w:10, r:[8,7,7]},
- *  ],
- * }
- */
-
-
-/**
  * ExerciseSession
  * @typedef {object} ExerciseSession Potential DB Model
  * @property {IDBValidKey} exerciseKey
  * @property {Date} date
- * @property {SetData[]} sets
+ * @property {WeightRow[]} sets
  * @property {IDBValidKey} [_key]
  * 
- * @typedef {object} SetData
- * @property {number} w Weight
- * @property {number} r Reps
+ * @typedef {object} WeightRow
+ * @property {number} w Weight used with {r} reps
+ * @property {number[]} r Amount of reps for each set, using {w} weight
  * 
 */
 
 /**
  * @type {ExerciseSession}
  */
-let ExerciseSession = {
+const ExerciseSession = {
   exerciseKey: 1,
   date: new Date(),
   sets: [
-    { w: 9, r: 10 },
-    { w: 9, r: 10 },
-    { w: 9, r: 10 },
+    { w: 8, r: [1, 2, 3] },
+    { w: 9, r: [2, 3, 4] },
   ]
-}
+};
 
 /**
- * Set
- * @typedef {object} Set - DB Model
- * @property {IDBValidKey} exerciseKey
- * @property {number} weight
- * @property {number} reps
- * @property {Date} [date]
- * @property {number} [volume] weight*reps
- * @property {IDBValidKey} [_key]
- */
-
-/**
- * Creates a Set. Puts it into the cache.
- * Updates Exercise with last set data.
+ * Appends the number of reps to the sets array for the weight.
+ * If the session doesn't exist, create it and set it as exercise.lastSession
+ * Append the reps to the weight row. If weight row doesn't exist create it.
+ * 
+ * Todo: This should only receive exerciseKey and session, not the entire exercise:
+ * the exercise should be updated in its own part of the code.
+ * Todo: Add validation for session existing for the date.
  * @param {import("./exercise-db.js").Exercise} exercise 
  * @param {number} weight 
  * @param {number} reps
+ * @param {Date} date
  * @returns {ServiceReturn<ExerciseSession>}
  */
-async function createSet(exercise, weight, reps) {
+async function createSet(exercise, weight, reps, date) {
   const exerciseKey = exercise._key || 0;
 
   /** @type {ExerciseSession | null} */
-  let session = exercise.lastSession
+  let session = exercise.lastSession;
   if (!session) {
     session = {
       exerciseKey,
-      date: new Date(),
+      date: new Date(date || ''),
       sets: [],
-    }
-    exercise.lastSession = session
+    };
+    exercise.lastSession = session;
   }
-  session.sets.push({ w: weight, r: reps })
+
+  let weightRow = session.sets.find(weightRow => weightRow.w === weight);
+  if (!weightRow) {
+    weightRow = { w: weight, r: [] };
+    session.sets.push(weightRow);
+  }
+  weightRow.r.push(reps);
 
   session._key = await putOne('sessions', session, session._key);
 
@@ -118,35 +95,12 @@ async function getSessionsForExercise(exerciseKey) {
     return dbStore.sessions[strExerciseKey];
   }
 
-  const sessions = await getAllWithIndex('sessions', 'exerciseKey', exerciseKey)
+  const sessions = await getAllWithIndex('sessions', 'exerciseKey', exerciseKey);
 
   // cache all sessions for exercise: 
   dbStore.sessions[strExerciseKey] = sessions;
   // @ts-ignore
-  return sessions
-}
-
-
-/**
- * @param {Set} set
- * @param {WeightAndRepsByDate} obj
-*/
-function convertSessionData(set, obj) {
-  // TODO: MAKE THIS WORK
-  if (!set.date) { return }
-  const date = toYYYYMMDD(set.date)
-  if (!obj[date]) {
-    obj[date] = [];
-  }
-
-  /** weight and reps for the date */
-  const workForDate = obj[date];
-  let weightAndReps = workForDate.find(row => row.w === set.weight)
-  if (!weightAndReps) {
-    weightAndReps = { w: set.weight, r: [] }
-    workForDate.unshift(weightAndReps)
-  }
-  weightAndReps.r.push(set.reps)
+  return sessions;
 }
 
 
@@ -156,7 +110,7 @@ function convertSessionData(set, obj) {
  * @param {StoreKey} key 
  */
 async function deleteSet(key) {
-  return await deleteOne('sets', key);
+  // return await deleteOne('sets', key);
 }
 
-export { createSet, getSessionsForExercise, deleteSet, convertSessionData };
+export { createSet, getSessionsForExercise, deleteSet };

@@ -17,7 +17,6 @@ import { _info, _log, _warn } from "../lib/logger.js";
  * @typedef {object} Exercise
  * @property {string} name
  * @property {string[]} muscles
- * @property {import("./set-db.js").Set} [lastSet]
  * @property {import("./set-db.js").ExerciseSession | null} lastSession
  * @property {IDBValidKey} [_key]
  * @property {Date} [createdAt]
@@ -34,7 +33,7 @@ async function createExercise(name, muscles = []) {
   if (!name) {
     return { errorMsg: 'Ingresar nombre' };
   }
-  const nameExists = await getOneWithIndex('exercises', 'excerisesNameIdx', name);
+  const nameExists = await getOneWithIndex('exercises', 'name', name);
   if (nameExists) {
     return { errorMsg: `El ejercicio "${name}" ya existe` };
   }

@@ -37,6 +37,7 @@
   padding: 4px;
   margin-bottom: 4px;
   color: white;
+  min-height: 32px;
 }
 
 .log-entry.type-info {
@@ -53,4 +54,9 @@
 
 .log-entry.type-error {
   background-color: #890000;
+}
+
+.log-entry.folded {
+  max-height: 32px;
+  overflow-y: hidden;
 }

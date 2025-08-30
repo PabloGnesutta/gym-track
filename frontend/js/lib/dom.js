@@ -121,6 +121,15 @@ function $getInner(el, selector) {
   // @ts-ignore
   return el.querySelector(selector);
 }
+/**
+ * @param {HTMLElement} el
+ * @param {string} selector
+ * @returns {HTMLInputElement}
+ */
+function $getInnerInput(el, selector) {
+  // @ts-ignore
+  return el.querySelector(selector);
+}
 
 
 /**
@@ -254,5 +263,5 @@ function testButton() {
 export {
   $, $form, $queryAll, $queryOne, $new, $newInput, $getChild, getCssVar, setCssVar,
   toggleFullScreen, show, hide, display, undisplay, $display, $undisplay,
-  $button, $getInner, select, unselect, fold, unfold, testButton
+  $button, $getInner, select, unselect, fold, unfold, testButton, $getInnerInput
 };

@@ -16,16 +16,16 @@ initializeCache();
 
 initializeIndexedDb();
 /** Callback for Indexed DB initialization */
-eventBus.on('IndexedDbInited', async () => {
+eventBus.on('IndexedDbInited', async ({ version }) => {
     // await seedDb();
     // return;
-
     _info(' (!) DB Callback');
+    $('cacheMajorVersion').innerText = localStorage.getItem('cacheMajorVersion') || '';
+    $('indexedDbVersion').innerText = version;
     await fetchExercises();
     fillExerciseList();
     openExerciseList();
     // openSingleExercise('1');
-    $('cacheMajorVersion').innerText = localStorage.getItem('cacheMajorVersion') || '';
 });
 
 initAppState();

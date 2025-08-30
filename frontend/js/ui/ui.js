@@ -1,6 +1,6 @@
 import { dbStore, revertHistory, stateHistory } from "../common/state.js";
-import { $, $button, $queryOne } from "../lib/dom.js";
-import { _log, openLogs } from "../lib/logger.js";
+import { $, $button, $getInner, $getInnerInput, $queryOne } from "../lib/dom.js";
+import { _log, _warn, openLogs } from "../lib/logger.js";
 import { openExerciseCreate, openSingleExercise, submitExercise } from "./exercise-ui.js";
 import { submitSet, tryDeleteSet } from "./set-ui.js";
 
@@ -17,6 +17,12 @@ const ClickEventHandlers = {
 
 
 function initUi() {
+  const createSetForm = $('createSetForm')
+  const weight = $getInnerInput(createSetForm, '[name="weight"]')
+  weight.addEventListener('focus', () => weight.select())
+  const reps = $getInnerInput(createSetForm, '[name="reps"]')
+  reps.addEventListener('focus', () => reps.select())
+
   $button({
     listener: { fn: submitExercise },
     label: 'Crear Ejercicio',
@@ -68,20 +74,15 @@ function modalBackdropHandler() {
 
 function dbugBtns() {
   const mainFooter = $('mainFooter');
+  // $button({
+  //   label: 'DBStore',
+  //   appendTo: mainFooter,
+  //   listener: { fn: e => { _log(dbStore); openLogs(); } }
+  // });
   $button({
     label: 'Logs',
     appendTo: mainFooter,
     listener: { fn: e => openLogs() }
-  });
-  $button({
-    label: 'History',
-    appendTo: mainFooter,
-    listener: { fn: e => { _log(stateHistory); openLogs(); } }
-  });
-  $button({
-    label: 'DBStore',
-    appendTo: mainFooter,
-    listener: { fn: e => { _log(dbStore); openLogs(); } }
   });
 }
 

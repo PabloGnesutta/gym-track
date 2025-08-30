@@ -9,6 +9,12 @@ const logs = $('logs');
 
 $('closeLogsBtn').addEventListener('pointerup', closeLogs);
 
+logs.addEventListener('click', e => {
+  // @ts-ignore
+  const entry = e.target.closest('.log-entry')
+  if (!entry) { return }
+  entry.classList.toggle('folded')
+})
 
 function openLogs() {
   display(logger);
@@ -46,7 +52,7 @@ function log() {
       default:
         text = String(arg); break;
     }
-    const p = $new({ tag: 'p', class: 'log-entry type-' + logLevel, text });
+    const p = $new({ tag: 'pre', class: 'log-entry type-' + logLevel, text });
     logs.append(p);
   });
 }

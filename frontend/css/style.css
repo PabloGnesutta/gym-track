@@ -23,7 +23,8 @@ div {
   color: white;
 }
 
-#cacheMajorVersion, #indexedDbVersion {
+#cacheMajorVersion,
+#indexedDbVersion {
   background-color: white;
   color: black;
   padding: 4px;
@@ -65,7 +66,7 @@ div {
 
 #exerciseListView .list {
   color: black;
-  padding: 0.5rem;
+  padding: 0.25rem;
   background: var(--list-bg);
 }
 
@@ -136,26 +137,41 @@ div {
 
 /* Generic for lists */
 .list .row {
-  color: white;
-  background-color: var(--row-bg);
-  padding: 0.75rem;
-  border-radius: 6px;
-  margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 2dvw;
+  color: white;
+  background-color: var(--row-bg);
+  padding: 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 8px;
 }
 
 .list .row:last-child {
   margin-bottom: 0;
 }
 
+.list .row .right-side {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  display: flex;
+  padding-left: 0.5rem;
+  flex-direction: column;
+  align-items: end;
+  gap: 1dvh;
+  text-align: right;
+}
+
 .list .row .exerciseName {
-  font-size: 24px;
+  font-size: 22px;
 }
 
 .list .row .last-set-data {
-  font-size: 20px;
+  font-size: 18px;
+}
+.list .row .timestamp {
+  font-size: 16px;
 }
 
 .modal {
@@ -193,8 +209,6 @@ div {
 .modal .content {
   padding-top: 10dvh;
   position: relative;
-  /* color: black; */
-  /* padding: 1rem; */
   border-radius: 8px;
   max-height: 85dvh;
   overflow-x: auto;

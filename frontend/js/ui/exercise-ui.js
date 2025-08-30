@@ -1,4 +1,5 @@
 import { dataState, dbStore, setStateField } from "../common/state.js";
+import { timeAgo } from "../lib/date.js";
 import { $, $form, $getInner, $new, $queryOne } from "../lib/dom.js";
 import { _error, _log, _warn } from "../lib/logger.js";
 import { createExercise } from "../local-db/exercise-db.js";
@@ -63,6 +64,8 @@ function fillExerciseList() {
 function appendExerciseRow(container, exercise) {
     const key = (exercise._key || '').toString();
     const lastSetData = $new({ class: 'last-set-data' })
+    const timestamp = $new({ class: 'timestamp', text: timeAgo(exercise.lastSession?.date || exercise.updatedAt) })
+    const lastSetDataContainer = $new({ class: 'right-side', children: [lastSetData, timestamp] })
     const exerciseRow = $new({
         class: 'row',
         dataset: [
@@ -71,7 +74,7 @@ function appendExerciseRow(container, exercise) {
         ],
         children: [
             $new({ class: 'exerciseName', text: exercise.name }),
-            lastSetData,
+            lastSetDataContainer,
 
         ],
     });
@@ -91,7 +94,7 @@ function setExerciseLastWeightRecord(exercise, lastSetData) {
     const lastSession = exercise.lastSession;
     if (lastSession) {
         const lastWeight = lastSession.sets[lastSession.sets.length - 1];
-        lastSetData.innerText = `${lastWeight.w} kg X ${lastWeight.r[lastWeight.r.length - 1]} reps`
+        lastSetData.innerText = `${lastWeight.w}kg X ${lastWeight.r[lastWeight.r.length - 1]}`
     }
 }
 

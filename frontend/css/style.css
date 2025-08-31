@@ -7,6 +7,8 @@
 :root {
   --app-bg: #111;
   --header-bg: black;
+  --header-heigt: 64px;
+  --footer-heigt: 48px;
 }
 
 body {
@@ -36,10 +38,44 @@ div {
   background-color: cyan;
 }
 
+#mainHeader {
+  min-height: var(--header-heigt);
+  background-color: var(--header-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: none;
+}
+
+.go-back {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 42px;
+  padding: 0.5rem 1.5rem;
+  background-color: rgb(255 255 255 / 25%);
+}
+
+.go-back:active {
+  background-color: rgb(255 255 255 / 50%);
+}
+
+.page-title {
+  font-size: 28px;
+  padding: 0.5rem;
+  color: coral;
+}
+
+.hamburger {}
+
+.views {
+  background-color: #002929;
+}
+
+.views .page {
+  min-height: calc(100dvh - var(--header-heigt) - var(--footer-heigt));
+}
+
 #mainFooter {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
   background-color: var(--header-bg);
   display: flex;
   align-items: center;
@@ -56,13 +92,10 @@ div {
 #exerciseListView {
   --list-bg: #7f031c;
   --title-bg: crimson;
-  --row-bg: rgba(0, 0, 0, 0.8);
+  --row-bg: rgba(0, 0, 0, 0.75);
 }
 
-#exerciseListView .title {
-  background-color: var(--title-bg);
-  padding: 2rem 1rem;
-}
+#exerciseListView {}
 
 #exerciseListView .list {
   color: black;
@@ -75,15 +108,28 @@ div {
   align-items: center;
   justify-content: center;
   padding: 0.5rem;
-  background-color: #002929;
 }
 
 #newExerciseBtn {
-  padding: 2rem 2.5rem;
+  position: fixed;
+  bottom: calc(var(--footer-heigt) + 1dvh);
+  right: 2.5dvw;
+  width: 80px;
+  height: 80px;
+  z-index: 1;
+  border-radius: 50%;
   background-color: var(--list-bg);
   color: white;
-  font-size: 18px;
+  font-size: 40px;
+  border: 1px solid transparent;
 }
+
+#newExerciseBtn:active {
+  background-color: #d5002b;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+#singleExerciseView {}
 
 #singleExerciseView .name {
   font-size: 26px;
@@ -129,6 +175,7 @@ div {
   justify-content: space-around;
   gap: 0.75rem;
 }
+
 .weight-container .weight {
   background-color: rgba(0, 0, 0, 0.5);
   padding: 2px;
@@ -145,11 +192,13 @@ div {
   background-color: var(--row-bg);
   padding: 0.5rem;
   border-radius: 6px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  border: 1px solid transparent;
 }
 
-.list .row:last-child {
-  margin-bottom: 0;
+.list .row:active {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .list .row .right-side {
@@ -170,6 +219,7 @@ div {
 .list .row .last-set-data {
   font-size: 18px;
 }
+
 .list .row .timestamp {
   font-size: 16px;
 }
@@ -198,27 +248,23 @@ div {
 
 .modal .close-modal {
   position: absolute;
-  font-size: 26px;
-  top: 2dvw;
-  right: 2dvw;
-  padding: 2dvw 2dvh;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  top: 1dvh;
+  right: 5dvw;
+  font-size: 42px;
 }
 
 .modal .content {
-  padding-top: 10dvh;
-  position: relative;
+  position: absolute;
+  top: 60px;
   border-radius: 8px;
   max-height: 85dvh;
-  overflow-x: auto;
+  overflow-y: auto;
 }
 
 /* State Machine */
 
 /* Things that would open the modal */
-#app[data-creating-exercise='true'] .modal,
-#app[data-viewing-single-exercise='true'] .modal {
+#app[data-creating-exercise='true'] .modal {
   display: flex;
 }
 
@@ -227,10 +273,16 @@ div {
   display: none;
 }
 
-#app[data-viewing-exercises='false'] #exerciseListView {
+#app:not([data-current-view='ExerciseList']) #exerciseListView {
   display: none;
 }
 
-#app[data-viewing-single-exercise='false'] #singleExerciseView {
+#app:not([data-current-view='SingleExercise']) #singleExerciseView {
   display: none;
+}
+
+#app[data-current-view='ExerciseList'] .go-back {
+  width: 0;
+  overflow: hidden;
+  padding: 0;
 }

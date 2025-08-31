@@ -71,7 +71,6 @@ function onDbOpenSuccess(e) {
   eventBus.emit('IndexedDbInited', { version: dbVersion });
 }
 
-
 /** 
  * Used to clean up data by setting a lower DB version
  */
@@ -101,7 +100,6 @@ function onDbOpenError(e) {
     _error(' __ Error al abrir base de datos', e);
   }
 }
-
 
 /**
  * Insert or update record.

@@ -25,11 +25,9 @@ const setForm = $form('createSetForm');
 async function populateSetData(exercise) {
   input: {
     setForm.dataset.exerciseId = (exercise._key || '').toString();
-    const lastSession = exercise.lastSession
+    const lastSession = exercise.lastSession;
     if (lastSession) {
       const lastWeightRow = lastSession.sets[lastSession.sets.length - 1];
-
-      // todo:
       setForm.elements['weight'].value = lastWeightRow.w;
       setForm.elements['reps'].value = lastWeightRow.r[lastWeightRow.r.length - 1];
       setForm.elements['reps'].focus();
@@ -41,13 +39,15 @@ async function populateSetData(exercise) {
   }
 
   history: {
+    currentDateLog.innerHTML = '';
+    previousDaysLog.innerHTML = '';
+
     const sessions = await getSessionsForExercise((exercise._key || ''));
     if (!sessions.length) {
       currentDateLog.innerHTML = 'No hay sets registrados para este ejercicio';
       break history;
     }
 
-    currentDateLog.innerHTML = '';
 
     for (const session of sessions) {
       const today = toYYYYMMDD(new Date());

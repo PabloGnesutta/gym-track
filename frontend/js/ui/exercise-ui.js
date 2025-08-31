@@ -1,9 +1,10 @@
-import { dataState, dbStore, setStateField } from "../common/state.js";
+import { appState, dataState, dbStore, setCurrentView, setStateField } from "../common/state.js";
 import { timeAgo } from "../lib/date.js";
 import { $, $form, $getInner, $new, $queryOne } from "../lib/dom.js";
 import { _error, _log, _warn } from "../lib/logger.js";
 import { createExercise } from "../local-db/exercise-db.js";
 import { populateSetData } from "./set-ui.js";
+import { pageTitle } from "./ui.js";
 
 
 /**
@@ -47,7 +48,8 @@ async function submitExercise(e) {
 
 /** Open exercise list view */
 async function openExerciseList() {
-    setStateField('viewingExercises', true);
+    setCurrentView('ExerciseList');
+    pageTitle.innerText = 'Ejercicios';
 }
 
 /** Fill Exercise list with rows */
@@ -63,9 +65,9 @@ function fillExerciseList() {
  */
 function appendExerciseRow(container, exercise) {
     const key = (exercise._key || '').toString();
-    const lastSetData = $new({ class: 'last-set-data' })
-    const timestamp = $new({ class: 'timestamp', text: timeAgo(exercise.lastSession?.date || exercise.updatedAt) })
-    const lastSetDataContainer = $new({ class: 'right-side', children: [lastSetData, timestamp] })
+    const lastSetData = $new({ class: 'last-set-data' });
+    const timestamp = $new({ class: 'timestamp', text: timeAgo(exercise.lastSession?.date || exercise.updatedAt) });
+    const lastSetDataContainer = $new({ class: 'right-side', children: [lastSetData, timestamp] });
     const exerciseRow = $new({
         class: 'row',
         dataset: [
@@ -89,12 +91,12 @@ function appendExerciseRow(container, exercise) {
  */
 function setExerciseLastWeightRecord(exercise, lastSetData) {
     if (!lastSetData) {
-        lastSetData = $queryOne(`.row[data-exercise-key="${exercise._key}"] .last-set-data`)
+        lastSetData = $queryOne(`.row[data-exercise-key="${exercise._key}"] .last-set-data`);
     }
     const lastSession = exercise.lastSession;
     if (lastSession) {
         const lastWeight = lastSession.sets[lastSession.sets.length - 1];
-        lastSetData.innerText = `${lastWeight.w}kg X ${lastWeight.r[lastWeight.r.length - 1]}`
+        lastSetData.innerText = `${lastWeight.w}kg X ${lastWeight.r[lastWeight.r.length - 1]}`;
     }
 }
 
@@ -105,18 +107,27 @@ function setExerciseLastWeightRecord(exercise, lastSetData) {
  * @param {string} exerciseKey 
  */
 async function openSingleExercise(exerciseKey) {
-    setStateField('viewingSingleExercise', true);
     const key = +exerciseKey;
-    if (key === dataState.currentExercise?._key) {
-        return _log('current exercise already cached');
+    let exercise = dataState.currentExercise || undefined;
+    if (key !== exercise?._key) {
+        exercise = dbStore.exercises.find(e => e._key === key);
     }
 
-    const exercise = dbStore.exercises.find(e => e._key === key);
     if (!exercise) { return _warn('Exercise not found'); }
+
+    setCurrentView('SingleExercise');
+    pageTitle.innerText = '';
+
     dataState.currentExercise = exercise;
     exerciseName.innerText = exercise.name;
     populateSetData(exercise);
 }
 
+function closeSingleExercise() {
+    if (appState.currentView !== 'SingleExercise') { return; }
+    setCurrentView('ExerciseList');
+    openExerciseList()
+}
 
-export { fillExerciseList, openExerciseList, openSingleExercise, openExerciseCreate, appendExerciseRow, submitExercise, setExerciseLastWeightRecord };
+
+export { fillExerciseList, openExerciseList, openSingleExercise, openExerciseCreate, appendExerciseRow, submitExercise, setExerciseLastWeightRecord, closeSingleExercise };

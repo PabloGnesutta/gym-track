@@ -48,7 +48,7 @@ import { updateExercise } from "./exercise-db.js";
  * @param {import("./exercise-db.js").Exercise} exercise 
  * @param {number} weight 
  * @param {number} reps
- * @param {Date} date
+ * @param {Date} date Date in which the set was performed
  * @returns {ServiceReturn<ExerciseSession>}
  */
 async function createSet(exercise, weight, reps, date = new Date()) {
@@ -56,7 +56,8 @@ async function createSet(exercise, weight, reps, date = new Date()) {
 
   /** @type {ExerciseSession | null} */
   let session = exercise.lastSession;
-  if (!session) {
+  if (!session || toYYYYMMDD(date) !== toYYYYMMDD(session.date)) {
+    // New session. Either the exercise has no lastSession, or it has one with a different date as the Set's
     session = {
       exerciseKey,
       date,

@@ -8,10 +8,10 @@
 /**
  * false for hot reloading, could use environment variable
  */
-const INTERCEPT_FETCH_REQUESTS = false;
+const INTERCEPT_FETCH_REQUESTS = true;
 
 
-const MAJOR_VERSION = 'v1.0.2';
+const MAJOR_VERSION = 'v1.0.3';
 const JS_CACHE = 'js_' + MAJOR_VERSION + '--0.0.1';
 const CSS_CACHE = 'css_' + MAJOR_VERSION + '--0.0.1';
 const MISC_CACHE = 'misc_' + MAJOR_VERSION + '--0.0.1';
@@ -52,9 +52,7 @@ function sendToClients(msg, transfer) {
     .catch(e => console.error(' ** @sendToClients', e));
 }
 
-/**
- * Install
- */
+/** Install */
 self.addEventListener('install', e => {
   console.info(' ** Install cache. Versions:', CACHE_WHITELIST);
   // @ts-ignore
@@ -68,9 +66,7 @@ self.addEventListener('install', e => {
   // ]));
 });
 
-/**
- * Activate
- */
+/** Activate */
 self.addEventListener('activate', () => {
   console.info(' ** Activate cache. Versions:', CACHE_WHITELIST);
   sendToClients({

@@ -27,6 +27,7 @@ import { _info, _log, _warn } from "../lib/logger.js";
 /**
  * @param {string} name 
  * @param {string[]} muscles 
+ * @param {Date} date - Date in which the exercise was created 
  * @returns {ServiceReturn<Exercise>} The exercise object with its key
  */
 async function createExercise(name, muscles = [], date = new Date()) {
@@ -58,7 +59,7 @@ async function createExercise(name, muscles = [], date = new Date()) {
  * @param {Exercise} exercise 
  */
 async function updateExercise(exercise, date = new Date()) {
-  exercise.updatedAt = date
+  exercise.updatedAt = date;
   await putOne('exercises', exercise, exercise._key);
 }
 
@@ -69,9 +70,9 @@ async function updateExercise(exercise, date = new Date()) {
  */
 async function fetchExercises() {
   /** @type {Exercise[]} */
-  const haveSet = []
+  const haveSet = [];
   /** @type {Exercise[]} */
-  const dontHaveSet = []
+  const dontHaveSet = [];
 
   await getAll(
     'exercises',
@@ -80,24 +81,24 @@ async function fetchExercises() {
      * one for excersices with sets done, and the other not
      * @param {Exercise} exercise 
      */
-    (exercise) => {
+    exercise => {
       if (exercise.lastSession) {
-        haveSet.push(exercise)
+        haveSet.push(exercise);
       } else {
-        dontHaveSet.push(exercise)
+        dontHaveSet.push(exercise);
       }
     }
   );
 
   haveSet.sort((a, b) => {
-    if (!a.updatedAt || !b.updatedAt) { return 0 }
-    return a.updatedAt <= b.updatedAt ? -1 : 1
-  })
+    if (!a.updatedAt || !b.updatedAt) { return 0; }
+    return a.updatedAt <= b.updatedAt ? -1 : 1;
+  });
 
   dontHaveSet.sort((a, b) => {
-    if (!a.createdAt || !b.createdAt) { return 0 }
-    return a.createdAt <= b.createdAt ? -1 : 1
-  })
+    if (!a.createdAt || !b.createdAt) { return 0; }
+    return a.createdAt <= b.createdAt ? -1 : 1;
+  });
 
   dbStore.exercises = haveSet.concat(dontHaveSet);
 }

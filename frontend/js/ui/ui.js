@@ -1,8 +1,9 @@
-import { dbStore, revertHistory, stateHistory } from "../common/state.js";
+import { appState, dbStore, revertHistory, setCurrentView, stateHistory } from "../common/state.js";
 import { $, $button, $getInner, $getInnerInput, $queryOne } from "../lib/dom.js";
 import { _log, _warn, openLogs } from "../lib/logger.js";
-import { openExerciseCreate, openSingleExercise, submitExercise } from "./exercise-ui.js";
+import { closeSingleExercise, openExerciseCreate, openSingleExercise, submitExercise } from "./exercise-ui.js";
 import { submitSet, tryDeleteSet } from "./set-ui.js";
+
 
 /**
  * TODO (event delegation): Use some kind of map for events so it grabs the 
@@ -15,13 +16,28 @@ const ClickEventHandlers = {
   tryDeleteSet
 };
 
+const mainHeader = $('mainHeader');
+const pageTitle = $getInner(mainHeader, '.page-title');
+const goBack = $getInner(mainHeader, '.go-back');
+
+goBack.addEventListener('click', e => {
+  // TODO: Eventually use history API
+  switch (appState.currentView) {
+    case 'ExerciseList':
+      break;
+    case 'SingleExercise':
+      closeSingleExercise();
+      break;
+    default: break;
+  }
+});
 
 function initUi() {
-  const createSetForm = $('createSetForm')
-  const weight = $getInnerInput(createSetForm, '[name="weight"]')
-  weight.addEventListener('focus', () => weight.select())
-  const reps = $getInnerInput(createSetForm, '[name="reps"]')
-  reps.addEventListener('focus', () => reps.select())
+  const createSetForm = $('createSetForm');
+  const weight = $getInnerInput(createSetForm, '[name="weight"]');
+  weight.addEventListener('focus', () => weight.select());
+  const reps = $getInnerInput(createSetForm, '[name="reps"]');
+  reps.addEventListener('focus', () => reps.select());
 
   $button({
     listener: { fn: submitExercise },
@@ -87,4 +103,4 @@ function dbugBtns() {
 }
 
 
-export { initUi, dbugBtns };
+export { initUi, dbugBtns, pageTitle, goBack };

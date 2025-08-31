@@ -4,7 +4,6 @@ import { _log } from "../lib/logger.js";
 
 /**
  * @typedef {import("../local-db/exercise-db.js").Exercise} Exercise
- * @typedef {import("../local-db/set-db.js").Set} Set
  * @typedef {import("../local-db/set-db.js").ExerciseSession} ExerciseSession
  */
 
@@ -12,9 +11,9 @@ import { _log } from "../lib/logger.js";
  * Main state of the application
  * @typedef {object} AppState
  * @property {boolean} creatingExercise
- * @property {boolean} creatingSet
- * @property {boolean} viewingExercises
- * @property {boolean} viewingSingleExercise
+ * @property {Views} currentView
+ * 
+ * @typedef {'ExerciseList'|'SingleExercise'} Views
  * 
  * @typedef {object} DataState
  * @property {Exercise|null} currentExercise
@@ -24,8 +23,6 @@ import { _log } from "../lib/logger.js";
  * 
  * @typedef {object} DBStore
  * @property {Exercise[]} exercises
- * @property {Record<string, Set[]>} setsForExercise
- * @property {Record<string, ExerciseSession[]>} sesionsForExercise
  * @property {ExerciseSession[]} sessions RARO ESTO
  */
 
@@ -33,7 +30,6 @@ import { _log } from "../lib/logger.js";
 /** @type {DBStore} - Cached records from the db */
 const dbStore = {
     exercises: [],
-    setsForExercise: {},
     sessions: [],
 };
 
@@ -42,9 +38,7 @@ const dbStore = {
 // will be overwritten by initAppState 
 const appState = {
     creatingExercise: false,
-    creatingSet: false,
-    viewingExercises: false,
-    viewingSingleExercise: false,
+    currentView: 'ExerciseList',
 };
 
 /** @type {DataState} State of data stored in memory */
@@ -62,13 +56,24 @@ var historyId = 0;
 
 /**
  * @param {keyof AppState} field 
+ * @param {*} value
+ * @param {boolean} doRecordHistory
  */
 function setStateField(field, value, doRecordHistory = true) {
+    // @ts-ignore // todo: check this
     appState[field] = value;
     $app.dataset[field] = value;
     if (doRecordHistory) {
         recordHistory();
     }
+}
+
+/**
+ * @param {Views} view 
+ */
+function setCurrentView(view) {
+    appState.currentView = view;
+    $app.dataset.currentView = view;
 }
 
 function recordHistory() {
@@ -97,10 +102,8 @@ function revertHistory(steps = 1) {
 
 function initAppState() {
     setStateField('creatingExercise', false, false);
-    setStateField('viewingExercises', false, false);
-    setStateField('viewingSingleExercise', false, false);
-    setStateField('creatingSet', false, false);
+    setCurrentView('ExerciseList');
     recordHistory();
 }
 
-export { appState, dataState, stateHistory, setStateField, initAppState, revertHistory, dbStore };
+export { appState, dataState, stateHistory, setStateField, initAppState, revertHistory, setCurrentView, dbStore };

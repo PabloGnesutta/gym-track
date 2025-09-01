@@ -1,6 +1,7 @@
-import { appState, dbStore, revertHistory, setCurrentView, stateHistory } from "../common/state.js";
+import { appState, revertHistory } from "../common/state.js";
 import { $, $button, $getInner, $getInnerInput, $queryOne } from "../lib/dom.js";
 import { _log, _warn, openLogs } from "../lib/logger.js";
+import { arrow_left } from "../svg/svgFn.js";
 import { closeSingleExercise, openExerciseCreate, openSingleExercise, submitExercise } from "./exercise-ui.js";
 import { submitSet, tryDeleteSet } from "./set-ui.js";
 
@@ -11,26 +12,13 @@ import { submitSet, tryDeleteSet } from "./set-ui.js";
  * This requires standardizing the input of the target functions:
  *   Something like always receiving a dataset, and having the function know what to do with it
  */
-const ClickEventHandlers = {
-  openSingleExercise,
-  tryDeleteSet
-};
+// const ClickEventHandlers = {
+//   openSingleExercise,
+//   tryDeleteSet
+// };
 
 const mainHeader = $('mainHeader');
 const pageTitle = $getInner(mainHeader, '.page-title');
-const goBack = $getInner(mainHeader, '.go-back');
-
-goBack.addEventListener('click', e => {
-  // TODO: Eventually use history API
-  switch (appState.currentView) {
-    case 'ExerciseList':
-      break;
-    case 'SingleExercise':
-      closeSingleExercise();
-      break;
-    default: break;
-  }
-});
 
 function initUi() {
   const createSetForm = $('createSetForm');
@@ -38,6 +26,40 @@ function initUi() {
   weight.addEventListener('focus', () => weight.select());
   const reps = $getInnerInput(createSetForm, '[name="reps"]');
   reps.addEventListener('focus', () => reps.select());
+
+  // Go Back Buttons (duplicated for usability testing)
+  $button({
+    appendTo: $('goBack1'),
+    svgFn: arrow_left,
+    listener: {
+      fn: e => {
+        switch (appState.currentView) {
+          case 'ExerciseList':
+            break;
+          case 'SingleExercise':
+            closeSingleExercise();
+            break;
+          default: break;
+        }
+      }
+    }
+  });
+  $button({
+    appendTo: $('goBack2'),
+    svgFn: arrow_left,
+    listener: {
+      fn: e => {
+        switch (appState.currentView) {
+          case 'ExerciseList':
+            break;
+          case 'SingleExercise':
+            closeSingleExercise();
+            break;
+          default: break;
+        }
+      }
+    }
+  });
 
   $button({
     listener: { fn: submitExercise },
@@ -103,4 +125,4 @@ function dbugBtns() {
 }
 
 
-export { initUi, dbugBtns, pageTitle, goBack };
+export { initUi, dbugBtns, pageTitle };

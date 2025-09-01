@@ -5,12 +5,9 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 2rem;
   border-radius: 6px;
-  color: white;
-  background-color: rgba(0, 0, 0, 0.6);
+  color: inherit;
   user-select: none;
-
 }
 
 .base-button.horizontal {
@@ -22,7 +19,7 @@
 }
 
 .base-button .icon {
-  /* display: flex; */
+  display: flex;
 }
 
 
@@ -34,11 +31,11 @@
   bottom: 0;
   background: transparent;
   z-index: 9;
+  color: white;
 }
 
 .base-button .overlay:hover {
   cursor: pointer;
-  /* background-color: rgba(255, 255, 255, 0.2); */
 }
 
 .base-button .overlay:active {

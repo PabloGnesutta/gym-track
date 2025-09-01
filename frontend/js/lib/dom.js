@@ -1,4 +1,3 @@
-import { svg_logs, svg_play } from "../svg/svgFn.js";
 import { _log } from "./logger.js";
 
 /**
@@ -237,31 +236,8 @@ function fold(el) { el.classList.add('folded'); }
 function unfold(el) { el.classList.remove('folded'); }
 
 
-/**
- * For Testing:
- * Creates buttons and appends them to main
- */
-function testButton() {
-  const container = $new({ class: 'button-container-test' });
-  container.style.display = 'flex';
-  container.style.flexWrap = 'wrap';
-  container.style.gap = '1rem';
-
-  $('app').append(container);
-
-  for (let i = 1; i <= 10; i++) {
-    $button({
-      label: 'Button ' + i,
-      svgFn: (i % 2 === 0) ? svg_logs : svg_play,
-      appendTo: container,
-      listener: { fn: e => _log('clicked', e.currentTarget) }
-    });
-  }
-}
-
-
 export {
   $, $form, $queryAll, $queryOne, $new, $newInput, $getChild, getCssVar, setCssVar,
   toggleFullScreen, show, hide, display, undisplay, $display, $undisplay,
-  $button, $getInner, select, unselect, fold, unfold, testButton, $getInnerInput
+  $button, $getInner, select, unselect, fold, unfold, $getInnerInput
 };

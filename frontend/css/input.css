@@ -2,11 +2,10 @@
   --title-bg: #1e2c47;
   --title-color: #ffffff;
   --content-bg: #ed143d;
-  --control-bg: rgba(0, 0, 0, 0.75);
+  --control-bg: rgba(0, 0, 0, 0.5);
 }
 
-.base-form {
-}
+.base-form {}
 
 .form-title {
   font-size: 1.5rem;
@@ -17,7 +16,7 @@
 
 .form-content {
   background-color: var(--content-bg);
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .form-control {
@@ -25,7 +24,7 @@
   padding: 0.75rem;
   border-radius: 6px;
   /* custom: */
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .form-control label {
@@ -46,9 +45,25 @@
 
 /* custom */
 #createExerciseForm {
-  /* --title-bg: violet; */
+  --title-bg: #4e004e;
+  --content-bg: #711942;
 }
+
+#createExerciseForm .btn {
+  background-color: #d0276e;
+  padding: 2rem;
+}
+
+#createSetForm {
+  --content-bg: #4c0211;
+}
+
 #createSetForm .numeric-inputs {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
+}
+
+#createSetForm .btn {
+  background-color: #cb042d;
+  padding: 2rem;
 }

@@ -20,6 +20,11 @@ div {
   user-select: none;
 }
 
+svg {
+  width: 100%;
+  height: 100%;
+}
+
 #app {
   background-color: var(--app-bg);
   color: white;
@@ -49,10 +54,12 @@ div {
 }
 
 .go-back {
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 42px;
-  padding: 0.5rem 1.5rem;
-  background-color: rgb(255 255 255 / 25%);
+  padding: 0.5rem;
+  color: white;
+}
+.go-back .btn {
+  width: 12vw;
+  height: 12vw;
 }
 
 .go-back:active {
@@ -65,10 +72,8 @@ div {
   color: coral;
 }
 
-.hamburger {}
-
 .views {
-  background-color: #002929;
+  background-color: #001a22;
 }
 
 .views .page {
@@ -90,7 +95,7 @@ div {
 }
 
 #exerciseListView {
-  --list-bg: #7f031c;
+  --list-bg: #801414;
   --title-bg: crimson;
   --row-bg: rgba(0, 0, 0, 0.75);
 }
@@ -134,13 +139,13 @@ div {
 #singleExerciseView .name {
   font-size: 26px;
   background-color: #7f031c;
-  padding: 1rem;
+  padding: 1rem 0.75rem;
 }
 
 #singleExerciseView .set-history-container {
   background-color: #1c0006;
-  padding-bottom: 1rem;
-  padding-top: 0.25rem;
+  padding-bottom: 0.125rem;
+  margin-top: .75rem;
 }
 
 .set-history-container h4 {
@@ -283,6 +288,6 @@ div {
 
 #app[data-current-view='ExerciseList'] .go-back {
   width: 0;
+  height: 0;
   overflow: hidden;
-  padding: 0;
 }

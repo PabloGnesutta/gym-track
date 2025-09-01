@@ -1,6 +1,6 @@
 import { dbStore } from "../common/state.js";
 import { getAll, getOneWithIndex, putOne } from "../lib/indexedDb.js";
-import { _info, _log, _warn } from "../lib/logger.js";
+import { _error, _info, _log, _warn } from "../lib/logger.js";
 
 
 /**
@@ -57,11 +57,28 @@ async function createExercise(name, muscles = [], date = new Date()) {
 
 /**
  * @param {Exercise} exercise 
+ * @param {string|null} name 
+ * @param {string[]|null} muscles 
+ * @param {Date|null} date
+ * @returns {ServiceReturn<Exercise>} The exercise object with its key
  */
-async function updateExercise(exercise, date = new Date()) {
-  exercise.updatedAt = date;
-  await putOne('exercises', exercise, exercise._key);
+async function updateExercise(exercise, name, muscles, date) {
+  if (!exercise || !exercise._key) { return { errorMsg: 'Llave no provista' } }
+  if (name) {
+    exercise.name = name
+  }
+  if (muscles && muscles.length) {
+    exercise.muscles = muscles
+  }
+  exercise.updatedAt = date || new Date();
+
+  const _key = await putOne('exercises', exercise, exercise._key);
+  if (!_key) {
+    _error('Error al actualizar ejercicio')
+  }
+  return { data: exercise }
 }
+
 
 /**
  * Fetch all exercises,

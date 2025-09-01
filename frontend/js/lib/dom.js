@@ -47,11 +47,17 @@ function $queryAll(selector) { // @ts-ignore
 }
 
 /**
- * Wrapper around querySelector
  * @param {string} selector
  * @returns {HTMLDivElement}
  */
 function $queryOne(selector) { // @ts-ignore
+  return document.querySelector(selector);
+}
+/**
+ * @param {string} selector
+ * @returns {HTMLInputElement}
+ */
+function $queryOneInput(selector) { // @ts-ignore
   return document.querySelector(selector);
 }
 
@@ -239,5 +245,5 @@ function unfold(el) { el.classList.remove('folded'); }
 export {
   $, $form, $queryAll, $queryOne, $new, $newInput, $getChild, getCssVar, setCssVar,
   toggleFullScreen, show, hide, display, undisplay, $display, $undisplay,
-  $button, $getInner, select, unselect, fold, unfold, $getInnerInput
+  $button, $getInner, select, unselect, fold, unfold, $getInnerInput, $queryOneInput
 };

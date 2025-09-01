@@ -14,14 +14,12 @@
   flex-direction: row;
 }
 
-
 .base-button .label {
 }
 
 .base-button .icon {
   display: flex;
 }
-
 
 .base-button .overlay {
   position: absolute;
@@ -40,4 +38,24 @@
 
 .base-button .overlay:active {
   background-color: rgba(255, 255, 255, 0.4);
+}
+
+.go-back {
+  color: white;
+}
+.go-back .btn {
+  padding: 0.5rem;
+}
+
+.go-back .btn .icon {
+  width: 12vw;
+  height: 12vw;
+}
+
+.edit-btn .btn {
+  padding: 1rem;
+}
+.edit-btn .btn .icon {
+  width: 8dvw;
+  height: 8dvw;
 }

@@ -18,7 +18,6 @@ logs.addEventListener('click', e => {
 
 function openLogs() {
   display(logger);
-  logger.scroll({ top: logger.scrollHeight, behavior: 'smooth' });
 }
 
 function closeLogs() {
@@ -52,8 +51,9 @@ function log() {
       default:
         text = String(arg); break;
     }
-    const p = $new({ tag: 'pre', class: 'log-entry type-' + logLevel, text });
-    logs.append(p);
+    const p = $new({ tag: 'pre', class: 'folded log-entry type-' + logLevel, text });
+    if (logLevel === 'error') { p.classList.remove('folded') }
+    logs.prepend(p);
   });
 }
 

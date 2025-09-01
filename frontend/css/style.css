@@ -53,23 +53,10 @@ svg {
   border: none;
 }
 
-.go-back {
-  padding: 0.5rem;
-  color: white;
-}
-.go-back .btn {
-  width: 12vw;
-  height: 12vw;
-}
-
-.go-back:active {
-  background-color: rgb(255 255 255 / 50%);
-}
-
 .page-title {
   font-size: 28px;
   padding: 0.5rem;
-  color: coral;
+  color: #0087b1;
 }
 
 .views {
@@ -100,7 +87,8 @@ svg {
   --row-bg: rgba(0, 0, 0, 0.75);
 }
 
-#exerciseListView {}
+#exerciseListView {
+}
 
 #exerciseListView .list {
   color: black;
@@ -134,18 +122,26 @@ svg {
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-#singleExerciseView {}
+#singleExerciseView {
+}
+
+#singleExerciseView .heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #7f031c;
+}
 
 #singleExerciseView .name {
   font-size: 26px;
-  background-color: #7f031c;
   padding: 1rem 0.75rem;
 }
 
 #singleExerciseView .set-history-container {
   background-color: #1c0006;
   padding-bottom: 0.125rem;
-  margin-top: .75rem;
+  margin-top: 0.75rem;
 }
 
 .set-history-container h4 {
@@ -268,16 +264,17 @@ svg {
 
 /* State Machine */
 
-/* Things that would open the modal */
-#app[data-creating-exercise='true'] .modal {
+/* Modal/Forms state */
+#app[data-creating-exercise='true'] .modal,
+#app[data-editing-exercise='true'] .modal {
   display: flex;
 }
 
-/* Things that will be displayed or not based on status */
-#app[data-creating-exercise='false'] #createExerciseForm {
+#app[data-show-exercise-form='false'] #exerciseForm {
   display: none;
 }
 
+/* Views state */
 #app:not([data-current-view='ExerciseList']) #exerciseListView {
   display: none;
 }
@@ -287,7 +284,5 @@ svg {
 }
 
 #app[data-current-view='ExerciseList'] .go-back {
-  width: 0;
-  height: 0;
-  overflow: hidden;
+  visibility: hidden;
 }

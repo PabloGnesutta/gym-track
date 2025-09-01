@@ -1,8 +1,8 @@
 import { appState, revertHistory } from "../common/state.js";
 import { $, $button, $getInner, $getInnerInput, $queryOne } from "../lib/dom.js";
 import { _log, _warn, openLogs } from "../lib/logger.js";
-import { arrow_left } from "../svg/svgFn.js";
-import { closeSingleExercise, openExerciseCreate, openSingleExercise, submitExercise } from "./exercise-ui.js";
+import { arrow_left, pen_solid } from "../svg/svgFn.js";
+import { closeSingleExercise, openExerciseForm, openSingleExercise, submitExercise, submitExerciseBtn } from "./exercise-ui.js";
 import { submitSet, tryDeleteSet } from "./set-ui.js";
 
 
@@ -20,6 +20,9 @@ import { submitSet, tryDeleteSet } from "./set-ui.js";
 const mainHeader = $('mainHeader');
 const pageTitle = $getInner(mainHeader, '.page-title');
 
+const submitSetBtn = $queryOne('#createSetForm .submit')
+
+
 function initUi() {
   const createSetForm = $('createSetForm');
   const weight = $getInnerInput(createSetForm, '[name="weight"]');
@@ -27,23 +30,7 @@ function initUi() {
   const reps = $getInnerInput(createSetForm, '[name="reps"]');
   reps.addEventListener('focus', () => reps.select());
 
-  // Go Back Buttons (duplicated for usability testing)
-  $button({
-    appendTo: $('goBack1'),
-    svgFn: arrow_left,
-    listener: {
-      fn: e => {
-        switch (appState.currentView) {
-          case 'ExerciseList':
-            break;
-          case 'SingleExercise':
-            closeSingleExercise();
-            break;
-          default: break;
-        }
-      }
-    }
-  });
+  // Go Back Button
   $button({
     appendTo: $('goBack2'),
     svgFn: arrow_left,
@@ -64,16 +51,24 @@ function initUi() {
   $button({
     listener: { fn: submitExercise },
     label: 'Crear Ejercicio',
-    appendTo: $queryOne('#createExerciseForm .btns'),
+    appendTo: submitExerciseBtn,
   });
 
   $button({
     listener: { fn: submitSet },
     label: 'Agregar Set',
-    appendTo: $queryOne('#createSetForm .btns'),
+    appendTo: submitSetBtn
   });
 
-  $('newExerciseBtn').addEventListener('click', openExerciseCreate);
+  $button({
+    listener: { fn: () => openExerciseForm(true) },
+    svgFn: pen_solid,
+    appendTo: $queryOne('#singleExerciseView .edit-btn'),
+  });
+
+  $('newExerciseBtn').addEventListener('click', () => { openExerciseForm(false) });
+
+
   modalBackdropHandler();
 
   // Click Event Delegation
@@ -112,11 +107,6 @@ function modalBackdropHandler() {
 
 function dbugBtns() {
   const mainFooter = $('mainFooter');
-  // $button({
-  //   label: 'DBStore',
-  //   appendTo: mainFooter,
-  //   listener: { fn: e => { _log(dbStore); openLogs(); } }
-  // });
   $button({
     label: 'Logs',
     appendTo: mainFooter,
@@ -125,4 +115,7 @@ function dbugBtns() {
 }
 
 
-export { initUi, dbugBtns, pageTitle };
+export {
+  initUi, dbugBtns, pageTitle,
+  submitSetBtn,
+};

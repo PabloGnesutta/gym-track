@@ -44,14 +44,16 @@
 }
 
 /* custom */
-#createExerciseForm {
+#exerciseForm {
   --title-bg: #4e004e;
   --content-bg: #711942;
 }
 
-#createExerciseForm .btn {
+#exerciseForm .submit .btn {
   background-color: #d0276e;
   padding: 2rem;
+  font-size: 22px;
+  border: 1px solid wheat;
 }
 
 #createSetForm {
@@ -63,7 +65,9 @@
   gap: 0.75rem;
 }
 
-#createSetForm .btn {
+#createSetForm .submit .btn {
   background-color: #cb042d;
   padding: 2rem;
+  font-size: 22px;
+  border: 1px solid wheat;
 }

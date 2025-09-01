@@ -30,6 +30,7 @@
 }
 
 .log-entry {
+  position: relative;
   font-family: 'Courier New', Courier, monospace;
   white-space: pre;
   background-color: #333;
@@ -57,6 +58,22 @@
 }
 
 .log-entry.folded {
-  max-height: 32px;
+  max-height: 64px;
   overflow-y: hidden;
+}
+.log-entry.folded::after {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.5);
+  font-size: 20px;
+  padding-right: 4px;
+  padding-bottom: 4px;
+  display: flex;
+  content: "🔍";
+  justify-content: end;
+  align-items: end;
 }

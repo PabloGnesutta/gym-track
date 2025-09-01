@@ -11,6 +11,8 @@ import { _log } from "../lib/logger.js";
  * Main state of the application
  * @typedef {object} AppState
  * @property {boolean} creatingExercise
+ * @property {boolean} editingExercise
+ * @property {boolean} showExerciseForm
  * @property {Views} currentView
  * 
  * @typedef {'ExerciseList'|'SingleExercise'} Views
@@ -38,6 +40,8 @@ const dbStore = {
 // will be overwritten by initAppState 
 const appState = {
     creatingExercise: false,
+    editingExercise: false,
+    showExerciseForm: false,
     currentView: 'ExerciseList',
 };
 
@@ -102,6 +106,8 @@ function revertHistory(steps = 1) {
 
 function initAppState() {
     setStateField('creatingExercise', false, false);
+    setStateField('editingExercise', false, false);
+    setStateField('showExerciseForm', false, false);
     setCurrentView('ExerciseList');
     recordHistory();
 }

@@ -75,7 +75,7 @@ async function createSet(exercise, weight, reps, date = new Date()) {
 
   session._key = await putOne('sessions', session, session._key);
 
-  await updateExercise(exercise, date);
+  await updateExercise(exercise, null, null, date);
 
   return { data: session };
 }

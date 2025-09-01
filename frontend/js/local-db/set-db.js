@@ -93,6 +93,7 @@ async function getSessionsForExercise(exerciseKey) {
     return dbStore.sessions[strExerciseKey];
   }
 
+  /** @type {ExerciseSession[]} */ // @ts-ignore
   const sessions = await getAllWithIndex('sessions', 'exerciseKey', exerciseKey);
 
   // cache all sessions for exercise: 
@@ -103,12 +104,13 @@ async function getSessionsForExercise(exerciseKey) {
 
 
 /**
- * Delete one Set from DB 
- * TODO: Remove from dbStore cache
- * @param {StoreKey} key 
+ * @param {ExerciseSession} session 
  */
-async function deleteSet(key) {
-  // return await deleteOne('sets', key);
+async function deleteSession(session) {
+  if (!session._key) { return }
+  const result = await deleteOne('sessions', session._key)
+  _log({ result })
 }
 
-export { createSet, getSessionsForExercise, deleteSet };
+
+export { createSet, getSessionsForExercise, deleteSession };

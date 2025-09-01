@@ -138,28 +138,28 @@ svg {
   padding: 1rem 0.75rem;
 }
 
-#singleExerciseView .set-history-container {
+#singleExerciseView .session-history-container {
   background-color: #1c0006;
   padding-bottom: 0.125rem;
   margin-top: 0.75rem;
 }
 
-.set-history-container h4 {
+.session-history-container h4 {
   font-size: 18px;
   padding: 0.25rem;
 }
 
-.set-history {
+.session-history {
   margin-bottom: 12px;
   font-family: 'Courier New', Courier, monospace;
 }
 
-.set-history.current-date-log {
+.session-history.current-date-log {
   background-color: #002d00;
   font-size: 1.25rem;
 }
 
-.set-history .row {
+.session-history .row {
   display: flex;
   justify-content: space-between;
   align-items: center;

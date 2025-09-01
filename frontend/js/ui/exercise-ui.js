@@ -101,7 +101,7 @@ function fillExerciseList() {
  */
 function updateExerciseRow(container, exercise) {
     const row = $getInner(container, '.row')
-    container.removeChild(row)
+    row.remove()
     appendExerciseRow(container, exercise, true)
 }
 
@@ -126,7 +126,6 @@ function appendExerciseRow(container, exercise, prepend = false) {
         children: [
             $new({ class: 'exerciseName', text: exercise.name }),
             lastSetDataContainer,
-
         ],
     });
 

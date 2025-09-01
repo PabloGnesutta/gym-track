@@ -25,14 +25,14 @@ import { _log } from "../lib/logger.js";
  * 
  * @typedef {object} DBStore
  * @property {Exercise[]} exercises
- * @property {ExerciseSession[]} sessions RARO ESTO
+ * @property {Record<string, ExerciseSession[]>} sessions
  */
 
 
 /** @type {DBStore} - Cached records from the db */
 const dbStore = {
     exercises: [],
-    sessions: [],
+    sessions: {},
 };
 
 

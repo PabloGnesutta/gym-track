@@ -1,13 +1,14 @@
-import { appState, dbStore } from "../common/state.js";
+import { appState, dataState, dbStore } from "../common/state.js";
 import { timeAgo, toYYYYMMDD } from "../lib/date.js";
-import { $, $form, $getInner, $new } from "../lib/dom.js";
+import { $, $form, $getInner, $new, $queryOne } from "../lib/dom.js";
 import { _error, _log } from "../lib/logger.js";
-import { createSet, deleteSet, getSessionsForExercise } from "../local-db/set-db.js";
+import { createSet, deleteSession, getSessionsForExercise } from "../local-db/set-db.js";
 import { setExerciseLastWeightRecord } from "./exercise-ui.js";
 
 
 /**
  * @typedef {import("../local-db/exercise-db.js").Exercise} Exercise 
+ * @typedef {import("../local-db/set-db.js").ExerciseSession} Session
  */
 
 const singleExerciseView = $('singleExerciseView');
@@ -52,12 +53,11 @@ async function populateSetData(exercise) {
     for (const session of sessions) {
       const today = toYYYYMMDD(new Date());
       const date = toYYYYMMDD(session.date);
-      _log({ today, date });
       if (date === today) {
         currentDateLog.innerHTML = '';
-        appendSessionData(currentDateLog, session);
+        appendSessionHistoryRow(currentDateLog, session);
       } else {
-        appendSessionData(previousDaysLog, session);
+        appendSessionHistoryRow(previousDaysLog, session);
       }
     }
   }
@@ -67,12 +67,17 @@ async function populateSetData(exercise) {
  * @param {HTMLElement} container
  * @param {import("../local-db/set-db.js").ExerciseSession} session
  */
-function appendSessionData(container, session) {
+function appendSessionHistoryRow(container, session) {
+  const key = (session._key || '').toString();
   const _weightConainer = $new({ class: 'weight-container' });
   const _date = $new({ class: 'date', text: timeAgo(session.date) });
   const _row = $new({
     class: 'row',
-    children: [_weightConainer, _date]
+    children: [_weightConainer, _date],
+    dataset: [
+      ['clickAction', 'openSessionForm'],
+      ['sessionKey', key],
+    ],
   });
 
   for (const { w, r } of session.sets) {
@@ -110,7 +115,7 @@ async function submitSet(e) {
   const result = await createSet(exercise, +weight, +reps, new Date());
   if (result.data) {
     currentDateLog.innerHTML = '';
-    appendSessionData(currentDateLog, result.data);
+    appendSessionHistoryRow(currentDateLog, result.data);
     setExerciseLastWeightRecord(exercise);
   } else {
     _error(result.errorMsg);
@@ -119,22 +124,34 @@ async function submitSet(e) {
 
 
 /**
- * @param {Event} e 
- * @returns {Promise<void>}
+ * @param {string} sessionKey 
  */
-async function tryDeleteSet(e) {
-  /** @type {HTMLDivElement} */ // @ts-ignore
-  const setRow = e.target.closest('.row');
-  if (!setRow) { return; }
-  const setKey = +(setRow.dataset.setKey || 0);
-  const doit = confirm('Querés borrar este set?');
-  if (!doit) { return; }
-  await deleteSet(setKey);
-  currentDateLog.removeChild(setRow);
-  if (currentDateLog.innerHTML === '') {
-    currentDateLog.innerHTML = 'No hay sets registrados para este ejercicio';
-  }
+async function openSessionForm(sessionKey) {
+  if (!dataState.currentExercise) { return }
+  const exKey = (dataState.currentExercise._key || '').toString()
+  if (!exKey) { return }
+  const _key = +sessionKey;
+  const sessions = dbStore.sessions[exKey]
+  const session = sessions.find(s => s._key === _key)
+  if (!session) { return }
+
+  // if (!confirm('Seguro que querés borrar esta sesión?')) { return }
+  // tryDeleteSession(session, sessionKey)
+}
+
+/**
+ * TODO: El problema ocn esto es que no se borra la exercise.lastSession
+ * y luego al crear un nuevo set, queda con la cantidad de sets vieja
+ * y se pushea a los weight rows... crea una nueva sesión para la fecha,
+ * pero con data previamente borrada 
+ * @param {Session} session 
+ * @param {string} sessionKey 
+*/
+async function tryDeleteSession(session, sessionKey) {
+  await deleteSession(session)
+  const row = $queryOne(`[data-session-key="${sessionKey}"]`)
+  row.remove()
 }
 
 
-export { populateSetData, submitSet, tryDeleteSet };
+export { populateSetData, submitSet, openSessionForm };

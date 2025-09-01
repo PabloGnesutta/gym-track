@@ -3,7 +3,7 @@ import { $, $button, $getInner, $getInnerInput, $queryOne } from "../lib/dom.js"
 import { _log, _warn, openLogs } from "../lib/logger.js";
 import { arrow_left, pen_solid } from "../svg/svgFn.js";
 import { closeSingleExercise, openExerciseForm, openSingleExercise, submitExercise, submitExerciseBtn } from "./exercise-ui.js";
-import { submitSet, tryDeleteSet } from "./set-ui.js";
+import { openSessionForm, submitSet } from "./set-ui.js";
 
 
 /**
@@ -87,8 +87,9 @@ function initUi() {
     switch (dataset.clickAction) {
       case 'openSingleExercise': openSingleExercise(dataset.exerciseKey || '');
         break;
-      case 'tryDeleteSet': tryDeleteSet(e);
+      case 'openSessionForm': openSessionForm(dataset.sessionKey || '')
         break;
+      default: return _warn(' :: clickAction not defined: ' + dataset.clickAction);
     }
   });
 }

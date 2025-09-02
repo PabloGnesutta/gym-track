@@ -1,7 +1,7 @@
 import { appState, dataState, dbStore, setCurrentView, setStateField } from "../common/state.js";
 import { timeAgo } from "../lib/date.js";
 import { $, $form, $getInner, $new, $queryOne, $queryOneInput } from "../lib/dom.js";
-import { _error, _log, _warn } from "../lib/logger.js";
+import { _error, _log } from "../lib/logger.js";
 import { createExercise, updateExercise } from "../local-db/exercise-db.js";
 import { populateSetData } from "./set-ui.js";
 import { pageTitle } from "./ui.js";
@@ -12,7 +12,6 @@ import { pageTitle } from "./ui.js";
  */
 
 
-
 const exerciseList = $queryOne('#exerciseListView .list');
 
 const singleExerciseView = $('singleExerciseView');
@@ -20,31 +19,31 @@ const exerciseName = $getInner(singleExerciseView, '.name');
 
 const exerciseForm = $form('exerciseForm');
 const exerciseNameInput = $queryOneInput('#exerciseForm input[name="exerciseName"]');
-const submitExerciseBtn = $queryOne('#exerciseForm .submit')
+const submitExerciseBtn = $queryOne('#exerciseForm .submit');
 
 exerciseNameInput.addEventListener('focus', () => exerciseNameInput.select());
 
 /** 
  * Open create exercise modal and focus name input
  * @param {boolean} isEdit
-*/
+ */
 function openExerciseForm(isEdit) {
-    const submitExerciseLabel = $getInner(submitExerciseBtn, ' .label')
+    const submitExerciseLabel = $getInner(submitExerciseBtn, ' .label');
 
     if (isEdit === true) {
         setStateField('editingExercise', true);
-        if (!dataState.currentExercise) { return }
+        if (!dataState.currentExercise) { return; }
         const musclesInput = $queryOneInput('#exerciseForm input[name="muscles"]');
-        const exercise = dataState.currentExercise
-        exerciseNameInput.value = exercise.name
-        musclesInput.value = exercise.muscles?.join(',')
-        submitExerciseLabel.innerText = 'Guardar Cambios'
+        const exercise = dataState.currentExercise;
+        exerciseNameInput.value = exercise.name;
+        musclesInput.value = exercise.muscles?.join(',');
+        submitExerciseLabel.innerText = 'Guardar Cambios';
     } else {
         setStateField('creatingExercise', true);
-        submitExerciseLabel.innerText = 'Crear Ejercicio'
+        submitExerciseLabel.innerText = 'Crear Ejercicio';
     }
 
-    setStateField('showExerciseForm', true)
+    setStateField('showExerciseForm', true);
     exerciseNameInput.focus();
     exerciseNameInput.select();
 }
@@ -56,30 +55,33 @@ function openExerciseForm(isEdit) {
 async function submitExercise(e) {
     e.preventDefault();
     const formData = new FormData(exerciseForm);
-    const name = formData.get('exerciseName') || ''
-    if (!(typeof name === 'string')) { return }
+    const name = formData.get('exerciseName') || '';
+    if (!(typeof name === 'string')) { return; }
 
-    var muscles = []
-    const _m = formData.get('muscles') || ''
-    if (typeof _m === 'string') { muscles = _m.split(',') }
+    var muscles = [];
+    const _m = formData.get('muscles') || '';
+    if (typeof _m === 'string') { muscles = _m.split(','); }
 
     if (appState.editingExercise === true && dataState.currentExercise) {
-        const result = await updateExercise(dataState.currentExercise, name, muscles, new Date())
+        // Edit
+        const result = await updateExercise(dataState.currentExercise, name, muscles, new Date());
         if (result.data) {
             updateExerciseRow(exerciseList, result.data);
-            exerciseName.innerText = result.data.name
+            exerciseName.innerText = result.data.name;
         } else { _error(result.errorMsg); }
         setStateField('editingExercise', false);
     }
     else {
+        // Create
         const result = await createExercise(name, muscles, new Date());
         if (result.data) {
             appendExerciseRow(exerciseList, result.data);
         } else { _error(result.errorMsg); }
         setStateField('creatingExercise', false);
     }
+
     exerciseForm.reset();
-    setStateField('showExerciseForm', false)
+    setStateField('showExerciseForm', false);
 }
 
 /** Open exercise list view */
@@ -100,9 +102,9 @@ function fillExerciseList() {
  * @param {import("../local-db/exercise-db.js").Exercise} exercise
  */
 function updateExerciseRow(container, exercise) {
-    const row = $getInner(container, '.row')
-    row.remove()
-    appendExerciseRow(container, exercise, true)
+    const row = $getInner(container, '.row');
+    row.remove();
+    appendExerciseRow(container, exercise, true);
 }
 
 /**
@@ -139,6 +141,7 @@ function appendExerciseRow(container, exercise, prepend = false) {
 }
 
 /**
+ * Maybe this can be replaced by updateExerciseRow
  * @param {Exercise} exercise 
  * @param {HTMLDivElement} [lastSetData]
  */
@@ -166,7 +169,7 @@ async function openSingleExercise(exerciseKey) {
         exercise = dbStore.exercises.find(e => e._key === key);
     }
 
-    if (!exercise) { return _warn('Exercise not found'); }
+    if (!exercise) { return _error('Exercise not found'); }
 
     setCurrentView('SingleExercise');
     pageTitle.innerText = 'Ejercicio actual';
@@ -179,7 +182,7 @@ async function openSingleExercise(exerciseKey) {
 function closeSingleExercise() {
     if (appState.currentView !== 'SingleExercise') { return; }
     setCurrentView('ExerciseList');
-    openExerciseList()
+    openExerciseList();
 }
 
 

@@ -1,7 +1,7 @@
 import { dbStore } from "../common/state.js";
 import { toYYYYMMDD } from "../lib/date.js";
 import { deleteOne, getAllWithIndex, putOne } from "../lib/indexedDb.js";
-import { _info, _log, _warn } from "../lib/logger.js";
+import { _error, _info, _log } from "../lib/logger.js";
 import { updateExercise } from "./exercise-db.js";
 
 
@@ -16,7 +16,7 @@ import { updateExercise } from "./exercise-db.js";
 
 /**
  * Exercise Session - DB Model
- * @typedef {object} ExerciseSession
+ * @typedef {object} Session
  * @property {IDBValidKey} exerciseKey
  * @property {Date} date
  * @property {WeightRow[]} sets
@@ -49,15 +49,15 @@ import { updateExercise } from "./exercise-db.js";
  * @param {number} weight 
  * @param {number} reps
  * @param {Date} date Date in which the set was performed
- * @returns {ServiceReturn<ExerciseSession>}
+ * @returns {ServiceReturn<Session>}
  */
 async function createSet(exercise, weight, reps, date = new Date()) {
   const exerciseKey = exercise._key || 0;
 
-  /** @type {ExerciseSession | null} */
+  /** @type {Session|null} */
   let session = exercise.lastSession;
   if (!session || toYYYYMMDD(date) !== toYYYYMMDD(session.date)) {
-    // New session. Either the exercise has no lastSession, or it has one with a different date as the Set's
+    // New session. Either the Exercise has no lastSession, or it has one with a different date as the Set's
     session = {
       exerciseKey,
       date,
@@ -77,6 +77,19 @@ async function createSet(exercise, weight, reps, date = new Date()) {
 
   await updateExercise(exercise, null, null, date);
 
+  // Update DBStore:
+  let exerciseSessions = dbStore.sessions[exerciseKey.toString()];
+  if (!exerciseSessions) {
+    exerciseSessions = [];
+    dbStore.sessions[exerciseKey.toString()] = exerciseSessions;
+  }
+  const index = exerciseSessions.findIndex(s => s._key === session._key);
+  if (index === -1) {
+    exerciseSessions.push(session);
+  } else {
+    exerciseSessions[index] = session;
+  }
+
   return { data: session };
 }
 
@@ -84,7 +97,7 @@ async function createSet(exercise, weight, reps, date = new Date()) {
  * Returns the sets for the given exercise.
  * If they are cached, return the cache, otherwise fetch and cache.
  * @param {import("./exercise-db.js").StoreKey} exerciseKey 
- * @returns {Promise<Array<ExerciseSession>>}
+ * @returns {Promise<Array<Session>>}
  */
 async function getSessionsForExercise(exerciseKey) {
   const strExerciseKey = exerciseKey.toString();
@@ -93,7 +106,7 @@ async function getSessionsForExercise(exerciseKey) {
     return dbStore.sessions[strExerciseKey];
   }
 
-  /** @type {ExerciseSession[]} */ // @ts-ignore
+  /** @type {Session[]} */ // @ts-ignore
   const sessions = await getAllWithIndex('sessions', 'exerciseKey', exerciseKey);
 
   // cache all sessions for exercise: 
@@ -104,12 +117,11 @@ async function getSessionsForExercise(exerciseKey) {
 
 
 /**
- * @param {ExerciseSession} session 
+ * @param {Session} session 
  */
 async function deleteSession(session) {
-  if (!session._key) { return }
-  const result = await deleteOne('sessions', session._key)
-  _log({ result })
+  if (!session._key) { return; }
+  await deleteOne('sessions', session._key);
 }
 
 

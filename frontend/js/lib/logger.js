@@ -42,7 +42,7 @@ function log() {
           _error(arg.stack);
           return;
         } else {
-          text = JSON.stringify(arg, null, 1); break;
+          text = JSON.stringify(arg, null, 2); break;
         }
       case 'string':
         text = arg; break;

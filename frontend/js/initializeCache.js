@@ -1,5 +1,5 @@
 import { $, display, fold, undisplay, unfold } from './lib/dom.js';
-import { _log, _error, _info, _warn } from './lib/logger.js';
+import { _log, _error, _info } from './lib/logger.js';
 
 
 /**
@@ -52,7 +52,7 @@ async function deleteOldCaches(CACHE_WHITELIST) {
       if (success) {
         _info(' - deleted cache: ' + cacheName);
       } else {
-        _warn(' - error deleting cache: ' + cacheName);
+        _error(' - error deleting cache: ' + cacheName);
       }
     }
     _info(' - old caches deleted');

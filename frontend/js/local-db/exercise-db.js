@@ -1,6 +1,6 @@
 import { dbStore } from "../common/state.js";
 import { getAll, getOneWithIndex, putOne } from "../lib/indexedDb.js";
-import { _error, _info, _log, _warn } from "../lib/logger.js";
+import { _error, _info, _log } from "../lib/logger.js";
 
 
 /**
@@ -10,6 +10,7 @@ import { _error, _info, _log, _warn } from "../lib/logger.js";
 
 /**
  * @typedef {import("../lib/indexedDb.js").StoreKey} StoreKey
+ * @typedef {import("./set-db.js").Session} Session
  */
 
 /**
@@ -17,7 +18,7 @@ import { _error, _info, _log, _warn } from "../lib/logger.js";
  * @typedef {object} Exercise
  * @property {string} name
  * @property {string[]} muscles
- * @property {import("./set-db.js").ExerciseSession | null} lastSession
+ * @property {import("./set-db.js").Session | null} lastSession
  * @property {IDBValidKey} [_key]
  * @property {Date} [createdAt]
  * @property {Date} [updatedAt]
@@ -25,6 +26,7 @@ import { _error, _info, _log, _warn } from "../lib/logger.js";
 
 
 /**
+ * Stores Exercise in DB. Updates DBStore
  * @param {string} name 
  * @param {string[]} muscles 
  * @param {Date} date - Date in which the exercise was created 
@@ -56,27 +58,28 @@ async function createExercise(name, muscles = [], date = new Date()) {
 }
 
 /**
- * @param {Exercise} exercise 
+ * Updates DB record. Mutates incoming Exercise object
+ * @param {Exercise} exercise will be updated
  * @param {string|null} name 
  * @param {string[]|null} muscles 
  * @param {Date|null} date
  * @returns {ServiceReturn<Exercise>} The exercise object with its key
  */
 async function updateExercise(exercise, name, muscles, date) {
-  if (!exercise || !exercise._key) { return { errorMsg: 'Llave no provista' } }
+  if (!exercise || !exercise._key) { return { errorMsg: 'Llave no provista' }; }
   if (name) {
-    exercise.name = name
+    exercise.name = name;
   }
   if (muscles && muscles.length) {
-    exercise.muscles = muscles
+    exercise.muscles = muscles;
   }
   exercise.updatedAt = date || new Date();
 
   const _key = await putOne('exercises', exercise, exercise._key);
   if (!_key) {
-    _error('Error al actualizar ejercicio')
+    _error('Error al actualizar ejercicio');
   }
-  return { data: exercise }
+  return { data: exercise };
 }
 
 

@@ -4,7 +4,7 @@ import { _log } from "../lib/logger.js";
 
 /**
  * @typedef {import("../local-db/exercise-db.js").Exercise} Exercise
- * @typedef {import("../local-db/set-db.js").ExerciseSession} ExerciseSession
+ * @typedef {import("../local-db/set-db.js").Session} Session
  */
 
 /**
@@ -25,7 +25,7 @@ import { _log } from "../lib/logger.js";
  * 
  * @typedef {object} DBStore
  * @property {Exercise[]} exercises
- * @property {Record<string, ExerciseSession[]>} sessions
+ * @property {Record<string, Session[]>} sessions
  */
 
 

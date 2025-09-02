@@ -1,4 +1,4 @@
-import { _error, _info, _warn } from './logger.js';
+import { _error, _info } from './logger.js';
 import { eventBus } from './utils.js';
 
 
@@ -115,7 +115,6 @@ async function putOne(storeName, value, key) {
     if (!db) return rej('No database found');
     const tx = db.transaction(storeName, 'readwrite');
     const store = tx.objectStore(storeName);
-    _warn({ storeName, value, key });
     const putRequest = store.put(value, key);
     putRequest.onsuccess = e => {
       // @ts-ignore
@@ -149,7 +148,7 @@ async function getOne(storeName, key) {
       /** @type {DbRecord} */ // @ts-ignore
       const record = e.target.result;
       if (!record) {
-        _warn(` __ Item with key: ${key} not found in store ${storeName}`);
+        _info(` __ Item with key: ${key} not found in store ${storeName}`);
         return res(null);
       }
       record.id = key;
@@ -183,7 +182,7 @@ async function getOneWithIndex(storeName, indexName, indexValue) {
       // @ts-ignore
       const record = e.target.result;
       if (!record) {
-        _warn(` __ Item with index key: "${indexValue}" not found in store "${storeName}"`);
+        _info(` __ Item with index key: "${indexValue}" not found in store "${storeName}"`);
         return res(null);
       }
       _info(' __ GetOneWithIndex: ' + storeName, record);

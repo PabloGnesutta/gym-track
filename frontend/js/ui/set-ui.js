@@ -1,14 +1,15 @@
-import { appState, dataState, dbStore } from "../common/state.js";
+import { dataState, dbStore } from "../common/state.js";
 import { timeAgo, toYYYYMMDD } from "../lib/date.js";
 import { $, $form, $getInner, $new, $queryOne } from "../lib/dom.js";
 import { _error, _log } from "../lib/logger.js";
+import { updateExercise } from "../local-db/exercise-db.js";
 import { createSet, deleteSession, getSessionsForExercise } from "../local-db/set-db.js";
 import { setExerciseLastWeightRecord } from "./exercise-ui.js";
 
 
 /**
  * @typedef {import("../local-db/exercise-db.js").Exercise} Exercise 
- * @typedef {import("../local-db/set-db.js").ExerciseSession} Session
+ * @typedef {import("../local-db/set-db.js").Session} Session
  */
 
 const singleExerciseView = $('singleExerciseView');
@@ -17,15 +18,13 @@ const previousDaysLog = $getInner(singleExerciseView, '.previous-days-log');
 const setForm = $form('createSetForm');
 
 
-// TODO: select() form fields on focus
-
 /**
  * Populates new set form and set history
  * @param {Exercise} exercise 
  */
 async function populateSetData(exercise) {
   input: {
-    setForm.dataset.exerciseId = (exercise._key || '').toString();
+    setForm.dataset.exerciseKey = (exercise._key || '').toString();
     const lastSession = exercise.lastSession;
     if (lastSession) {
       const lastWeightRow = lastSession.sets[lastSession.sets.length - 1];
@@ -65,7 +64,7 @@ async function populateSetData(exercise) {
 
 /**
  * @param {HTMLElement} container
- * @param {import("../local-db/set-db.js").ExerciseSession} session
+ * @param {Session} session
  */
 function appendSessionHistoryRow(container, session) {
   const key = (session._key || '').toString();
@@ -106,8 +105,8 @@ async function submitSet(e) {
     return;
   }
 
-  const exerciseId = setForm.dataset.exerciseId || 0;
-  const exercise = dbStore.exercises.find(e => e._key == exerciseId);
+  const exerciseKey = setForm.dataset.exerciseKey || 0;
+  const exercise = dbStore.exercises.find(e => e._key == exerciseKey);
   if (!exercise) {
     return _error('No hay ejercicio seleccionado');
   }
@@ -124,33 +123,42 @@ async function submitSet(e) {
 
 
 /**
+ * Currently prompts to delete session.
+ * Eventually it will display a form to edit the session.
  * @param {string} sessionKey 
  */
 async function openSessionForm(sessionKey) {
-  if (!dataState.currentExercise) { return }
-  const exKey = (dataState.currentExercise._key || '').toString()
-  if (!exKey) { return }
+  if (!dataState.currentExercise) { return; }
+  const exKey = (dataState.currentExercise._key || '').toString();
+  if (!exKey) { return; }
   const _key = +sessionKey;
-  const sessions = dbStore.sessions[exKey]
-  const session = sessions.find(s => s._key === _key)
-  if (!session) { return }
+  const sessions = dbStore.sessions[exKey];
+  const session = sessions.find(s => s._key === _key);
+  if (!session) { return; }
 
-  // if (!confirm('Seguro que querés borrar esta sesión?')) { return }
-  // tryDeleteSession(session, sessionKey)
+  if (!confirm('Seguro que querés borrar esta sesión?')) { return; }
+  tryDeleteSession(session, sessionKey, dataState.currentExercise);
 }
 
 /**
- * TODO: El problema ocn esto es que no se borra la exercise.lastSession
- * y luego al crear un nuevo set, queda con la cantidad de sets vieja
- * y se pushea a los weight rows... crea una nueva sesión para la fecha,
- * pero con data previamente borrada 
+ * Deletes session from DB.
+ * Deletes it from current Exercise's lastSession (DB and Store) if necessary
  * @param {Session} session 
  * @param {string} sessionKey 
+ * @param {Exercise} exercise 
 */
-async function tryDeleteSession(session, sessionKey) {
-  await deleteSession(session)
-  const row = $queryOne(`[data-session-key="${sessionKey}"]`)
-  row.remove()
+async function tryDeleteSession(session, sessionKey, exercise) {
+  await deleteSession(session);
+  const row = $queryOne(`[data-session-key="${sessionKey}"]`);
+  row.remove();
+
+  // Update Exercise's lastSession if necessary
+  const lastSession = exercise.lastSession;
+  if (!lastSession) { return; }
+  if (toYYYYMMDD(session.date) === toYYYYMMDD(lastSession.date)) {
+    exercise.lastSession = null;
+    await updateExercise(exercise, null, null, new Date());
+  }
 }
 
 

@@ -1,6 +1,6 @@
-import { appState, revertHistory } from "../common/state.js";
+import { appState, dataState, dbStore, revertHistory } from "../common/state.js";
 import { $, $button, $getInner, $getInnerInput, $queryOne } from "../lib/dom.js";
-import { _log, _warn, openLogs } from "../lib/logger.js";
+import { _info, _log, _warn, openLogs } from "../lib/logger.js";
 import { arrow_left, pen_solid } from "../svg/svgFn.js";
 import { closeSingleExercise, openExerciseForm, openSingleExercise, submitExercise, submitExerciseBtn } from "./exercise-ui.js";
 import { openSessionForm, submitSet } from "./set-ui.js";
@@ -20,7 +20,7 @@ import { openSessionForm, submitSet } from "./set-ui.js";
 const mainHeader = $('mainHeader');
 const pageTitle = $getInner(mainHeader, '.page-title');
 
-const submitSetBtn = $queryOne('#createSetForm .submit')
+const submitSetBtn = $queryOne('#createSetForm .submit');
 
 
 function initUi() {
@@ -66,7 +66,7 @@ function initUi() {
     appendTo: $queryOne('#singleExerciseView .edit-btn'),
   });
 
-  $('newExerciseBtn').addEventListener('click', () => { openExerciseForm(false) });
+  $('newExerciseBtn').addEventListener('click', () => { openExerciseForm(false); });
 
 
   modalBackdropHandler();
@@ -87,7 +87,7 @@ function initUi() {
     switch (dataset.clickAction) {
       case 'openSingleExercise': openSingleExercise(dataset.exerciseKey || '');
         break;
-      case 'openSessionForm': openSessionForm(dataset.sessionKey || '')
+      case 'openSessionForm': openSessionForm(dataset.sessionKey || '');
         break;
       default: return _warn(' :: clickAction not defined: ' + dataset.clickAction);
     }
@@ -108,6 +108,16 @@ function modalBackdropHandler() {
 
 function dbugBtns() {
   const mainFooter = $('mainFooter');
+  $button({
+    label: 'State',
+    appendTo: mainFooter,
+    listener: {
+      fn: e => {
+        _log('dbStore', dbStore);
+        _log('dataState', dataState);
+      }
+    }
+  });
   $button({
     label: 'Logs',
     appendTo: mainFooter,

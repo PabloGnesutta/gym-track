@@ -1,6 +1,6 @@
-import { dataState, dbStore } from "../common/state.js";
+import { dataState, dbStore, setStateField } from "../common/state.js";
 import { timeAgo, toYYYYMMDD } from "../lib/date.js";
-import { $, $form, $getInner, $new, $queryOne } from "../lib/dom.js";
+import { $, $form, $getInner, $new, $newInput, $queryOne } from "../lib/dom.js";
 import { _error, _log } from "../lib/logger.js";
 import { updateExercise } from "../local-db/exercise-db.js";
 import { createSet, deleteSession, getSessionsForExercise } from "../local-db/set-db.js";
@@ -16,6 +16,7 @@ const singleExerciseView = $('singleExerciseView');
 const currentDateLog = $getInner(singleExerciseView, '.current-date-log');
 const previousDaysLog = $getInner(singleExerciseView, '.previous-days-log');
 const setForm = $form('createSetForm');
+const sessionForm = $form('sessionForm');
 
 
 /**
@@ -121,6 +122,15 @@ async function submitSet(e) {
   }
 }
 
+/**
+ * 
+ * @param {Event} e 
+ */
+async function submitSession(e) {
+  e.preventDefault();
+  const formData = new FormData(sessionForm);
+  _log('submit session', sessionForm);
+}
 
 /**
  * Currently prompts to delete session.
@@ -136,22 +146,35 @@ async function openSessionForm(sessionKey) {
   const session = sessions.find(s => s._key === _key);
   if (!session) { return; }
 
-  if (!confirm('Seguro que querés borrar esta sesión?')) { return; }
-  tryDeleteSession(session, sessionKey, dataState.currentExercise);
+  const label = $getInner(sessionForm, '.session-label');
+  label.innerText = dataState.currentExercise.name + ' - ' + toYYYYMMDD(session.date);
+
+  // TODO: Append inputs to edit session
+  const content = $getInner(sessionForm, '.form-content');
+  // $newInput();
+
+  dataState.currentSession = session;
+  setStateField('showSessionForm', true);
 }
 
 /**
  * Deletes session from DB.
  * Deletes it from current Exercise's lastSession (DB and Store) if necessary
- * @param {Session} session 
- * @param {string} sessionKey 
- * @param {Exercise} exercise 
+ * @param {Event} e 
 */
-async function tryDeleteSession(session, sessionKey, exercise) {
+async function tryDeleteSession(e) {
+  e.preventDefault();
+  if (!confirm('Seguro que querés borrar esta sesión?')) { return; }
+
+  const session = dataState.currentSession;
+  if (!session) { return; }
+  const strSessionKey = (session._key || '').toString();
   await deleteSession(session);
-  const row = $queryOne(`[data-session-key="${sessionKey}"]`);
+  const row = $queryOne(`[data-session-key="${strSessionKey}"]`);
   row.remove();
 
+  const exercise = dataState.currentExercise;
+  if (!exercise) { return; }
   // Update Exercise's lastSession if necessary
   const lastSession = exercise.lastSession;
   if (!lastSession) { return; }
@@ -159,7 +182,8 @@ async function tryDeleteSession(session, sessionKey, exercise) {
     exercise.lastSession = null;
     await updateExercise(exercise, null, null, new Date());
   }
+  setStateField('showSessionForm', false);
 }
 
 
-export { populateSetData, submitSet, openSessionForm };
+export { populateSetData, submitSet, openSessionForm, submitSession, tryDeleteSession };

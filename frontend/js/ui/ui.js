@@ -1,9 +1,9 @@
-import { appState, dataState, dbStore, revertHistory } from "../common/state.js";
+import { appState, dataState, dbStore, setStateField } from "../common/state.js";
 import { $, $button, $getInner, $getInnerInput, $queryOne } from "../lib/dom.js";
 import { _info, _log, _warn, openLogs } from "../lib/logger.js";
-import { arrow_left, pen_solid } from "../svg/svgFn.js";
+import { arrow_left, pen_solid, svg_trash } from "../svg/svgFn.js";
 import { closeSingleExercise, openExerciseForm, openSingleExercise, submitExercise, submitExerciseBtn } from "./exercise-ui.js";
-import { openSessionForm, submitSet } from "./set-ui.js";
+import { openSessionForm, submitSession, submitSet, tryDeleteSession } from "./set-ui.js";
 
 
 /**
@@ -19,9 +19,6 @@ import { openSessionForm, submitSet } from "./set-ui.js";
 
 const mainHeader = $('mainHeader');
 const pageTitle = $getInner(mainHeader, '.page-title');
-
-const submitSetBtn = $queryOne('#createSetForm .submit');
-
 
 function initUi() {
   const createSetForm = $('createSetForm');
@@ -48,26 +45,39 @@ function initUi() {
     }
   });
 
+  $('newExerciseBtn').addEventListener('click', () => { openExerciseForm(false); });
+
   $button({
-    listener: { fn: submitExercise },
     label: 'Crear Ejercicio',
+    listener: { fn: submitExercise },
     appendTo: submitExerciseBtn,
   });
 
   $button({
-    listener: { fn: submitSet },
-    label: 'Agregar Set',
-    appendTo: submitSetBtn
-  });
-
-  $button({
+    // Editar Ejercicio
     listener: { fn: () => openExerciseForm(true) },
     svgFn: pen_solid,
     appendTo: $queryOne('#singleExerciseView .edit-btn'),
   });
 
-  $('newExerciseBtn').addEventListener('click', () => { openExerciseForm(false); });
+  $button({
+    label: 'Agregar Set',
+    listener: { fn: submitSet },
+    appendTo: $queryOne('#createSetForm .submit')
+  });
 
+  $button({
+    label: 'Guardar Cambios',
+    listener: { fn: submitSession },
+    appendTo: $queryOne('#sessionForm .submit')
+  });
+
+  $button({
+    // Borrar Sesión
+    listener: { fn: tryDeleteSession },
+    svgFn: svg_trash,
+    appendTo: $queryOne('#sessionForm .delete')
+  });
 
   modalBackdropHandler();
 
@@ -79,17 +89,18 @@ function initUi() {
     const clickElement = target.closest('[data-click-action]');
     if (!clickElement) { return; }
     if (!('dataset' in clickElement)) { return; }
-
     // Elements that have click action should do something when clicked
-
     /** @type {DOMStringMap} */ //@ts-ignore
     const dataset = clickElement.dataset;
     switch (dataset.clickAction) {
-      case 'openSingleExercise': openSingleExercise(dataset.exerciseKey || '');
+      case 'openSingleExercise':
+        openSingleExercise(dataset.exerciseKey || '');
         break;
-      case 'openSessionForm': openSessionForm(dataset.sessionKey || '');
+      case 'openSessionForm':
+        openSessionForm(dataset.sessionKey || '');
         break;
-      default: return _warn(' :: clickAction not defined: ' + dataset.clickAction);
+      default:
+        return _warn(' :: clickAction not defined: ' + dataset.clickAction);
     }
   });
 }
@@ -100,7 +111,10 @@ function modalBackdropHandler() {
     /** @type {boolean} */ // @ts-ignore
     const clickedBackdrop = e.target.classList.contains('backdrop') || e.currentTarget.classList.contains('backdrop');
     if (clickedBackdrop) {
-      revertHistory();
+      setStateField('creatingExercise', false);
+      setStateField('editingExercise', false);
+      setStateField('showExerciseForm', false);
+      setStateField('showSessionForm', false);
     }
   });
 }
@@ -126,7 +140,4 @@ function dbugBtns() {
 }
 
 
-export {
-  initUi, dbugBtns, pageTitle,
-  submitSetBtn,
-};
+export { initUi, dbugBtns, pageTitle };

@@ -29,7 +29,7 @@ exerciseNameInput.addEventListener('focus', () => exerciseNameInput.select());
  */
 function openExerciseForm(isEdit) {
     const submitExerciseLabel = $getInner(submitExerciseBtn, ' .label');
-
+    const formTitle = $getInner(exerciseForm, '.form-title');
     if (isEdit === true) {
         setStateField('editingExercise', true);
         if (!dataState.currentExercise) { return; }
@@ -38,9 +38,11 @@ function openExerciseForm(isEdit) {
         exerciseNameInput.value = exercise.name;
         musclesInput.value = exercise.muscles?.join(',');
         submitExerciseLabel.innerText = 'Guardar Cambios';
+        formTitle.innerText = 'Editar Ejercicio'
     } else {
         setStateField('creatingExercise', true);
         submitExerciseLabel.innerText = 'Crear Ejercicio';
+        formTitle.innerText = 'Nuevo Ejercicio'
     }
 
     setStateField('showExerciseForm', true);

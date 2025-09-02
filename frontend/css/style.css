@@ -87,8 +87,7 @@ svg {
   --row-bg: rgba(0, 0, 0, 0.75);
 }
 
-#exerciseListView {
-}
+#exerciseListView {}
 
 #exerciseListView .list {
   color: black;
@@ -122,14 +121,17 @@ svg {
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-#singleExerciseView {
-}
+#singleExerciseView {}
 
-#singleExerciseView .heading {
+#singleExerciseView .heading,
+#sessionForm .heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   align-items: center;
+}
+
+#singleExerciseView .heading {
   background-color: #7f031c;
 }
 
@@ -150,13 +152,14 @@ svg {
 }
 
 .session-history {
+  font-size: 20px;
   margin-bottom: 12px;
   font-family: 'Courier New', Courier, monospace;
 }
 
 .session-history.current-date-log {
   background-color: #002d00;
-  font-size: 1.25rem;
+  font-size: 24px;
 }
 
 .session-history .row {
@@ -257,6 +260,8 @@ svg {
 .modal .content {
   position: absolute;
   top: 60px;
+  width: 90%;
+  max-width: 600px;
   border-radius: 8px;
   max-height: 85dvh;
   overflow-y: auto;
@@ -265,24 +270,23 @@ svg {
 /* State Machine */
 
 /* Modal/Forms state */
-#app[data-creating-exercise='true'] .modal,
-#app[data-editing-exercise='true'] .modal {
+#app[data-show-exercise-form='true'] .modal,
+#app[data-show-session-form='true'] .modal {
   display: flex;
 }
 
-#app[data-show-exercise-form='false'] #exerciseForm {
+#app[data-show-exercise-form='false'] #exerciseForm,
+#app[data-show-session-form='false'] #sessionForm {
   display: none;
 }
 
 /* Views state */
-#app:not([data-current-view='ExerciseList']) #exerciseListView {
-  display: none;
-}
-
+#app:not([data-current-view='ExerciseList']) #exerciseListView,
 #app:not([data-current-view='SingleExercise']) #singleExerciseView {
   display: none;
 }
 
+/* Go Back button visibility */
 #app[data-current-view='ExerciseList'] .go-back {
   visibility: hidden;
 }

@@ -13,12 +13,14 @@ import { _log } from "../lib/logger.js";
  * @property {boolean} creatingExercise
  * @property {boolean} editingExercise
  * @property {boolean} showExerciseForm
+ * @property {boolean} showSessionForm
  * @property {Views} currentView
  * 
  * @typedef {'ExerciseList'|'SingleExercise'} Views
  * 
  * @typedef {object} DataState
  * @property {Exercise|null} currentExercise
+ * @property {Session|null} currentSession
  */
 
 /**
@@ -42,12 +44,14 @@ const appState = {
     creatingExercise: false,
     editingExercise: false,
     showExerciseForm: false,
+    showSessionForm: false,
     currentView: 'ExerciseList',
 };
 
 /** @type {DataState} State of data stored in memory */
 const dataState = {
     currentExercise: null,
+    currentSession: null,
 };
 /** 
  * State history. Enables certain "undo" operations
@@ -108,6 +112,7 @@ function initAppState() {
     setStateField('creatingExercise', false, false);
     setStateField('editingExercise', false, false);
     setStateField('showExerciseForm', false, false);
+    setStateField('showSessionForm', false, false);
     setCurrentView('ExerciseList');
     recordHistory();
 }

@@ -71,3 +71,20 @@
   font-size: 22px;
   border: 1px solid wheat;
 }
+
+#sessionForm .heading {
+  background-color: #cb042d;
+  font-size: 22px;
+}
+
+#sessionForm .inputs {
+  background-color: white;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+#sessionForm .submit .btn {
+  background-color: #cb042d;
+  padding: 2rem;
+  font-size: 22px;
+  border: 1px solid wheat;
+}

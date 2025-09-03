@@ -1,6 +1,7 @@
 import { dataState, dbStore, setStateField } from "../common/state.js";
 import { timeAgo, toYYYYMMDD } from "../lib/date.js";
-import { $, $form, $getInner, $new, $newInput, $queryOne } from "../lib/dom.js";
+import { $, $form, $getInner, $new, $queryOne } from "../lib/dom.js";
+import { putOne } from "../lib/indexedDb.js";
 import { _error, _log } from "../lib/logger.js";
 import { updateExercise } from "../local-db/exercise-db.js";
 import { createSet, deleteSession, getSessionsForExercise } from "../local-db/set-db.js";
@@ -10,6 +11,7 @@ import { setExerciseLastWeightRecord } from "./exercise-ui.js";
 /**
  * @typedef {import("../local-db/exercise-db.js").Exercise} Exercise 
  * @typedef {import("../local-db/set-db.js").Session} Session
+ * @typedef {import("../local-db/set-db.js").WeightRow} WeightRow
  */
 
 const singleExerciseView = $('singleExerciseView');
@@ -123,13 +125,54 @@ async function submitSet(e) {
 }
 
 /**
- * 
+ * Lotta stuff
  * @param {Event} e 
  */
 async function submitSession(e) {
   e.preventDefault();
   const formData = new FormData(sessionForm);
-  _log('submit session', sessionForm);
+  const weights = formData.getAll('weight').map(w => Number(w));
+  const repsInputs = formData.getAll('reps');
+  if (weights.length !== repsInputs.length) {
+    return _error('Las filas están locas');
+  }
+
+  /** @type {Array<number[]>} */
+  const reps = [];
+  repsInputs.forEach(
+    /** @param {string} repsInputValue */ // @ts-ignore
+    repsInputValue => {
+      /** @type {number[]} */
+      const repsArray = [];
+      const split = repsInputValue.split(',');
+
+      split.forEach(
+        repsForSet => {
+          const n = Number(repsForSet);
+          if (Number.isNaN(n)) {
+            throw 'Formato inválido: ' + repsForSet;
+          }
+          if (n <= 0) {
+            return;
+          }
+          repsArray.push(n);
+        }
+      );
+      reps.push(repsArray);
+    }
+  );
+
+  /** @type {WeightRow[]} */
+  const weightRows = [];
+  for (var i = 0; i < weights.length; i++) {
+    weightRows.push({ w: weights[i], r: reps[i] });
+  }
+
+  const session = dataState.currentSession;
+  if (!session) { return _error('Las sesiones descubren el fuego'); }
+  session.sets = weightRows;
+  // TODO: Some part of this whole thing needs to be in a service layer
+  await putOne('sessions', session, session?._key);
 }
 
 /**
@@ -145,13 +188,41 @@ async function openSessionForm(sessionKey) {
   const sessions = dbStore.sessions[exKey];
   const session = sessions.find(s => s._key === _key);
   if (!session) { return; }
-
+  _log(session);
   const label = $getInner(sessionForm, '.session-label');
   label.innerText = dataState.currentExercise.name + ' - ' + toYYYYMMDD(session.date);
 
-  // TODO: Append inputs to edit session
-  const content = $getInner(sessionForm, '.form-content');
-  // $newInput();
+  const inputs = $getInner(sessionForm, '.inputs');
+  session.sets.forEach(
+    /**
+     * @param {WeightRow} wr 
+     */
+    wr => {
+      const weightRow = $new({
+        class: 'weight-row',
+        html: `
+          <div class="form-control">
+            <input type="number" step="1" name="weight" value="${wr.w}" />
+            <label for="weight">kg</label>
+          </div>
+        `,
+      });
+
+      const repsValue = wr.r.join(',') + ',';
+      weightRow.append($new({
+        class: 'reps-container',
+        children: [
+          $new({
+            html: `
+              <div class="form-control">
+                  <input type="text" name="reps" value="${repsValue}" />
+              </div>`
+          })
+        ]
+      }));
+      inputs.append(weightRow);
+    }
+  );
 
   dataState.currentSession = session;
   setStateField('showSessionForm', true);

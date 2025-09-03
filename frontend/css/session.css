@@ -1,0 +1,63 @@
+#sessionForm .heading,
+#sessionForm .heading-b {
+  display: flex;
+  background-color: black;
+  align-items: center;
+  font-size: 20px;
+}
+#sessionForm .heading {
+  padding-left: 12px;
+}
+
+#sessionForm .inputs .heading-b div {
+  padding: 1rem 12px;
+  background-color: black;
+}
+
+.heading-b .weight {
+  width: 122px;
+}
+
+.heading-b .reps {}
+
+
+#sessionForm .inputs {
+  padding: 1rem 0;
+  background-color: black;
+}
+
+.weight-row {
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.weight-row .form-control {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem
+}
+
+.weight-row input {
+  font-size: 26px;
+  background-color: black;
+  color: white;
+  border: 1px solid #8b8b8b;
+  text-align: right;
+}
+
+.weight-row input[name="weight"] {
+  max-width: 72px;
+}
+
+.weight-row input[name="reps"] {
+  max-width: 152px;
+}
+
+#sessionForm .submit .btn {
+  background-color: #cb042d;
+  padding: 2rem;
+  font-size: 22px;
+  border: 1px solid wheat;
+}

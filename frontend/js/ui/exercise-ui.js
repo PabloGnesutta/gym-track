@@ -178,7 +178,7 @@ async function openSingleExercise(exerciseKey) {
 
     dataState.currentExercise = exercise;
     exerciseName.innerText = exercise.name;
-    populateSetData(exercise);
+    await populateSetData(exercise);
 }
 
 function closeSingleExercise() {

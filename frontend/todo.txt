@@ -1,0 +1,4 @@
+click action a los inputs para hacerles select()
+
+borrar weight rows de una sesión
+agregar idem

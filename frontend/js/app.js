@@ -8,6 +8,7 @@ import { fillExerciseList, openExerciseList, openSingleExercise } from "./ui/exe
 import { fetchExercises } from "./local-db/exercise-db.js";
 import { $ } from "./lib/dom.js";
 import { seedDb } from "./local-db/seed.js";
+import { openSessionForm } from "./ui/set-ui.js";
 
 
 _info(' (!) App started');
@@ -25,7 +26,8 @@ eventBus.on('IndexedDbInited', async ({ version }) => {
     await fetchExercises();
     fillExerciseList();
     openExerciseList();
-    // openSingleExercise('1');
+    // await openSingleExercise('1');
+    // openSessionForm('1')
 });
 
 initAppState();

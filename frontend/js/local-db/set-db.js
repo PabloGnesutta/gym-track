@@ -53,7 +53,6 @@ import { updateExercise } from "./exercise-db.js";
  */
 async function createSet(exercise, weight, reps, date = new Date()) {
   const exerciseKey = exercise._key || 0;
-
   /** @type {Session|null} */
   let session = exercise.lastSession;
   if (!session || toYYYYMMDD(date) !== toYYYYMMDD(session.date)) {

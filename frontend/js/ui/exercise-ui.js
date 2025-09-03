@@ -120,7 +120,7 @@ function appendExerciseRow(container, exercise, prepend = false) {
     const key = (exercise._key || '').toString();
     const lastSetData = $new({ class: 'last-set-data' });
     const timestamp = $new({ class: 'timestamp', text: timeAgo(exercise.lastSession?.date || exercise.updatedAt) });
-    const lastSetDataContainer = $new({ class: 'right-side', children: [lastSetData, timestamp] });
+    const lastSetDataContainer = $new({ class: 'right-side', children: [timestamp, lastSetData] });
     const exerciseRow = $new({
         class: 'row',
         dataset: [
@@ -154,7 +154,7 @@ function setExerciseLastWeightRecord(exercise, lastSetData) {
     const lastSession = exercise.lastSession;
     if (lastSession) {
         const lastWeight = lastSession.sets[lastSession.sets.length - 1];
-        lastSetData.innerText = `${lastWeight.w}kg X ${lastWeight.r[lastWeight.r.length - 1]}`;
+        lastSetData.innerText = `${lastWeight.w}kg x ${lastWeight.r[lastWeight.r.length - 1]}`;
     }
 }
 

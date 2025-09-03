@@ -193,6 +193,7 @@ async function openSessionForm(sessionKey) {
   label.innerText = dataState.currentExercise.name + ' - ' + toYYYYMMDD(session.date);
 
   const inputs = $getInner(sessionForm, '.inputs');
+  inputs.innerHTML = ''
   session.sets.forEach(
     /**
      * @param {WeightRow} wr 
@@ -201,7 +202,7 @@ async function openSessionForm(sessionKey) {
       const weightRow = $new({
         class: 'weight-row',
         html: `
-          <div class="form-control">
+          <div class="form-group">
             <input type="number" step="1" name="weight" value="${wr.w}" />
             <label for="weight">kg</label>
           </div>
@@ -214,8 +215,8 @@ async function openSessionForm(sessionKey) {
         children: [
           $new({
             html: `
-              <div class="form-control">
-                  <input type="text" name="reps" value="${repsValue}" />
+              <div class="form-group">
+                <input type="text" name="reps" value="${repsValue}" />
               </div>`
           })
         ]

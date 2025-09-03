@@ -1,4 +1,5 @@
 click action a los inputs para hacerles select()
 
+Session From:
 borrar weight rows de una sesión
 agregar idem

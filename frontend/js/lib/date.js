@@ -1,5 +1,6 @@
 import { _log } from "./logger.js";
 
+
 /**
  * Returns a "time ago" string.
  * @param {string | Date} input 
@@ -8,6 +9,7 @@ import { _log } from "./logger.js";
 function timeAgo(input = '') {
     const date = (input instanceof Date) ? input : new Date(input);
     const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+
     if (isNaN(seconds)) { return "¡!"; }
     const daysPassed = Math.floor(seconds / 60 / 60 / 24);
     if (daysPassed < 1) { return "hoy"; } // edge case midnight returns "hoy"

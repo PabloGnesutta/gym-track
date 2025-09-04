@@ -21,12 +21,6 @@ const mainHeader = $('mainHeader');
 const pageTitle = $getInner(mainHeader, '.page-title');
 
 function initUi() {
-  const createSetForm = $('createSetForm');
-  const weight = $getInnerInput(createSetForm, '[name="weight"]');
-  weight.addEventListener('focus', () => weight.select());
-  const reps = $getInnerInput(createSetForm, '[name="reps"]');
-  reps.addEventListener('focus', () => reps.select());
-
   // Go Back Button
   $button({
     appendTo: $('goBack2'),
@@ -85,6 +79,10 @@ function initUi() {
   $('app').addEventListener('click', e => {
     const target = e.target;
     if (!target) { return; }
+    if (target instanceof HTMLInputElement) {
+      target.select();
+      return;
+    }
     if (!(target instanceof HTMLElement)) { return; }
     const clickElement = target.closest('[data-click-action]');
     if (!clickElement) { return; }

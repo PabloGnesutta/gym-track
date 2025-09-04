@@ -90,6 +90,7 @@ svg {
 #exerciseListView .list {
   padding: 0.5rem 0.25rem;
 }
+
 #exerciseListView .list .row {
   background: var(--list-row-bg);
 }
@@ -120,8 +121,7 @@ svg {
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-#singleExerciseView {
-}
+#singleExerciseView {}
 
 #singleExerciseView .heading,
 #sessionForm .heading {
@@ -173,7 +173,7 @@ svg {
   margin-bottom: 4px;
 }
 
-.row .weight-container {
+.session-history .row .weight-container {
   display: flex;
   align-items: center;
   justify-content: space-around;
@@ -185,13 +185,20 @@ svg {
   padding: 2px;
   border-radius: 4px;
 }
-.row .date {
+
+.session-history .row .date {
   background-color: rgba(255, 255, 255, 0.137);
   padding: 0 2px;
   border-radius: 4px;
 }
 
 /* Generic for lists */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .list .row {
   display: flex;
   justify-content: space-between;
@@ -200,21 +207,17 @@ svg {
   color: white;
   padding: 0.5rem;
   border-radius: 6px;
-  margin-bottom: 6px;
   border: 1px solid transparent;
+}
+
+#exerciseListView .list .row[data-timestamp="hoy"] {
+  order: -1;
+  --list-row-bg: #ad189b;
 }
 
 .list .row:active {
   background-color: rgba(0, 0, 0, 0.5);
   border-color: rgba(255, 255, 255, 0.5);
-}
-
-.list .row .right-side {
-  display: flex;
-  flex-direction: column;
-  align-items: end;
-  text-align: right;
-  color: #ffc8c8;
 }
 
 .list .row .exerciseName {
@@ -224,9 +227,20 @@ svg {
   border-radius: 6px;
 }
 
-.list .row .timestamp {
-  font-size: 18px;
+.list .row .right-side {
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  text-align: right;
+  color: #ffc8c8;
+  gap: 4px;
 }
+
+.list .row .timestamp {
+  color: white;
+  font-size: 20px;
+}
+
 .list .row .last-set-data {
   font-size: 16px;
 }

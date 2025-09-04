@@ -21,7 +21,6 @@ const exerciseForm = $form('exerciseForm');
 const exerciseNameInput = $queryOneInput('#exerciseForm input[name="exerciseName"]');
 const submitExerciseBtn = $queryOne('#exerciseForm .submit');
 
-exerciseNameInput.addEventListener('focus', () => exerciseNameInput.select());
 
 /** 
  * Open create exercise modal and focus name input
@@ -38,11 +37,11 @@ function openExerciseForm(isEdit) {
         exerciseNameInput.value = exercise.name;
         musclesInput.value = exercise.muscles?.join(',');
         submitExerciseLabel.innerText = 'Guardar Cambios';
-        formTitle.innerText = 'Editar Ejercicio'
+        formTitle.innerText = 'Editar Ejercicio';
     } else {
         setStateField('creatingExercise', true);
         submitExerciseLabel.innerText = 'Crear Ejercicio';
-        formTitle.innerText = 'Nuevo Ejercicio'
+        formTitle.innerText = 'Nuevo Ejercicio';
     }
 
     setStateField('showExerciseForm', true);
@@ -98,8 +97,7 @@ function fillExerciseList() {
 }
 
 /**
- * Creates and appends Exercise row.
- * Adds listener to open Single Exercise View.
+ * Removes the current row, then creates another one and prepends it
  * @param {HTMLDivElement} container 
  * @param {import("../local-db/exercise-db.js").Exercise} exercise
  */
@@ -119,13 +117,15 @@ function updateExerciseRow(container, exercise) {
 function appendExerciseRow(container, exercise, prepend = false) {
     const key = (exercise._key || '').toString();
     const lastSetData = $new({ class: 'last-set-data' });
-    const timestamp = $new({ class: 'timestamp', text: timeAgo(exercise.lastSession?.date || exercise.updatedAt) });
+    const timeagoString = timeAgo(exercise.lastSession?.date || exercise.updatedAt);
+    const timestamp = $new({ class: 'timestamp', text: timeagoString });
     const lastSetDataContainer = $new({ class: 'right-side', children: [timestamp, lastSetData] });
     const exerciseRow = $new({
         class: 'row',
         dataset: [
             ['clickAction', 'openSingleExercise'],
             ['exerciseKey', key],
+            ['timestamp', timeagoString],
         ],
         children: [
             $new({ class: 'exerciseName', text: exercise.name }),
@@ -133,17 +133,18 @@ function appendExerciseRow(container, exercise, prepend = false) {
         ],
     });
 
-    setExerciseLastWeightRecord(exercise, lastSetData);
-
     if (prepend) {
         container.prepend(exerciseRow);
     } else {
         container.append(exerciseRow);
     }
+
+    setExerciseLastWeightRecord(exercise, lastSetData);
 }
 
 /**
- * Maybe this can be replaced by updateExerciseRow
+ * TODO: Maybe unify this with the above.
+ * TODO: Update time ago string when adding a new set
  * @param {Exercise} exercise 
  * @param {HTMLDivElement} [lastSetData]
  */

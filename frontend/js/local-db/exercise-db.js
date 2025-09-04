@@ -6,7 +6,7 @@ import { _error, _info, _log } from "../lib/logger.js";
 /**
  * @template T
  * @typedef {import("../common/types.js").ServiceReturn<T>} ServiceReturn<T>
-*/
+ */
 
 /**
  * @typedef {import("../lib/indexedDb.js").StoreKey} StoreKey
@@ -14,11 +14,12 @@ import { _error, _info, _log } from "../lib/logger.js";
  */
 
 /**
- * 
  * @typedef {object} Exercise
  * @property {string} name
  * @property {string[]} muscles
  * @property {import("./set-db.js").Session | null} lastSession
+ * @property {*|null} lastTopSet
+ * @property {*|null} lastPR
  * @property {IDBValidKey} [_key]
  * @property {Date} [createdAt]
  * @property {Date} [updatedAt]
@@ -49,6 +50,8 @@ async function createExercise(name, muscles = [], date = new Date()) {
     createdAt: date,
     updatedAt: date,
     lastSession: null,
+    lastTopSet: null,
+    lastPR: null,
   };
   const _key = await putOne('exercises', exercise);
   exercise._key = _key;

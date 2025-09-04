@@ -1,5 +1,5 @@
 import { appState, dataState, dbStore, setStateField } from "../common/state.js";
-import { $, $button, $getInner, $getInnerInput, $queryOne } from "../lib/dom.js";
+import { $, $button, $getInner, $queryOne } from "../lib/dom.js";
 import { _info, _log, _warn, openLogs } from "../lib/logger.js";
 import { arrow_left, pen_solid, svg_trash } from "../svg/svgFn.js";
 import { closeSingleExercise, openExerciseForm, openSingleExercise, submitExercise, submitExerciseBtn } from "./exercise-ui.js";
@@ -103,7 +103,6 @@ function initUi() {
   });
 }
 
-/** Reverts history 1 step */
 function modalBackdropHandler() {
   $queryOne('#main-modal .backdrop').addEventListener('click', e => {
     /** @type {boolean} */ // @ts-ignore

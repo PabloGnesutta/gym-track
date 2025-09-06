@@ -35,7 +35,9 @@ function openExerciseForm(isEdit) {
         const musclesInput = $queryOneInput('#exerciseForm input[name="muscles"]');
         const exercise = dataState.currentExercise;
         exerciseNameInput.value = exercise.name;
-        musclesInput.value = exercise.muscles?.join(',');
+        if (exercise.muscles) {
+            musclesInput.value = exercise.muscles?.join(',');
+        }
         submitExerciseLabel.innerText = 'Guardar Cambios';
         formTitle.innerText = 'Editar Ejercicio';
     } else {

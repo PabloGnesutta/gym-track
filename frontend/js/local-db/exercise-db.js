@@ -6,7 +6,7 @@ import { _error, _info, _log } from "../lib/logger.js";
 /**
  * @template T
  * @typedef {import("../common/types.js").ServiceReturn<T>} ServiceReturn<T>
-*/
+ */
 
 /**
  * @typedef {import("../lib/indexedDb.js").StoreKey} StoreKey
@@ -14,7 +14,6 @@ import { _error, _info, _log } from "../lib/logger.js";
  */
 
 /**
- * 
  * @typedef {object} Exercise
  * @property {string} name
  * @property {string[]} muscles

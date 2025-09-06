@@ -49,6 +49,17 @@ function openExerciseForm(isEdit) {
     exerciseNameInput.select();
 }
 
+/** Open exercise list view */
+async function openExerciseList() {
+    setCurrentView('ExerciseList');
+    pageTitle.innerText = 'Ejercicios';
+}
+
+/** Fill Exercise list with rows */
+function fillExerciseList() {
+    dbStore.exercises.forEach(e => appendExerciseRow(exerciseList, e));
+}
+
 /**
  * Creates or updates Exercise in DB and UI
  * @param {Event} e 
@@ -85,16 +96,7 @@ async function submitExercise(e) {
     setStateField('showExerciseForm', false);
 }
 
-/** Open exercise list view */
-async function openExerciseList() {
-    setCurrentView('ExerciseList');
-    pageTitle.innerText = 'Ejercicios';
-}
 
-/** Fill Exercise list with rows */
-function fillExerciseList() {
-    dbStore.exercises.forEach(e => appendExerciseRow(exerciseList, e));
-}
 
 /**
  * Removes the current row, then creates another one and prepends it
@@ -117,15 +119,13 @@ function updateExerciseRow(container, exercise) {
 function appendExerciseRow(container, exercise, prepend = false) {
     const key = (exercise._key || '').toString();
     const lastSetData = $new({ class: 'last-set-data' });
-    const timeagoString = timeAgo(exercise.lastSession?.date || exercise.updatedAt);
-    const timestamp = $new({ class: 'timestamp', text: timeagoString });
+    const timestamp = $new({ class: 'timestamp' });
     const lastSetDataContainer = $new({ class: 'right-side', children: [timestamp, lastSetData] });
     const exerciseRow = $new({
         class: 'row',
         dataset: [
             ['clickAction', 'openSingleExercise'],
             ['exerciseKey', key],
-            ['timestamp', timeagoString],
         ],
         children: [
             $new({ class: 'exerciseName', text: exercise.name }),
@@ -139,19 +139,28 @@ function appendExerciseRow(container, exercise, prepend = false) {
         container.append(exerciseRow);
     }
 
-    setExerciseLastWeightRecord(exercise, lastSetData);
+    setExerciseRowLastSetData(exercise, exerciseRow);
 }
 
 /**
- * TODO: Maybe unify this with the above.
- * TODO: Update time ago string when adding a new set
+ * Set the row from the exercise list that belongs to the given exercise,
+ * sets its last set data and when that happened (time ago).
  * @param {Exercise} exercise 
- * @param {HTMLDivElement} [lastSetData]
+ * @param {HTMLDivElement} [exerciseRow]
  */
-function setExerciseLastWeightRecord(exercise, lastSetData) {
-    if (!lastSetData) {
-        lastSetData = $queryOne(`.row[data-exercise-key="${exercise._key}"] .last-set-data`);
+function setExerciseRowLastSetData(exercise, exerciseRow) {
+    if (!exerciseRow) {
+        exerciseRow = $queryOne(`.row[data-exercise-key="${exercise._key}"]`);
     }
+
+    const timeagoString = timeAgo(exercise.lastSession?.date || exercise.updatedAt);
+
+    exerciseRow.dataset.timestamp = timeagoString;
+
+    const lastSetData = $getInner(exerciseRow, '.last-set-data');
+    const timestamp = $getInner(exerciseRow, '.timestamp');
+
+    timestamp.innerText = timeagoString;
     const lastSession = exercise.lastSession;
     if (lastSession) {
         const lastWeight = lastSession.sets[lastSession.sets.length - 1];
@@ -189,4 +198,4 @@ function closeSingleExercise() {
 }
 
 
-export { fillExerciseList, openExerciseList, openSingleExercise, openExerciseForm, appendExerciseRow, submitExercise, setExerciseLastWeightRecord, closeSingleExercise, submitExerciseBtn };
+export { fillExerciseList, openExerciseList, openSingleExercise, openExerciseForm, appendExerciseRow, submitExercise, setExerciseRowLastSetData, closeSingleExercise, submitExerciseBtn };

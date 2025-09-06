@@ -24,22 +24,16 @@ import { _log } from "../lib/logger.js";
  */
 
 /**
- * 
+ * Cached records from the d
  * @typedef {object} DBStore
  * @property {Exercise[]} exercises
  * @property {Record<string, Session[]>} sessions
  */
 
-
-/** @type {DBStore} - Cached records from the db */
-const dbStore = {
-    exercises: [],
-    sessions: {},
-};
-
-
-/** @type {AppState} State of which features are active */
-// will be overwritten by initAppState 
+/** 
+ * Note: appState will be overwritten by initAppState
+ * @type {AppState} State of which features are active
+ */
 const appState = {
     creatingExercise: false,
     editingExercise: false,
@@ -48,32 +42,34 @@ const appState = {
     currentView: 'ExerciseList',
 };
 
-/** @type {DataState} State of data stored in memory */
+/**
+ * State of data stored in memory
+ * @type {DataState}  
+ */
 const dataState = {
     currentExercise: null,
     currentSession: null,
 };
-/** 
- * State history. Enables certain "undo" operations
- * @type {Array<AppState & {historyId:number}>} 
- */
-const stateHistory = [];
-const $app = $('app');
-var historyId = 0;
 
+/**
+ * Cached records from the db 
+ * @type {DBStore}
+ */
+const dbStore = {
+    exercises: [],
+    sessions: {},
+};
+
+const $app = $('app');
 
 /**
  * @param {keyof AppState} field 
  * @param {*} value
- * @param {boolean} doRecordHistory
  */
-function setStateField(field, value, doRecordHistory = true) {
+function setStateField(field, value) {
     // @ts-ignore // todo: check this
     appState[field] = value;
     $app.dataset[field] = value;
-    if (doRecordHistory) {
-        recordHistory();
-    }
 }
 
 /**
@@ -84,37 +80,12 @@ function setCurrentView(view) {
     $app.dataset.currentView = view;
 }
 
-function recordHistory() {
-    stateHistory.push({ ...appState, historyId: ++historyId });
-}
-
-/** 
- * Goes to a state in the past by the given amount of steps
- * By default, it will go to the immediate previous step.
- */
-function revertHistory(steps = 1) {
-    const len = stateHistory.length;
-    if (!len || len <= steps) { return; }
-    _log('reverting history by ', steps);
-
-    const prevStateIndex = len - steps - 1;
-    const prevState = stateHistory[prevStateIndex];
-
-    for (const key in appState) {
-        // @ts-ignore
-        setStateField(key, prevState[key], false);
-    }
-    stateHistory.splice(prevStateIndex + 1, len);
-}
-
-
 function initAppState() {
-    setStateField('creatingExercise', false, false);
-    setStateField('editingExercise', false, false);
-    setStateField('showExerciseForm', false, false);
-    setStateField('showSessionForm', false, false);
+    setStateField('creatingExercise', false);
+    setStateField('editingExercise', false);
+    setStateField('showExerciseForm', false);
+    setStateField('showSessionForm', false);
     setCurrentView('ExerciseList');
-    recordHistory();
 }
 
-export { appState, dataState, stateHistory, setStateField, initAppState, revertHistory, setCurrentView, dbStore };
+export { appState, dataState, dbStore, initAppState, setStateField, setCurrentView };

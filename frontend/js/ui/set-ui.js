@@ -5,7 +5,7 @@ import { putOne } from "../lib/indexedDb.js";
 import { _error, _log } from "../lib/logger.js";
 import { updateExercise } from "../local-db/exercise-db.js";
 import { createSet, deleteSession, getSessionsForExercise } from "../local-db/set-db.js";
-import { setExerciseLastWeightRecord } from "./exercise-ui.js";
+import { setExerciseRowLastSetData } from "./exercise-ui.js";
 
 
 /**
@@ -118,7 +118,7 @@ async function submitSet(e) {
   if (result.data) {
     currentDateLog.innerHTML = '';
     appendSessionHistoryRow(currentDateLog, result.data);
-    setExerciseLastWeightRecord(exercise);
+    setExerciseRowLastSetData(exercise);
   } else {
     _error(result.errorMsg);
   }

@@ -1,6 +1,7 @@
 import { dbStore } from "../common/state.js";
 import { getAll, getOneWithIndex, putOne } from "../lib/indexedDb.js";
 import { _error, _info, _log } from "../lib/logger.js";
+import { normalize } from "../lib/string.js";
 
 
 /**
@@ -16,6 +17,7 @@ import { _error, _info, _log } from "../lib/logger.js";
 /**
  * @typedef {object} Exercise
  * @property {string} name
+ * @property {string} [normalizedName]
  * @property {string[]} muscles
  * @property {import("./set-db.js").Session | null} lastSession
  * @property {IDBValidKey} [_key]
@@ -44,6 +46,7 @@ async function createExercise(name, muscles = [], date = new Date()) {
   /** @type {Exercise} */
   const exercise = {
     name,
+    normalizedName: normalize(name),
     muscles,
     createdAt: date,
     updatedAt: date,
@@ -68,6 +71,7 @@ async function updateExercise(exercise, name, muscles, date) {
   if (!exercise || !exercise._key) { return { errorMsg: 'Llave no provista' }; }
   if (name) {
     exercise.name = name;
+    exercise.normalizedName = normalize(name)
   }
   if (muscles && muscles.length) {
     exercise.muscles = muscles;
@@ -85,7 +89,7 @@ async function updateExercise(exercise, name, muscles, date) {
 /**
  * Fetch all exercises,
  * Store then sorted in dbStore.exercises
- * @returns {Promise<void>}
+ * @returns {Promise<Exercise[]>}
  */
 async function fetchExercises() {
   /** @type {Exercise[]} */
@@ -119,7 +123,8 @@ async function fetchExercises() {
     return a.createdAt <= b.createdAt ? -1 : 1;
   });
 
-  dbStore.exercises = haveSet.concat(dontHaveSet);
+  const exercises = haveSet.concat(dontHaveSet);
+  return exercises
 }
 
 

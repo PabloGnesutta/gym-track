@@ -1,8 +1,9 @@
 import { appState, dataState, dbStore, setCurrentView, setStateField } from "../common/state.js";
 import { timeAgo } from "../lib/date.js";
-import { $, $form, $getInner, $new, $queryOne, $queryOneInput } from "../lib/dom.js";
+import { $, $form, $getInner, $input, $new, $queryOne, $queryOneInput } from "../lib/dom.js";
 import { _error, _log } from "../lib/logger.js";
-import { createExercise, updateExercise } from "../local-db/exercise-db.js";
+import { matches, normalize } from "../lib/string.js";
+import { createExercise, fetchExercises, updateExercise } from "../local-db/exercise-db.js";
 import { populateSetData } from "./set-ui.js";
 import { pageTitle } from "./ui.js";
 
@@ -20,6 +21,22 @@ const exerciseName = $getInner(singleExerciseView, '.name');
 const exerciseForm = $form('exerciseForm');
 const exerciseNameInput = $queryOneInput('#exerciseForm input[name="exerciseName"]');
 const submitExerciseBtn = $queryOne('#exerciseForm .submit');
+
+
+const searchInput = $input('searchExercise')
+searchInput.addEventListener('input',
+    e => {
+        if (!e.target) { return }
+        /** @type {string} */ // @ts-ignore
+        const value = e.target.value
+        dbStore.exercises.forEach(e => {
+            if (matches(e.normalizedName || '', value)) {
+                $queryOne(`[data-exercise-key="${e._key}"]`).classList.remove('display-none')
+            } else {
+                $queryOne(`[data-exercise-key="${e._key}"]`).classList.add('display-none')
+            }
+        })
+    })
 
 
 /** 
@@ -57,9 +74,22 @@ async function openExerciseList() {
     pageTitle.innerText = 'Ejercicios';
 }
 
-/** Fill Exercise list with rows */
-function fillExerciseList() {
-    dbStore.exercises.forEach(e => appendExerciseRow(exerciseList, e));
+/**
+ * Fetch all exercises from DB.
+ * Render exercise list.
+ * Store them in dbstore.
+ */
+async function fetchAndRenderExercises() {
+    const exercises = await fetchExercises();
+    exercises.forEach(exercise => {
+        appendExerciseRow(exerciseList, exercise)
+
+        if (!exercise.normalizedName) {
+            exercise.normalizedName = normalize(exercise.name)
+            // todo: update DB?
+        }
+        dbStore.exercises.push(exercise)
+    });
 }
 
 /**
@@ -82,7 +112,9 @@ async function submitExercise(e) {
         if (result.data) {
             updateExerciseRow(exerciseList, result.data);
             exerciseName.innerText = result.data.name;
-        } else { _error(result.errorMsg); }
+        } else {
+            _error(result.errorMsg);
+        }
         setStateField('editingExercise', false);
     }
     else {
@@ -90,7 +122,9 @@ async function submitExercise(e) {
         const result = await createExercise(name, muscles, new Date());
         if (result.data) {
             appendExerciseRow(exerciseList, result.data);
-        } else { _error(result.errorMsg); }
+        } else {
+            _error(result.errorMsg);
+        }
         setStateField('creatingExercise', false);
     }
 
@@ -101,6 +135,7 @@ async function submitExercise(e) {
 
 
 /**
+ * TODO: Esto está incorrecto.
  * Removes the current row, then creates another one and prepends it
  * @param {HTMLDivElement} container 
  * @param {import("../local-db/exercise-db.js").Exercise} exercise
@@ -200,4 +235,4 @@ function closeSingleExercise() {
 }
 
 
-export { fillExerciseList, openExerciseList, openSingleExercise, openExerciseForm, appendExerciseRow, submitExercise, setExerciseRowLastSetData, closeSingleExercise, submitExerciseBtn };
+export { fetchAndRenderExercises, openExerciseList, openSingleExercise, openExerciseForm, appendExerciseRow, submitExercise, setExerciseRowLastSetData, closeSingleExercise, submitExerciseBtn };

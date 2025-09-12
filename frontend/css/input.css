@@ -1,3 +1,12 @@
+input {
+  width: 100%;
+  outline: none;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  font-size: 24px;
+  padding: 4px;
+}
+
 .base-form {
   --title-bg: #1e2c47;
   --title-color: #ffffff;
@@ -5,7 +14,8 @@
   --control-bg: rgba(0, 0, 0, 0.5);
 }
 
-.base-form {}
+.base-form {
+}
 
 .form-title {
   font-size: 2rem;
@@ -32,15 +42,6 @@
   display: block;
   font-size: 20px;
   padding: 4px 0;
-}
-
-.form-control input {
-  width: 100%;
-  outline: none;
-  border: 2px solid transparent;
-  border-radius: 6px;
-  font-size: 24px;
-  padding: 4px;
 }
 
 /* custom */
@@ -70,4 +71,19 @@
   padding: 2rem;
   font-size: 22px;
   border: 1px solid wheat;
+}
+
+.search-container {
+  padding: 4px;
+}
+
+.search-container input  {
+  background-color: black;
+  color: #e7e7e7;
+  border-bottom: 1px solid #717171;
+}
+
+.search-container input::placeholder  {
+  color: rgb(100, 100, 100);
+  padding: 0 2px;
 }

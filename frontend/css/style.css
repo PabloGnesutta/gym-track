@@ -109,16 +109,15 @@ svg {
   width: 80px;
   height: 80px;
   z-index: 1;
+  border: 1px solid white;
   border-radius: 50%;
   background-color: var(--list-row-bg);
   color: white;
   font-size: 40px;
-  border: 1px solid transparent;
 }
 
 #newExerciseBtn:active {
-  background-color: #d5002b;
-  border-color: rgba(255, 255, 255, 0.5);
+  background-color: #8b3cc7;
 }
 
 #singleExerciseView {}

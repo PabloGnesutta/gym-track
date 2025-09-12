@@ -28,11 +28,17 @@ function $(id) { // @ts-ignore
 }
 
 /**
- * Gets an HTML element by its ID
  * @param {string} id
  * @returns {HTMLFormElement}
  */
 function $form(id) { // @ts-ignore
+  return $(id);
+}
+/**
+ * @param {string} id
+ * @returns {HTMLInputElement}
+ */
+function $input(id) { // @ts-ignore
   return $(id);
 }
 
@@ -243,7 +249,7 @@ function unfold(el) { el.classList.remove('folded'); }
 
 
 export {
-  $, $form, $queryAll, $queryOne, $new, $newInput, $getChild, getCssVar, setCssVar,
+  $, $form, $input, $queryAll, $queryOne, $new, $newInput, $getChild, getCssVar, setCssVar,
   toggleFullScreen, show, hide, display, undisplay, $display, $undisplay,
   $button, $getInner, select, unselect, fold, unfold, $getInnerInput, $queryOneInput
 };

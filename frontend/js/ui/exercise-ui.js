@@ -22,21 +22,24 @@ const exerciseForm = $form('exerciseForm');
 const exerciseNameInput = $queryOneInput('#exerciseForm input[name="exerciseName"]');
 const submitExerciseBtn = $queryOne('#exerciseForm .submit');
 
-
-const searchInput = $input('searchExercise')
+/** Search */
+const searchInput = $input('searchExercise');
 searchInput.addEventListener('input',
-    e => {
-        if (!e.target) { return }
-        /** @type {string} */ // @ts-ignore
-        const value = e.target.value
-        dbStore.exercises.forEach(e => {
-            if (matches(e.normalizedName || '', value)) {
-                $queryOne(`[data-exercise-key="${e._key}"]`).classList.remove('display-none')
-            } else {
-                $queryOne(`[data-exercise-key="${e._key}"]`).classList.add('display-none')
-            }
-        })
-    })
+  e => {
+    if (!e.target) { return; }
+    /** @type {string} */ // @ts-ignore
+    const value = e.target.value;
+    dbStore.exercises.forEach(e => {
+      if (
+        matches(e.normalizedName || '', value)
+        || matches(e.normalizedMuscles || '', value)
+      ) {
+        $queryOne(`[data-exercise-key="${e._key}"]`).classList.remove('display-none');
+      } else {
+        $queryOne(`[data-exercise-key="${e._key}"]`).classList.add('display-none');
+      }
+    });
+  });
 
 
 /** 
@@ -44,34 +47,34 @@ searchInput.addEventListener('input',
  * @param {boolean} isEdit
  */
 function openExerciseForm(isEdit) {
-    const submitExerciseLabel = $getInner(submitExerciseBtn, ' .label');
-    const formTitle = $getInner(exerciseForm, '.form-title');
-    if (isEdit === true) {
-        setStateField('editingExercise', true);
-        if (!dataState.currentExercise) { return; }
-        const musclesInput = $queryOneInput('#exerciseForm input[name="muscles"]');
-        const exercise = dataState.currentExercise;
-        exerciseNameInput.value = exercise.name;
-        if (exercise.muscles) {
-            musclesInput.value = exercise.muscles?.join(',');
-        }
-        submitExerciseLabel.innerText = 'Guardar Cambios';
-        formTitle.innerText = 'Editar Ejercicio';
-    } else {
-        setStateField('creatingExercise', true);
-        submitExerciseLabel.innerText = 'Crear Ejercicio';
-        formTitle.innerText = 'Nuevo Ejercicio';
+  const submitExerciseLabel = $getInner(submitExerciseBtn, ' .label');
+  const formTitle = $getInner(exerciseForm, '.form-title');
+  if (isEdit === true) {
+    setStateField('editingExercise', true);
+    if (!dataState.currentExercise) { return; }
+    const musclesInput = $queryOneInput('#exerciseForm input[name="muscles"]');
+    const exercise = dataState.currentExercise;
+    exerciseNameInput.value = exercise.name;
+    if (exercise.muscles) {
+      musclesInput.value = exercise.muscles?.join(',');
     }
+    submitExerciseLabel.innerText = 'Guardar Cambios';
+    formTitle.innerText = 'Editar Ejercicio';
+  } else {
+    setStateField('creatingExercise', true);
+    submitExerciseLabel.innerText = 'Crear Ejercicio';
+    formTitle.innerText = 'Nuevo Ejercicio';
+  }
 
-    setStateField('showExerciseForm', true);
-    exerciseNameInput.focus();
-    exerciseNameInput.select();
+  setStateField('showExerciseForm', true);
+  exerciseNameInput.focus();
+  exerciseNameInput.select();
 }
 
 /** Open exercise list view */
 async function openExerciseList() {
-    setCurrentView('ExerciseList');
-    pageTitle.innerText = 'Ejercicios';
+  setCurrentView('ExerciseList');
+  pageTitle.innerText = 'Ejercicios';
 }
 
 /**
@@ -80,16 +83,16 @@ async function openExerciseList() {
  * Store them in dbstore.
  */
 async function fetchAndRenderExercises() {
-    const exercises = await fetchExercises();
-    exercises.forEach(exercise => {
-        appendExerciseRow(exerciseList, exercise)
-
-        if (!exercise.normalizedName) {
-            exercise.normalizedName = normalize(exercise.name)
-            // todo: update DB?
-        }
-        dbStore.exercises.push(exercise)
-    });
+  const exercises = await fetchExercises();
+  exercises.forEach(exercise => {
+    appendExerciseRow(exerciseList, exercise);
+    if (!exercise.muscles) {
+      exercise.muscles = [];
+    }
+    exercise.normalizedName = normalize(exercise.name);
+    exercise.normalizedMuscles = normalize(exercise.muscles.join(','));
+    dbStore.exercises.push(exercise);
+  });
 }
 
 /**
@@ -97,39 +100,39 @@ async function fetchAndRenderExercises() {
  * @param {Event} e 
  */
 async function submitExercise(e) {
-    e.preventDefault();
-    const formData = new FormData(exerciseForm);
-    const name = formData.get('exerciseName') || '';
-    if (!(typeof name === 'string')) { return; }
+  e.preventDefault();
+  const formData = new FormData(exerciseForm);
+  const name = formData.get('exerciseName') || '';
+  if (!(typeof name === 'string')) { return; }
 
-    var muscles = [];
-    const _m = formData.get('muscles') || '';
-    if (typeof _m === 'string') { muscles = _m.split(','); }
+  var muscles = [];
+  const _m = formData.get('muscles') || '';
+  if (typeof _m === 'string') { muscles = _m.split(',').map(v => v.trim()); }
 
-    if (appState.editingExercise === true && dataState.currentExercise) {
-        // Edit
-        const result = await updateExercise(dataState.currentExercise, name, muscles, new Date());
-        if (result.data) {
-            updateExerciseRow(exerciseList, result.data);
-            exerciseName.innerText = result.data.name;
-        } else {
-            _error(result.errorMsg);
-        }
-        setStateField('editingExercise', false);
+  if (appState.editingExercise === true && dataState.currentExercise) {
+    // Edit
+    const result = await updateExercise(dataState.currentExercise, name, muscles, new Date());
+    if (result.data) {
+      updateExerciseRow(exerciseList, result.data);
+      exerciseName.innerText = result.data.name;
+    } else {
+      _error(result.errorMsg);
     }
-    else {
-        // Create
-        const result = await createExercise(name, muscles, new Date());
-        if (result.data) {
-            appendExerciseRow(exerciseList, result.data);
-        } else {
-            _error(result.errorMsg);
-        }
-        setStateField('creatingExercise', false);
+    setStateField('editingExercise', false);
+  }
+  else {
+    // Create
+    const result = await createExercise(name, muscles, new Date());
+    if (result.data) {
+      appendExerciseRow(exerciseList, result.data);
+    } else {
+      _error(result.errorMsg);
     }
+    setStateField('creatingExercise', false);
+  }
 
-    exerciseForm.reset();
-    setStateField('showExerciseForm', false);
+  exerciseForm.reset();
+  setStateField('showExerciseForm', false);
 }
 
 
@@ -141,9 +144,9 @@ async function submitExercise(e) {
  * @param {import("../local-db/exercise-db.js").Exercise} exercise
  */
 function updateExerciseRow(container, exercise) {
-    const row = $getInner(container, '.row');
-    row.remove();
-    appendExerciseRow(container, exercise, true);
+  const row = $getInner(container, '.row');
+  row.remove();
+  appendExerciseRow(container, exercise, true);
 }
 
 /**
@@ -154,29 +157,29 @@ function updateExerciseRow(container, exercise) {
  * @param {boolean} prepend 
  */
 function appendExerciseRow(container, exercise, prepend = false) {
-    const key = (exercise._key || '').toString();
-    const lastSetData = $new({ class: 'last-set-data' });
-    const timestamp = $new({ class: 'timestamp' });
-    const lastSetDataContainer = $new({ class: 'right-side', children: [timestamp, lastSetData] });
-    const exerciseRow = $new({
-        class: 'row',
-        dataset: [
-            ['clickAction', 'openSingleExercise'],
-            ['exerciseKey', key],
-        ],
-        children: [
-            $new({ class: 'exerciseName', text: exercise.name }),
-            lastSetDataContainer,
-        ],
-    });
+  const key = (exercise._key || '').toString();
+  const lastSetData = $new({ class: 'last-set-data' });
+  const timestamp = $new({ class: 'timestamp' });
+  const lastSetDataContainer = $new({ class: 'right-side', children: [timestamp, lastSetData] });
+  const exerciseRow = $new({
+    class: 'row',
+    dataset: [
+      ['clickAction', 'openSingleExercise'],
+      ['exerciseKey', key],
+    ],
+    children: [
+      $new({ class: 'exerciseName', text: exercise.name }),
+      lastSetDataContainer,
+    ],
+  });
 
-    if (prepend) {
-        container.prepend(exerciseRow);
-    } else {
-        container.append(exerciseRow);
-    }
+  if (prepend) {
+    container.prepend(exerciseRow);
+  } else {
+    container.append(exerciseRow);
+  }
 
-    setExerciseRowLastSetData(exercise, exerciseRow);
+  setExerciseRowLastSetData(exercise, exerciseRow);
 }
 
 /**
@@ -186,23 +189,23 @@ function appendExerciseRow(container, exercise, prepend = false) {
  * @param {HTMLDivElement} [exerciseRow]
  */
 function setExerciseRowLastSetData(exercise, exerciseRow) {
-    if (!exerciseRow) {
-        exerciseRow = $queryOne(`.row[data-exercise-key="${exercise._key}"]`);
-    }
+  if (!exerciseRow) {
+    exerciseRow = $queryOne(`.row[data-exercise-key="${exercise._key}"]`);
+  }
 
-    const timeagoString = timeAgo(exercise.lastSession?.date || exercise.updatedAt);
+  const timeagoString = timeAgo(exercise.lastSession?.date || exercise.updatedAt);
 
-    exerciseRow.dataset.timestamp = timeagoString;
+  exerciseRow.dataset.timestamp = timeagoString;
 
-    const lastSetData = $getInner(exerciseRow, '.last-set-data');
-    const timestamp = $getInner(exerciseRow, '.timestamp');
+  const lastSetData = $getInner(exerciseRow, '.last-set-data');
+  const timestamp = $getInner(exerciseRow, '.timestamp');
 
-    timestamp.innerText = timeagoString;
-    const lastSession = exercise.lastSession;
-    if (lastSession) {
-        const lastWeight = lastSession.sets[lastSession.sets.length - 1];
-        lastSetData.innerText = `${lastWeight.w}kg x ${lastWeight.r[lastWeight.r.length - 1]}`;
-    }
+  timestamp.innerText = timeagoString;
+  const lastSession = exercise.lastSession;
+  if (lastSession) {
+    const lastWeight = lastSession.sets[lastSession.sets.length - 1];
+    lastSetData.innerText = `${lastWeight.w}kg x ${lastWeight.r[lastWeight.r.length - 1]}`;
+  }
 }
 
 /**
@@ -212,26 +215,26 @@ function setExerciseRowLastSetData(exercise, exerciseRow) {
  * @param {string} exerciseKey 
  */
 async function openSingleExercise(exerciseKey) {
-    const key = +exerciseKey;
-    let exercise = dataState.currentExercise || undefined;
-    if (key !== exercise?._key) {
-        exercise = dbStore.exercises.find(e => e._key === key);
-    }
+  const key = +exerciseKey;
+  let exercise = dataState.currentExercise || undefined;
+  if (key !== exercise?._key) {
+    exercise = dbStore.exercises.find(e => e._key === key);
+  }
 
-    if (!exercise) { return _error('Exercise not found'); }
+  if (!exercise) { return _error('Exercise not found'); }
 
-    setCurrentView('SingleExercise');
-    pageTitle.innerText = 'Ejercicio actual';
+  setCurrentView('SingleExercise');
+  pageTitle.innerText = 'Ejercicio actual';
 
-    dataState.currentExercise = exercise;
-    exerciseName.innerText = exercise.name;
-    await populateSetData(exercise);
+  dataState.currentExercise = exercise;
+  exerciseName.innerText = exercise.name;
+  await populateSetData(exercise);
 }
 
 function closeSingleExercise() {
-    if (appState.currentView !== 'SingleExercise') { return; }
-    setCurrentView('ExerciseList');
-    openExerciseList();
+  if (appState.currentView !== 'SingleExercise') { return; }
+  setCurrentView('ExerciseList');
+  openExerciseList();
 }
 
 

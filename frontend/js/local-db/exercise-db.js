@@ -18,6 +18,7 @@ import { normalize } from "../lib/string.js";
  * @typedef {object} Exercise
  * @property {string} name
  * @property {string} [normalizedName]
+ * @property {string} [normalizedMuscles]
  * @property {string[]} muscles
  * @property {import("./set-db.js").Session | null} lastSession
  * @property {IDBValidKey} [_key]
@@ -48,6 +49,7 @@ async function createExercise(name, muscles = [], date = new Date()) {
     name,
     normalizedName: normalize(name),
     muscles,
+    normalizedMuscles: normalize(muscles.join(',')),
     createdAt: date,
     updatedAt: date,
     lastSession: null,
@@ -71,7 +73,8 @@ async function updateExercise(exercise, name, muscles, date) {
   if (!exercise || !exercise._key) { return { errorMsg: 'Llave no provista' }; }
   if (name) {
     exercise.name = name;
-    exercise.normalizedName = normalize(name)
+    exercise.normalizedName = normalize(name);
+    exercise.normalizedMuscles = normalize(exercise.muscles.join(','));
   }
   if (muscles && muscles.length) {
     exercise.muscles = muscles;
@@ -124,7 +127,7 @@ async function fetchExercises() {
   });
 
   const exercises = haveSet.concat(dontHaveSet);
-  return exercises
+  return exercises;
 }
 
 

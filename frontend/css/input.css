@@ -1,3 +1,4 @@
+textarea,
 input {
   width: 100%;
   outline: none;
@@ -14,8 +15,7 @@ input {
   --control-bg: rgba(0, 0, 0, 0.5);
 }
 
-.base-form {
-}
+.base-form {}
 
 .form-title {
   font-size: 2rem;
@@ -73,17 +73,33 @@ input {
   border: 1px solid wheat;
 }
 
+#sessionForm .notes {
+  padding: 4px;
+  background-color: rgb(33, 33, 33);
+}
+
+#sessionForm .notes .heading {
+  padding: 4px;
+  border-radius: 4px;
+  background-color: rgb(22, 22, 22);
+}
+
+#sessionForm textarea {
+  background-color: rgb(50, 50, 50);
+  color: white;
+}
+
 .search-container {
   padding: 4px;
 }
 
-.search-container input  {
+.search-container input {
   background-color: black;
   color: #e7e7e7;
   border-bottom: 1px solid #717171;
 }
 
-.search-container input::placeholder  {
+.search-container input::placeholder {
   color: rgb(100, 100, 100);
   padding: 0 2px;
 }

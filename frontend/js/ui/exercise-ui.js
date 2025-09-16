@@ -105,6 +105,7 @@ async function submitExercise(e) {
   const name = formData.get('exerciseName') || '';
   if (!(typeof name === 'string')) { return; }
 
+  /** @type {string[]} */
   var muscles = [];
   const _m = formData.get('muscles') || '';
   if (typeof _m === 'string') { muscles = _m.split(',').map(v => v.trim()); }

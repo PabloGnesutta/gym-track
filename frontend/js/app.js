@@ -15,6 +15,7 @@ _info(' (!) App started');
 initializeCache();
 
 initializeIndexedDb();
+
 /** Callback for Indexed DB initialization */
 eventBus.on('IndexedDbInited', async ({ version }) => {
     // await seedDb();
@@ -27,7 +28,7 @@ eventBus.on('IndexedDbInited', async ({ version }) => {
 
     openExerciseList();
     // await openSingleExercise('1');
-    // openSessionForm('1')
+    // openSessionForm('4')
 });
 
 initAppState();

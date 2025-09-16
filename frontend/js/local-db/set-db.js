@@ -20,6 +20,7 @@ import { updateExercise } from "./exercise-db.js";
  * @property {IDBValidKey} exerciseKey
  * @property {Date} date
  * @property {WeightRow[]} sets
+ * @property {string} [notes]
  * @property {IDBValidKey} [_key]
  * @example 
  * {
@@ -35,7 +36,11 @@ import { updateExercise } from "./exercise-db.js";
  * @property {number} w Weight used with {r} reps
  * @property {number[]} r Amount of reps for each set, using {w} weight
  * 
-*/
+ * @typedef {object} SetData
+ * @property {number} weight
+ * @property {number} reps
+ * @property {Date} [date]
+ */
 
 /**
  * Appends the number of reps to the sets array for the weight.
@@ -46,12 +51,11 @@ import { updateExercise } from "./exercise-db.js";
  * the exercise should be updated in its own part of the code.
  * Todo: Add validation for session existing for the date.
  * @param {import("./exercise-db.js").Exercise} exercise 
- * @param {number} weight 
- * @param {number} reps
- * @param {Date} date Date in which the set was performed
+ * @param {SetData} setData
  * @returns {ServiceReturn<Session>}
  */
-async function createSet(exercise, weight, reps, date = new Date()) {
+async function createSet(exercise, setData) {
+  const date = setData.date || new Date();
   const exerciseKey = exercise._key || 0;
   /** @type {Session|null} */
   let session = exercise.lastSession;
@@ -65,12 +69,12 @@ async function createSet(exercise, weight, reps, date = new Date()) {
     exercise.lastSession = session;
   }
 
-  let weightRow = session.sets.find(weightRow => weightRow.w === weight);
+  let weightRow = session.sets.find(weightRow => weightRow.w === setData.weight);
   if (!weightRow) {
-    weightRow = { w: weight, r: [] };
+    weightRow = { w: setData.weight, r: [] };
     session.sets.push(weightRow);
   }
-  weightRow.r.push(reps);
+  weightRow.r.push(setData.reps);
 
   session._key = await putOne('sessions', session, session._key);
 

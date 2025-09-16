@@ -11,7 +11,7 @@
 const INTERCEPT_FETCH_REQUESTS = true;
 
 
-const MAJOR_VERSION = 'v0.0.9';
+const MAJOR_VERSION = 'v0.0.1';
 const JS_CACHE = 'js_' + MAJOR_VERSION + '--0.0.1';
 const CSS_CACHE = 'css_' + MAJOR_VERSION + '--0.0.1';
 const MISC_CACHE = 'misc_' + MAJOR_VERSION + '--0.0.1';
@@ -49,7 +49,10 @@ function sendToClients(msg, transfer) {
         if (!clients || !clients.length) { console.info(' ** no clients'); }
         clients.forEach(c => c.postMessage({ msg, transfer }));
       })
-    .catch(e => console.error(' ** @sendToClients', e));
+    .catch(
+      /** @param {Event} e */
+      e => console.error(' ** @sendToClients', e)
+    );
 }
 
 /** Install */

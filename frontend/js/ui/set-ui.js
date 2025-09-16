@@ -5,6 +5,7 @@ import { putOne } from "../lib/indexedDb.js";
 import { _error, _log } from "../lib/logger.js";
 import { updateExercise } from "../local-db/exercise-db.js";
 import { createSet, deleteSession, getSessionsForExercise } from "../local-db/set-db.js";
+import { svg_notes } from "../svg/svgFn.js";
 import { setExerciseRowLastSetData } from "./exercise-ui.js";
 
 
@@ -31,12 +32,18 @@ async function populateSetData(exercise) {
     const lastSession = exercise.lastSession;
     if (lastSession) {
       const lastWeightRow = lastSession.sets[lastSession.sets.length - 1];
+      // @ts-ignore
       setForm.elements['weight'].value = lastWeightRow.w;
+      // @ts-ignore
       setForm.elements['reps'].value = lastWeightRow.r[lastWeightRow.r.length - 1];
+      // @ts-ignore
       setForm.elements['reps'].focus();
+      // @ts-ignore
       setForm.elements['reps'].select();
     } else {
+      // @ts-ignore
       setForm.elements['weight'].focus();
+      // @ts-ignore
       setForm.elements['weight'].select();
     }
   }
@@ -73,14 +80,22 @@ function appendSessionHistoryRow(container, session) {
   const key = (session._key || '').toString();
   const _weightConainer = $new({ class: 'weight-container' });
   const _date = $new({ class: 'date', text: timeAgo(session.date) });
+  const _rightSide = $new({ class: 'right-side', children: [_date] });
   const _row = $new({
     class: 'row',
-    children: [_weightConainer, _date],
+    children: [_weightConainer, _rightSide],
     dataset: [
       ['clickAction', 'openSessionForm'],
       ['sessionKey', key],
     ],
   });
+
+  if (session.notes) {
+    _rightSide.appendChild($new({
+      class: 'has-notes',
+      html: svg_notes(),
+    }));
+  }
 
   for (const { w, r } of session.sets) {
     const _weight = $new({ class: 'weight', text: `${w}kg X ` });
@@ -114,7 +129,7 @@ async function submitSet(e) {
     return _error('No hay ejercicio seleccionado');
   }
 
-  const result = await createSet(exercise, +weight, +reps, new Date());
+  const result = await createSet(exercise, { weight: +weight, reps: +reps });
   if (result.data) {
     currentDateLog.innerHTML = '';
     appendSessionHistoryRow(currentDateLog, result.data);
@@ -125,6 +140,7 @@ async function submitSet(e) {
 }
 
 /**
+ * TODO: Some part of this whole thing needs to be in a service layer
  * Lotta stuff
  * @param {Event} e 
  */
@@ -133,6 +149,7 @@ async function submitSession(e) {
   const formData = new FormData(sessionForm);
   const weights = formData.getAll('weight').map(w => Number(w));
   const repsInputs = formData.getAll('reps');
+  const notes = formData.get('sessionNotes');
   if (weights.length !== repsInputs.length) {
     return _error('Las filas están locas');
   }
@@ -170,14 +187,18 @@ async function submitSession(e) {
 
   const session = dataState.currentSession;
   if (!session) { return _error('Las sesiones descubren el fuego'); }
+
+  if (typeof notes === 'string') {
+    session.notes = notes;
+    // TODO: Add notes icon if necessary
+  }
   session.sets = weightRows;
-  // TODO: Some part of this whole thing needs to be in a service layer
+
   await putOne('sessions', session, session?._key);
 }
 
 /**
- * Currently prompts to delete session.
- * Eventually it will display a form to edit the session.
+ * Open modal with the edit session form
  * @param {string} sessionKey 
  */
 async function openSessionForm(sessionKey) {
@@ -189,11 +210,12 @@ async function openSessionForm(sessionKey) {
   const session = sessions.find(s => s._key === _key);
   if (!session) { return; }
   _log(session);
-  const label = $getInner(sessionForm, '.session-label');
-  label.innerText = dataState.currentExercise.name + ' - ' + toYYYYMMDD(session.date);
+
+  $getInner(sessionForm, '.session-label').innerText = dataState.currentExercise.name + ' - ' + toYYYYMMDD(session.date);
+  $getInner(sessionForm, '#sessionNotes').innerText = session.notes || '';
 
   const inputs = $getInner(sessionForm, '.inputs');
-  inputs.innerHTML = ''
+  inputs.innerHTML = '';
   session.sets.forEach(
     /**
      * @param {WeightRow} wr 

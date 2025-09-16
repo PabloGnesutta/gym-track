@@ -185,6 +185,15 @@ svg {
   border-radius: 4px;
 }
 
+.session-history .row .right-side {
+  display: flex;
+  gap: 4px;
+}
+.has-notes {
+  color: white;
+  width: 25px;
+}
+
 .session-history .row .date {
   background-color: rgba(255, 255, 255, 0.137);
   padding: 0 2px;

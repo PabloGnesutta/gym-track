@@ -1,6 +1,3 @@
-import { _log } from "./logger.js";
-
-
 /**
  * Returns a "time ago" string.
  * @param {string | Date} input 
@@ -9,22 +6,33 @@ import { _log } from "./logger.js";
 function timeAgo(input = '') {
     const date = (input instanceof Date) ? input : new Date(input);
     const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-
     if (isNaN(seconds)) { return "¡!"; }
-    const daysPassed = Math.floor(seconds / 60 / 60 / 24);
-    if (daysPassed < 1) { return "hoy"; } // edge case midnight returns "hoy"
-    if (daysPassed === 1) { return "ayer"; }
+
+    /** 
+     * Will account for entire days passed. 
+     * So, if the date is yesterday but less than 24 hours ago, it will yield 0.
+     */
+    const wholeDaysPassed = Math.floor(seconds / 60 / 60 / 24);
+    if (wholeDaysPassed < 1) {
+        // Hack due to the nature of wholeDaysPassed
+        if (date.getDate() === new Date().getDate()) {
+            return "hoy";
+        } else {
+            return 'ayer';
+        }
+    }
+    if (wholeDaysPassed === 1) { return "ayer"; }
+
     const labels = [
         { label: 'año', days: 365 },
         { label: 'mes', pl: 'es', days: 30 },
         { label: 'semana', days: 7 },
         { label: 'día', days: 1 },
     ];
-
     for (const { label, pl, days } of labels) {
-        if (daysPassed < days) { continue; }
-        const amount = Math.floor(daysPassed / days);
-        const remainder = daysPassed % days;
+        if (wholeDaysPassed < days) { continue; }
+        const amount = Math.floor(wholeDaysPassed / days);
+        const remainder = wholeDaysPassed % days;
         return `${amount} ${label}` + (amount > 1 ? (pl || 's') : '') + (remainder ? '+' : '');
     }
 

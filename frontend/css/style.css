@@ -85,6 +85,7 @@ svg {
   --list-row-bg: #6d18ad;
   --title-bg: crimson;
   --row-bg: rgba(0, 0, 0, 0.75);
+  padding-bottom: 4.5rem;
 }
 
 #exerciseListView .list {

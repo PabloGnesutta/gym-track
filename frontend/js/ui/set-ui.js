@@ -1,6 +1,6 @@
 import { dataState, dbStore, setStateField } from "../common/state.js";
 import { timeAgo, toYYYYMMDD } from "../lib/date.js";
-import { $, $form, $getInner, $new, $queryOne } from "../lib/dom.js";
+import { $, $form, $getInner, $getInnerInput, $new, $queryOne } from "../lib/dom.js";
 import { putOne } from "../lib/indexedDb.js";
 import { _error, _log } from "../lib/logger.js";
 import { updateExercise } from "../local-db/exercise-db.js";
@@ -209,10 +209,10 @@ async function openSessionForm(sessionKey) {
   const sessions = dbStore.sessions[exKey];
   const session = sessions.find(s => s._key === _key);
   if (!session) { return; }
-  _log(session);
+  _log('session', session);
 
   $getInner(sessionForm, '.session-label').innerText = dataState.currentExercise.name + ' - ' + toYYYYMMDD(session.date);
-  $getInner(sessionForm, '#sessionNotes').innerText = session.notes || '';
+  $getInnerInput(sessionForm, '#sessionNotes').value = session.notes || '';
 
   const inputs = $getInner(sessionForm, '.inputs');
   inputs.innerHTML = '';

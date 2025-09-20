@@ -126,6 +126,7 @@ function dbugBtns() {
       fn: e => {
         _log('dbStore', dbStore);
         _log('dataState', dataState);
+        openLogs()
       }
     }
   });

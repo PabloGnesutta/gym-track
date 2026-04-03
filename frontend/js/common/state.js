@@ -24,7 +24,7 @@ import { _log } from "../lib/logger.js";
  */
 
 /**
- * Cached records from the d
+ * Cached records from the db
  * @typedef {object} DBStore
  * @property {Exercise[]} exercises
  * @property {Record<string, Session[]>} sessions
@@ -57,6 +57,7 @@ const dataState = {
  */
 const dbStore = {
     exercises: [],
+    /** Key is exercise ID, value is the sets array */
     sessions: {},
 };
 
@@ -67,7 +68,7 @@ const $app = $('app');
  * @param {*} value
  */
 function setStateField(field, value) {
-    // @ts-ignore // todo: check this
+    // @ts-ignore // TODO: check this
     appState[field] = value;
     $app.dataset[field] = value;
 }

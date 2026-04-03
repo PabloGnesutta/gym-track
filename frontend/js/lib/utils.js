@@ -14,7 +14,7 @@ function randomInt(min, max) {
  * Clears the array of items.
  * Use this instead of the assignment operator (arr = [])
  * to keep any references to the array valid.
- * @param {Array} arr
+ * @param {Array<*>} arr
 */
 function clearArray(arr) {
   while (arr.length) arr.splice(0);
@@ -35,13 +35,15 @@ function clearObj(obj, omit = []) {
 
 /**
  * @typedef {'IndexedDbInited'} Events
+ * @typedef {(payload: *)=>void} EventBusCallback
  */
 
 const eventBus = {
+  /** @type {Record<string, Array<EventBusCallback>>} */
   subs: {},
   /**
    * @param {Events} name 
-   * @param {(payload)=>void} cb 
+   * @param {EventBusCallback} cb 
    */
   on(name, cb) {
     if (typeof name !== "string")
@@ -65,6 +67,7 @@ const eventBus = {
   },
   /**
    * @param {Events} name 
+   * @param {*} payload 
    */
   emit(name, payload) {
     if (typeof name !== "string")

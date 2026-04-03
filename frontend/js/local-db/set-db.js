@@ -1,7 +1,7 @@
-import { dbStore } from "../common/state.js";
 import { toYYYYMMDD } from "../lib/date.js";
-import { deleteOne, getAllWithIndex, putOne } from "../lib/indexedDb.js";
+import { dbStore } from "../common/state.js";
 import { _error, _info, _log } from "../lib/logger.js";
+import { deleteMany, deleteOne, getAllWithIndex, putOne } from "../lib/indexedDb.js";
 import { updateExercise } from "./exercise-db.js";
 
 
@@ -47,18 +47,24 @@ import { updateExercise } from "./exercise-db.js";
  * If the session doesn't exist, create it and set it as exercise.lastSession
  * Append the reps to the weight row. If weight row doesn't exist create it.
  * 
- * Todo: This should only receive exerciseKey and session, not the entire exercise:
+ * TODO: This should only receive exerciseKey and session, not the entire exercise:
  * the exercise should be updated in its own part of the code.
- * Todo: Add validation for session existing for the date.
+ * TODO: Add validation for session existing for the date.
  * @param {import("./exercise-db.js").Exercise} exercise 
  * @param {SetData} setData
  * @returns {ServiceReturn<Session>}
  */
 async function createSet(exercise, setData) {
+  const exerciseKey = exercise._key;
+  if (!exerciseKey) {
+    return { errorMsg: 'Exercise had no _key' };
+  }
+
   const date = setData.date || new Date();
-  const exerciseKey = exercise._key || 0;
+
   /** @type {Session|null} */
   let session = exercise.lastSession;
+
   if (!session || toYYYYMMDD(date) !== toYYYYMMDD(session.date)) {
     // New session. Either the Exercise has no lastSession, or it has one with a different date as the Set's
     session = {
@@ -123,9 +129,21 @@ async function getSessionsForExercise(exerciseKey) {
  * @param {Session} session 
  */
 async function deleteSession(session) {
-  if (!session._key) { return; }
+  if (!session._key) {
+    return;
+  }
   await deleteOne('sessions', session._key);
+  // TODO: Remove session from state memory and UI
+}
+
+/**
+ * Deletes all the sessions for the given exercise
+ * @param {StoreKey} exerciseKey 
+ * @returns {Promise<boolean>}
+ */
+async function deleteExerciseSessions(exerciseKey) {
+  return deleteMany('sessions', 'exerciseKey', exerciseKey);
 }
 
 
-export { createSet, getSessionsForExercise, deleteSession };
+export { createSet, getSessionsForExercise, deleteSession, deleteExerciseSessions };

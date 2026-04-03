@@ -186,7 +186,9 @@ async function submitSession(e) {
   }
 
   const session = dataState.currentSession;
-  if (!session) { return _error('Las sesiones descubren el fuego'); }
+  if (!session) {
+    return _error('Las sesiones descubren el fuego');
+  }
 
   if (typeof notes === 'string') {
     session.notes = notes;
@@ -194,7 +196,7 @@ async function submitSession(e) {
   }
   session.sets = weightRows;
 
-  await putOne('sessions', session, session?._key);
+  await putOne('sessions', session, session._key);
 }
 
 /**

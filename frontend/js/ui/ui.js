@@ -2,7 +2,7 @@ import { appState, dataState, dbStore, setStateField } from "../common/state.js"
 import { $, $button, $getInner, $queryOne } from "../lib/dom.js";
 import { _info, _log, _warn, openLogs } from "../lib/logger.js";
 import { arrow_left, pen_solid, svg_trash } from "../svg/svgFn.js";
-import { closeSingleExercise, openExerciseForm, openSingleExercise, submitExercise, submitExerciseBtn } from "./exercise-ui.js";
+import { closeSingleExercise, openExerciseForm, openSingleExercise, submitExercise, submitExerciseBtn, tryDeleteExercise } from "./exercise-ui.js";
 import { openSessionForm, submitSession, submitSet, tryDeleteSession } from "./set-ui.js";
 
 
@@ -52,6 +52,12 @@ function initUi() {
     listener: { fn: () => openExerciseForm(true) },
     svgFn: pen_solid,
     appendTo: $queryOne('#singleExerciseView .edit-btn'),
+  });
+  $button({
+    // Borrar Ejercicio
+    listener: { fn: tryDeleteExercise },
+    svgFn: svg_trash,
+    appendTo: $queryOne('#singleExerciseView .delete-btn'),
   });
 
   $button({

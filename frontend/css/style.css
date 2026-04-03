@@ -140,6 +140,11 @@ svg {
   padding: 1rem 0.75rem;
 }
 
+#singleExerciseView .right-side {
+  display: flex;
+  align-items: center;
+}
+
 #singleExerciseView .session-history-container {
   background-color: #1c0006;
   padding-bottom: 0.125rem;
@@ -190,6 +195,7 @@ svg {
   display: flex;
   gap: 4px;
 }
+
 .has-notes {
   color: white;
   width: 25px;

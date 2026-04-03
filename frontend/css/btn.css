@@ -60,10 +60,10 @@
   height: 8dvw;
 }
 
-.delete .btn {
+.delete .btn, .delete-btn .btn {
   padding: 1rem;
 }
-.delete .btn .icon {
+.delete .btn .icon, .delete-btn .btn .icon {
   width: 8dvw;
   height: 8dvw;
 }

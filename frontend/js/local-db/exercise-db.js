@@ -1,7 +1,7 @@
 import { dbStore } from "../common/state.js";
-import { getAll, getOneWithIndex, putOne } from "../lib/indexedDb.js";
-import { _error, _info, _log } from "../lib/logger.js";
 import { normalize } from "../lib/string.js";
+import { _error, _info, _log } from "../lib/logger.js";
+import { deleteOne, getAll, getOneWithIndex, putOne } from "../lib/indexedDb.js";
 
 
 /**
@@ -88,6 +88,15 @@ async function updateExercise(exercise, name, muscles, date) {
   return { data: exercise };
 }
 
+/**
+ * @param {StoreKey} exerciseKey 
+ * @returns {Promise<StoreKey>}
+ */
+async function deleteExercise(exerciseKey) {
+  return deleteOne('exercises', exerciseKey);
+
+}
+
 
 /**
  * Fetch all exercises,
@@ -131,4 +140,4 @@ async function fetchExercises() {
 }
 
 
-export { createExercise, fetchExercises, updateExercise };
+export { createExercise, fetchExercises, updateExercise, deleteExercise };

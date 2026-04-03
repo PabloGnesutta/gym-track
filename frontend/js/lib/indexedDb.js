@@ -39,7 +39,7 @@ function initializeIndexedDb() {
 /**
  * Initialize Object Stores
  */
-function onDbUpgradeNeeded(e) {
+function onDbUpgradeNeeded() {
   _info(' __ Updating IndexedDB');
   db = openDbRequest.result;
   if (!db.objectStoreNames.contains(_stores.exercises)) {
@@ -58,14 +58,14 @@ function onDbUpgradeNeeded(e) {
     store.createIndex('exerciseKey', 'exerciseKey', { unique: false });
   }
 
-  //todo: delete TestDB
+  // TODO: delete TestDB
   _info(db.objectStoreNames);
 }
 
 /** 
  * Database opened successfully 
  */
-function onDbOpenSuccess(e) {
+function onDbOpenSuccess() {
   db = openDbRequest.result;
   _info(' __ Base de datos abierta - Versión ' + db.version);
   eventBus.emit('IndexedDbInited', { version: dbVersion });
@@ -73,6 +73,7 @@ function onDbOpenSuccess(e) {
 
 /** 
  * Used to clean up data by setting a lower DB version
+ * @param {*} e
  */
 function onDbOpenError(e) {
   if (e.target.error.name === 'VersionError') {
@@ -289,7 +290,7 @@ async function getAllWithIndex(storeName, indexName, indexValue, cbs) {
 }
 
 /**
- * Get one record from a store using the key
+ * Delete one record from a store using the key
  * @param {ObjectStores} storeName
  * @param {StoreKey} key
  * @returns {Promise<StoreKey>}
@@ -302,7 +303,6 @@ async function deleteOne(storeName, key) {
 
     const deleteRequest = store.delete(key);
     deleteRequest.onsuccess = e => {
-      // @ts-ignore
       _info(' __ DeleteOne: ' + storeName, key);
       return res(key);
     };
@@ -315,5 +315,42 @@ async function deleteOne(storeName, key) {
   });
 }
 
+/**
+ * Deletes all entries for the given store, index name and index value
+ * @param {ObjectStores} storeName 
+ * @param {Indexes} indexName 
+ * @param {StoreKey} indexValue 
+ * @returns {Promise<boolean>}
+ */
+async function deleteMany(storeName, indexName, indexValue) {
+  return new Promise((res, rej) => {
+    if (!db) return rej('No database found');
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const index = store.index(indexName);
 
-export { initializeIndexedDb, putOne, getOne, getAll, getOneWithIndex, getAllWithIndex, deleteOne };
+    const getAllCursor = index.openCursor(indexValue);
+    getAllCursor.onsuccess = e => {
+      const cursor = getAllCursor.result;
+      if (cursor) {
+        const request = cursor.delete();
+        request.onsuccess = () => {
+          console.log('Session deleted');
+        };
+        cursor.continue();
+      } else {
+        _info(' __ Deletion process ended: ' + storeName, indexName, indexValue);
+        return res(true);
+      }
+    };
+    getAllCursor.onerror = e => {
+      _error(' __ Error geting IndexedDB entries');
+      // @ts-ignore
+      _error(e.target.error.message);
+      return rej(e);
+    };
+  });
+}
+
+
+export { initializeIndexedDb, putOne, getOne, getAll, getOneWithIndex, getAllWithIndex, deleteOne, deleteMany };

@@ -1,11 +1,12 @@
-import { appState, dataState, dbStore, setCurrentView, setStateField } from "../common/state.js";
 import { timeAgo } from "../lib/date.js";
-import { $, $form, $getInner, $input, $new, $queryOne, $queryOneInput } from "../lib/dom.js";
 import { _error, _log } from "../lib/logger.js";
 import { matches, normalize } from "../lib/string.js";
-import { createExercise, fetchExercises, updateExercise } from "../local-db/exercise-db.js";
-import { populateSetData } from "./set-ui.js";
+import { deleteExerciseSessions } from "../local-db/set-db.js";
+import { $, $form, $getInner, $input, $new, $queryOne, $queryOneInput } from "../lib/dom.js";
+import { appState, dataState, dbStore, setCurrentView, setStateField } from "../common/state.js";
+import { createExercise, deleteExercise, fetchExercises, updateExercise } from "../local-db/exercise-db.js";
 import { pageTitle } from "./ui.js";
+import { populateSetData } from "./set-ui.js";
 
 
 /**
@@ -51,7 +52,9 @@ function openExerciseForm(isEdit) {
   const formTitle = $getInner(exerciseForm, '.form-title');
   if (isEdit === true) {
     setStateField('editingExercise', true);
-    if (!dataState.currentExercise) { return; }
+    if (!dataState.currentExercise) {
+      return;
+    }
     const musclesInput = $queryOneInput('#exerciseForm input[name="muscles"]');
     const exercise = dataState.currentExercise;
     exerciseNameInput.value = exercise.name;
@@ -209,6 +212,39 @@ function setExerciseRowLastSetData(exercise, exerciseRow) {
   }
 }
 
+async function tryDeleteExercise() {
+  const exercise = dataState.currentExercise;
+  if (!exercise) {
+    return;
+  }
+  const exerciseKey = exercise._key;
+  if (!exerciseKey) {
+    return;
+  }
+  if (!confirm(`¿Seguro que querés borrar el ejercicio ${exercise.name}?`)) {
+    return;
+  }
+
+  await deleteExercise(exerciseKey);
+  await deleteExerciseSessions(exerciseKey);
+
+  closeSingleExercise();
+
+  const exIndex = dbStore.exercises.findIndex(ex => ex._key === exerciseKey);
+  if (exIndex !== -1) {
+    dbStore.exercises.splice(exIndex, 1);
+  }
+
+  delete dbStore.sessions[exerciseKey.toString()];
+
+  const node = document.querySelector(`#exerciseListView .list [data-exercise-key="${exerciseKey}"]`);
+  if (node) {
+    node.remove();
+  }
+
+  dataState.currentExercise = null;
+}
+
 /**
  * Opens single exercise view.
  * Populates Set fields with last set data. 
@@ -233,10 +269,15 @@ async function openSingleExercise(exerciseKey) {
 }
 
 function closeSingleExercise() {
-  if (appState.currentView !== 'SingleExercise') { return; }
+  if (appState.currentView !== 'SingleExercise') {
+    return;
+  }
   setCurrentView('ExerciseList');
   openExerciseList();
 }
 
 
-export { fetchAndRenderExercises, openExerciseList, openSingleExercise, openExerciseForm, appendExerciseRow, submitExercise, setExerciseRowLastSetData, closeSingleExercise, submitExerciseBtn };
+export {
+  fetchAndRenderExercises, openExerciseList, openSingleExercise, openExerciseForm, appendExerciseRow, submitExercise, setExerciseRowLastSetData,
+  tryDeleteExercise, closeSingleExercise, submitExerciseBtn
+};

@@ -1,7 +1,7 @@
 #sessionForm {
-  --title-bg: #1e1e1e;
-  --inputs-bg: #001b4d;
-  background-color: black;
+  --title-bg: var(--form-session-title);
+  --content-bg: var(--form-session-content);
+  background-color: var(--surface-0);
 }
 
 #sessionForm .heading,
@@ -12,14 +12,14 @@
 
 #sessionForm .heading {
   font-size: 22px;
-  background-color: #0042bd;
+  background-color: var(--form-session-title);
   padding-left: 12px;
   margin-bottom: 0.25rem;
 }
 
 #sessionForm .inputs-header {
   font-size: 18px;
-  background-color: var(--inputs-bg);
+  background-color: var(--form-session-content);
 }
 
 #sessionForm .inputs-header div {
@@ -34,7 +34,7 @@
   padding: 1rem;
   padding-top: 0;
   margin-bottom: 0.5rem;
-  background-color: var(--inputs-bg);
+  background-color: var(--form-session-content);
 }
 
 .weight-row {
@@ -52,13 +52,7 @@
 }
 
 .weight-row input {
-  outline: none;
-  border-radius: 6px;
-  border: 1px solid #8b8b8b;
-  padding: 4px;
   font-size: 26px;
-  background-color: black;
-  color: white;
   text-align: right;
 }
 
@@ -69,11 +63,4 @@
 .weight-row input[name='reps'] {
   max-width: 152px;
   text-align: left;
-}
-
-#sessionForm .submit .btn {
-  background-color: #cb042d;
-  padding: 2rem;
-  font-size: 22px;
-  border: 1px solid wheat;
 }

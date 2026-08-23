@@ -6,16 +6,27 @@ input {
   border-radius: 6px;
   font-size: 24px;
   padding: 4px;
+  background-color: var(--surface-2);
+  color: var(--text-primary);
+  transition: border-color 120ms ease;
+}
+
+textarea:focus,
+input:focus {
+  border-color: var(--accent);
+}
+
+textarea::placeholder,
+input::placeholder {
+  color: var(--text-muted);
 }
 
 .base-form {
-  --title-bg: #1e2c47;
-  --title-color: #ffffff;
-  --content-bg: #ed143d;
-  --control-bg: rgba(0, 0, 0, 0.5);
+  --title-bg: var(--surface-2);
+  --title-color: var(--text-primary);
+  --content-bg: var(--surface-1);
+  --control-bg: var(--press-bg);
 }
-
-.base-form {}
 
 .form-title {
   font-size: 2rem;
@@ -38,27 +49,35 @@ input {
 }
 
 .form-control label {
-  color: white;
+  color: var(--text-primary);
   display: block;
   font-size: 20px;
   padding: 4px 0;
 }
 
-/* custom */
-#exerciseForm {
-  --title-bg: #4e004e;
-  --content-bg: #711942;
-}
-
-#exerciseForm .submit .btn {
-  background-color: #d0276e;
+/* Every form's submit button shares one treatment - only the form's own
+   title/content chrome varies (see the per-form overrides below) - same
+   "always-accent CTA, varied-only-behind-it chrome" split as the sibling
+   car-track/fridge-track apps use. */
+#exerciseForm .submit .btn,
+#createSetForm .submit .btn,
+#sessionForm .submit .btn,
+#authForm .submit .btn {
+  background-color: var(--accent-strong);
   padding: 2rem;
   font-size: 22px;
-  border: 1px solid wheat;
+  border: 1px solid var(--accent);
+}
+
+/* custom */
+#exerciseForm {
+  --title-bg: var(--form-exercise-title);
+  --content-bg: var(--form-exercise-content);
 }
 
 #createSetForm {
-  --content-bg: #4c0211;
+  --title-bg: var(--form-set-title);
+  --content-bg: var(--form-set-content);
 }
 
 #createSetForm .numeric-inputs {
@@ -66,40 +85,16 @@ input {
   gap: 0.75rem;
 }
 
-#createSetForm .submit .btn {
-  background-color: #cb042d;
-  padding: 2rem;
-  font-size: 22px;
-  border: 1px solid wheat;
-}
-
-#sessionForm .notes {
-  padding: 4px;
-  background-color: rgb(33, 33, 33);
-}
-
-#sessionForm .notes .heading {
-  padding: 4px;
-  border-radius: 4px;
-  background-color: rgb(22, 22, 22);
-}
-
-#sessionForm textarea {
-  background-color: rgb(50, 50, 50);
-  color: white;
-}
-
 .search-container {
   padding: 4px;
 }
 
 .search-container input {
-  background-color: black;
-  color: #e7e7e7;
-  border-bottom: 1px solid #717171;
+  background-color: var(--surface-2);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--surface-4);
 }
 
 .search-container input::placeholder {
-  color: rgb(100, 100, 100);
-  padding: 0 2px;
+  color: var(--text-muted);
 }

@@ -27,8 +27,6 @@
 #authForm {
   width: 100%;
   max-width: 360px;
-  --title-bg: #1e2c47;
-  --content-bg: #17233b;
 }
 
 .mode-toggle {
@@ -38,7 +36,7 @@
   padding: 8px;
   background: none;
   border: none;
-  color: #6fa8ff;
+  color: var(--accent);
   font: inherit;
   text-align: center;
   cursor: pointer;
@@ -48,15 +46,4 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-}
-
-.logout-btn .btn {
-  padding: 0.5rem;
-}
-
-.logout-btn .btn .icon {
-  width: 8vw;
-  height: 8vw;
-  max-width: 24px;
-  max-height: 24px;
 }

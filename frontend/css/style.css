@@ -5,15 +5,62 @@
 }
 
 :root {
-  --app-bg: #111;
-  --header-bg: black;
+  color-scheme: dark;
+
   --header-heigt: 64px;
   --footer-heigt: 48px;
+
+  /* Neutral surfaces - violet-slate dark scale, darkest to lightest */
+  --surface-0: #0c0a14;
+  --surface-1: #120e1e;
+  --surface-2: #1c1630;
+  --surface-3: #2a2248;
+  --surface-4: #3d3268;
+
+  /* Text */
+  --text-primary: #ffffff;
+  --text-secondary: #b3a8d6;
+  --text-muted: #756a96;
+  --text-faint: #4a4166;
+
+  /* Brand accent - violet, primary actions/focus/links */
+  --accent: #a97bff;
+  --accent-strong: #7c3aed;
+  --accent-soft: #2c2154;
+
+  /* "Trained today" semantic */
+  --status-today: #1c8a3f;
+  --status-today-text: #6fcf8f;
+  --status-today-bg: #0e2a1a;
+
+  /* Form accents - harmonized jewel tones (same saturation/lightness family) */
+  --form-exercise-title: #3a2159;
+  --form-exercise-content: #241540;
+  --form-session-title: #5c2340;
+  --form-session-content: #3c162b;
+  --form-set-title: #164a52;
+  --form-set-content: #0d3339;
+
+  /* Overlays & scrims */
+  --overlay-faint: rgba(255, 255, 255, 0.05);
+  --overlay-soft: rgba(255, 255, 255, 0.08);
+  --overlay-medium: rgba(255, 255, 255, 0.15);
+  --overlay-active: rgba(255, 255, 255, 0.4);
+  --overlay-strong: rgba(255, 255, 255, 0.5);
+  --press-bg: rgba(0, 0, 0, 0.5);
+  --scrim: rgba(0, 0, 0, 0.7);
+  --shadow: rgba(0, 0, 0, 0.4);
+
+  /* Logger entry types */
+  --log-info: #1c6b1c;
+  --log-debug: var(--accent-soft);
+  --log-warn: #7c4f00;
+  --log-error: #7a0d0d;
 }
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
-  background-color: #222;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--surface-0);
 }
 
 div {
@@ -26,41 +73,46 @@ svg {
 }
 
 #app {
-  background-color: var(--app-bg);
-  color: white;
+  background-color: var(--surface-0);
+  color: var(--text-primary);
 }
 
 #cacheMajorVersion,
 #indexedDbVersion {
-  background-color: white;
-  color: black;
+  background-color: var(--surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--surface-4);
   padding: 4px;
   border-radius: 4px;
   font-size: 16px;
 }
 
 #indexedDbVersion {
-  background-color: cyan;
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 #mainHeader {
   min-height: var(--header-heigt);
-  background-color: var(--header-bg);
+  background-color: var(--surface-1);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   border: none;
+  box-shadow: 0 2px 8px var(--shadow);
+  position: relative;
+  z-index: 2;
 }
 
 .page-title {
   font-size: 34px;
   padding-left: 1rem;
-  color: white;
+  color: var(--text-primary);
 }
 
 .views {
-  background-color: #001a22;
+  background-color: var(--surface-0);
 }
 
 .views .page {
@@ -68,7 +120,7 @@ svg {
 }
 
 #mainFooter {
-  background-color: var(--header-bg);
+  background-color: var(--surface-1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -78,13 +130,11 @@ svg {
 
 #mainFooter .btn {
   padding: 3dvw;
-  color: white;
+  color: var(--text-primary);
 }
 
 #exerciseListView {
-  --list-row-bg: #6d18ad;
-  --title-bg: crimson;
-  --row-bg: rgba(0, 0, 0, 0.75);
+  --list-row-bg: var(--surface-2);
   padding-bottom: 4.5rem;
 }
 
@@ -110,15 +160,16 @@ svg {
   width: 80px;
   height: 80px;
   z-index: 1;
-  border: 1px solid white;
+  border: 1px solid var(--accent);
   border-radius: 50%;
-  background-color: var(--list-row-bg);
-  color: white;
+  background-color: var(--accent-strong);
+  color: var(--text-primary);
   font-size: 40px;
+  box-shadow: 0 4px 14px var(--shadow);
 }
 
 #newExerciseBtn:active {
-  background-color: #8b3cc7;
+  background-color: var(--accent);
 }
 
 #singleExerciseView {}
@@ -132,7 +183,7 @@ svg {
 }
 
 #singleExerciseView .heading {
-  background-color: #7f031c;
+  background-color: var(--surface-1);
 }
 
 #singleExerciseView .name {
@@ -146,7 +197,7 @@ svg {
 }
 
 #singleExerciseView .session-history-container {
-  background-color: #1c0006;
+  background-color: var(--surface-1);
   padding-bottom: 0.125rem;
   margin-top: 0.75rem;
 }
@@ -163,7 +214,7 @@ svg {
 }
 
 .session-history.current-date-log {
-  background-color: #002d00;
+  background-color: var(--status-today-bg);
   font-size: 24px;
 }
 
@@ -173,7 +224,7 @@ svg {
   align-items: center;
   gap: 1rem;
   padding: 4px;
-  background-color: rgba(255, 255, 255, 0.12);
+  background-color: var(--overlay-medium);
   border-radius: 4px;
   margin-bottom: 4px;
 }
@@ -186,7 +237,7 @@ svg {
 }
 
 .weight-container .weight {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--press-bg);
   padding: 2px;
   border-radius: 4px;
 }
@@ -197,12 +248,12 @@ svg {
 }
 
 .has-notes {
-  color: white;
+  color: var(--text-primary);
   width: 25px;
 }
 
 .session-history .row .date {
-  background-color: rgba(255, 255, 255, 0.137);
+  background-color: var(--overlay-soft);
   padding: 0 2px;
   border-radius: 4px;
 }
@@ -219,25 +270,26 @@ svg {
   justify-content: space-between;
   align-items: center;
   gap: 2dvw;
-  color: white;
+  color: var(--text-primary);
   padding: 0.5rem;
   border-radius: 6px;
   border: 1px solid transparent;
+  border-left: 4px solid transparent;
 }
 
 #exerciseListView .list .row[data-timestamp="hoy"] {
   order: -1;
-  --list-row-bg: #ad189b;
+  border-left-color: var(--status-today);
 }
 
 .list .row:active {
-  background-color: rgba(0, 0, 0, 0.5);
-  border-color: rgba(255, 255, 255, 0.5);
+  background-color: var(--press-bg);
+  border-color: var(--overlay-strong);
 }
 
 .list .row .exerciseName {
   font-size: 22px;
-  background-color: #ffffff29;
+  background-color: var(--overlay-medium);
   padding: .5rem 1rem;
   border-radius: 6px;
 }
@@ -247,12 +299,16 @@ svg {
   flex-direction: column;
   align-items: end;
   text-align: right;
-  color: #ffc8c8;
+  color: var(--text-secondary);
   gap: 4px;
 }
 
+#exerciseListView .list .row[data-timestamp="hoy"] .timestamp {
+  color: var(--status-today-text);
+}
+
 .list .row .timestamp {
-  color: white;
+  color: var(--text-primary);
   font-size: 20px;
 }
 
@@ -268,7 +324,6 @@ svg {
   right: 0;
   z-index: 10;
 
-  display: flex;
   display: none;
   justify-content: center;
   align-items: center;
@@ -279,7 +334,7 @@ svg {
   position: absolute;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--scrim);
 }
 
 .modal .close-modal {
@@ -287,6 +342,7 @@ svg {
   top: 1dvh;
   right: 5dvw;
   font-size: 42px;
+  color: var(--text-primary);
 }
 
 .modal .content {
@@ -297,6 +353,7 @@ svg {
   border-radius: 8px;
   max-height: 85dvh;
   overflow-y: auto;
+  box-shadow: 0 8px 30px var(--shadow);
 }
 
 /* State Machine */

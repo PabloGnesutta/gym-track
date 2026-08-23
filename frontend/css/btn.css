@@ -8,6 +8,11 @@
   border-radius: 6px;
   color: inherit;
   user-select: none;
+  transition: transform 100ms ease;
+}
+
+.base-button:active {
+  transform: scale(0.96);
 }
 
 .base-button.horizontal {
@@ -29,7 +34,7 @@
   bottom: 0;
   background: transparent;
   z-index: 9;
-  color: white;
+  color: var(--text-primary);
 }
 
 .base-button .overlay:hover {
@@ -37,33 +42,35 @@
 }
 
 .base-button .overlay:active {
-  background-color: rgba(255, 255, 255, 0.4);
+  background-color: var(--overlay-active);
 }
 
 .go-back {
-  color: white;
+  color: var(--text-primary);
 }
-.go-back .btn {
-  padding: 0.5rem;
+.go-back .btn,
+.logout-btn .btn {
+  padding: 0.75rem;
 }
 
-.go-back .btn .icon {
-  width: 12vw;
-  height: 12vw;
+.go-back .btn .icon,
+.logout-btn .btn .icon {
+  width: 22px;
+  height: 22px;
 }
 
 .edit-btn .btn {
-  padding: 1rem;
+  padding: 0.75rem;
 }
 .edit-btn .btn .icon {
-  width: 8dvw;
-  height: 8dvw;
+  width: 20px;
+  height: 20px;
 }
 
 .delete .btn, .delete-btn .btn {
-  padding: 1rem;
+  padding: 0.75rem;
 }
 .delete .btn .icon, .delete-btn .btn .icon {
-  width: 8dvw;
-  height: 8dvw;
+  width: 20px;
+  height: 20px;
 }

@@ -25,8 +25,8 @@ async function seedDb() {
   const ex3 = await createExercise('antier sin set', [], minus2);
   const ex4 = await createExercise('ayer sin set', [], minus1);
   if (!ex1.data || !ex2.data || !ex3.data || !ex4.data || !ex1.data) { return; }
-  await createSet(ex1.data, w, 13, minus1);
-  await createSet(ex2.data, w, 14, minus2);
+  await createSet(ex1.data, { weight: w, reps: 13, date: minus1 });
+  await createSet(ex2.data, { weight: w, reps: 14, date: minus2 });
 }
 
 

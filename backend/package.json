@@ -1,12 +1,18 @@
 {
   "scripts": {
-    "serve": "nodemon ./src/index.gym-track.js"
+    "serve": "nodemon ./src/index.gym-track.js",
+    "test": "node --test",
+    "typecheck": "tsc --noEmit"
   },
   "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "devDependencies": {
-    "@types/node": "^20.11.20",
+    "@types/node": "^24.0.0",
     "dotenv": "^16.3.1",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "typescript": "^5.7.3"
   },
   "dependencies": {
     "jsonwebtoken": "^9.0.2"

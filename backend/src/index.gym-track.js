@@ -7,7 +7,13 @@ const __dirname = dirname(__filename);
 configEnv({ path: join(__dirname, '../', '.env') });
 import { handleRequest } from './http/requestHandler.js';
 import { log } from './logger/logger.js';
+import { db } from './db/db.js';
 
+
+// Importing db.js runs pending migrations (backend/src/db/migrate.js)
+// against backend/data/gymtrack.db, creating it on first run. Not yet used
+// by any route - see CLAUDE.md's "Server-side database (scaffolding)".
+log(' - Database ready:', db.isOpen);
 
 createServer(
   handleRequest

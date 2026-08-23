@@ -1,4 +1,5 @@
 import { sql as initialSchema } from './001_initial_schema.js';
+import { sql as accounts } from './002_accounts.js';
 
 /**
  * Ordered, explicit registry (no directory-scanning) - add new migrations
@@ -10,6 +11,7 @@ import { sql as initialSchema } from './001_initial_schema.js';
  */
 const migrations = [
   { version: 1, name: 'initial_schema', sql: initialSchema },
+  { version: 2, name: 'accounts', sql: accounts },
 ];
 
 export { migrations };

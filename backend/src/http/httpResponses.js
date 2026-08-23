@@ -1,15 +1,6 @@
 import { debug } from '../logger/logger.js';
+import { SECURITY_HEADERS } from './securityHeaders.js';
 
-
-/**
- * @param {import('./types').ApiResponse} res
- * @param {Object} data
- * @param {number} [status=200] - Default 200
- */
-export function jsonResponse(res, data = {}, status = 200) {
-  res.writeHead(status, { 'content-type': 'application/json' });
-  return res.end(JSON.stringify({ data }));
-}
 
 /**
  * @param {import('./types').ApiResponse} res
@@ -18,6 +9,16 @@ export function jsonResponse(res, data = {}, status = 200) {
  */
 export function errorResponse(res, msg, status = 400) {
   debug(' @errorResponse:', msg);
-  res.writeHead(status, { 'content-type': 'application/json' });
+  res.writeHead(status, { 'content-type': 'application/json', ...SECURITY_HEADERS });
   return res.end(JSON.stringify({ error: msg }));
+}
+
+/**
+ * @param {import('./types').ApiResponse} res
+ * @param {*} data
+ * @param {number} [status=200] - Default 200
+ */
+export function successResponse(res, data, status = 200) {
+  res.writeHead(status, { 'content-type': 'application/json', ...SECURITY_HEADERS });
+  return res.end(JSON.stringify({ data }));
 }

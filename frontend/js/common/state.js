@@ -15,9 +15,11 @@ import { _log } from "../lib/logger.js";
  * @property {boolean} showExerciseForm
  * @property {boolean} showSessionForm
  * @property {Views} currentView
- * 
+ * @property {AuthStage} authStage
+ *
  * @typedef {'ExerciseList'|'SingleExercise'} Views
- * 
+ * @typedef {'checking'|'login'|'ready'} AuthStage
+ *
  * @typedef {object} DataState
  * @property {Exercise|null} currentExercise
  * @property {Session|null} currentSession
@@ -40,6 +42,7 @@ const appState = {
     showExerciseForm: false,
     showSessionForm: false,
     currentView: 'ExerciseList',
+    authStage: 'checking',
 };
 
 /**
@@ -74,11 +77,19 @@ function setStateField(field, value) {
 }
 
 /**
- * @param {Views} view 
+ * @param {Views} view
  */
 function setCurrentView(view) {
     appState.currentView = view;
     $app.dataset.currentView = view;
+}
+
+/**
+ * @param {AuthStage} stage
+ */
+function setAuthStage(stage) {
+    appState.authStage = stage;
+    $app.dataset.authStage = stage;
 }
 
 function initAppState() {
@@ -87,6 +98,7 @@ function initAppState() {
     setStateField('showExerciseForm', false);
     setStateField('showSessionForm', false);
     setCurrentView('ExerciseList');
+    setAuthStage('checking');
 }
 
-export { appState, dataState, dbStore, initAppState, setStateField, setCurrentView };
+export { appState, dataState, dbStore, initAppState, setStateField, setCurrentView, setAuthStage };

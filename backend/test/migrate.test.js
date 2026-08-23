@@ -12,7 +12,7 @@ test('runMigrations creates every table on a fresh database', () => {
   /** @type {{name: string}[]} */ // @ts-ignore
   const tables = db.prepare(`SELECT name FROM sqlite_master WHERE type = 'table'`).all();
   const names = tables.map(t => t.name);
-  for (const expected of ['exercises', 'sessions']) {
+  for (const expected of ['users', 'auth_sessions', 'allowed_emails', 'exercises', 'sessions']) {
     assert.ok(names.includes(expected), `expected table "${expected}" to exist`);
   }
 });

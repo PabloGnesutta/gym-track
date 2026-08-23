@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { ensureAuth } from './helpers.js';
 
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
+  await ensureAuth(page);
   await expect(page.locator('#exerciseListView')).toBeVisible();
 
   await page.locator('#newExerciseBtn').click();

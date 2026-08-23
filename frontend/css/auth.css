@@ -1,0 +1,62 @@
+/* Auth gate: shown while logged out, hides the rest of the app while any
+   non-"ready" auth stage is active (checking session / showing the login
+   form). #authView itself lives outside .views so it's independent of the
+   ExerciseList/SingleExercise page-switching machinery. */
+
+#authView {
+  display: none;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+#app[data-auth-stage='login'] #authView {
+  display: flex;
+}
+
+#app:not([data-auth-stage='ready']) #mainHeader,
+#app:not([data-auth-stage='ready']) .views {
+  display: none;
+}
+
+#app:not([data-auth-stage='ready']) .logout-btn {
+  display: none;
+}
+
+#authForm {
+  width: 100%;
+  max-width: 360px;
+  --title-bg: #1e2c47;
+  --content-bg: #17233b;
+}
+
+.mode-toggle {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px;
+  background: none;
+  border: none;
+  color: #6fa8ff;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logout-btn .btn {
+  padding: 0.5rem;
+}
+
+.logout-btn .btn .icon {
+  width: 8vw;
+  height: 8vw;
+  max-width: 24px;
+  max-height: 24px;
+}

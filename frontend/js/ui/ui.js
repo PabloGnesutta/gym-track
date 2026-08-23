@@ -1,9 +1,11 @@
 import { appState, dataState, dbStore, setStateField } from "../common/state.js";
 import { $, $button, $getInner, $queryOne } from "../lib/dom.js";
 import { _info, _log, _warn, openLogs } from "../lib/logger.js";
-import { arrow_left, pen_solid, svg_trash } from "../svg/svgFn.js";
+import { arrow_left, pen_solid, svg_trash, svg_logout } from "../svg/svgFn.js";
 import { closeSingleExercise, openExerciseForm, openSingleExercise, submitExercise, submitExerciseBtn, tryDeleteExercise } from "./exercise-ui.js";
 import { openSessionForm, submitSession, submitSet, tryDeleteSession } from "./set-ui.js";
+import { resetAuthMode } from "./auth-ui.js";
+import { logout } from "../appBoot.js";
 
 
 /**
@@ -35,6 +37,17 @@ function initUi() {
             break;
           default: break;
         }
+      }
+    }
+  });
+
+  $button({
+    appendTo: $('logoutBtn'),
+    svgFn: svg_logout,
+    listener: {
+      fn: async () => {
+        await logout();
+        resetAuthMode(false); // always land back on the login form, not wherever the mode was left
       }
     }
   });

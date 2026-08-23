@@ -10,7 +10,17 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = join(__dirname, '../../data');
 mkdirSync(DATA_DIR, { recursive: true });
 
-const db = new DatabaseSync(join(DATA_DIR, 'gymtrack.db'));
+// DB_NAME lets the e2e suite point at its own file (see
+// frontend/playwright.config.js) instead of whatever a manually-run dev
+// server is using - without this, an e2e run and `npm run serve` would be
+// the same process on the same port talking to the same database file.
+const DB_NAME = process.env.DB_NAME || 'gymtrack.db';
+const db = new DatabaseSync(join(DATA_DIR, DB_NAME));
+// WAL lets readers/writers avoid blocking each other; busy_timeout makes a
+// writer retry for a bit instead of throwing "database is locked" the
+// instant it collides with another connection.
+db.exec('PRAGMA journal_mode = WAL');
+db.exec('PRAGMA busy_timeout = 5000');
 runMigrations(db, migrations);
 
 export { db };

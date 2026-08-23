@@ -1,9 +1,10 @@
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { debug, log, warn } from '../logger/logger.js';
-import { apiRouter } from './apiRouter.js';
-import { jsonResponse, errorResponse } from './httpResponses.js';
+import { debug, log } from '../logger/logger.js';
+import { errorResponse } from './httpResponses.js';
+import { SECURITY_HEADERS } from './securityHeaders.js';
+import { handleApiRequest } from './apiRouter.js';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -11,9 +12,8 @@ const __dirname = dirname(__filename);
 const PUBLIC_DIR = join(__dirname, '../', '../', '../', 'frontend');
 
 /**
- * Main handler of the request. 
+ * Main handler of the request.
  * First thing that executes in the request lifecycle.
- * // TODO:? Make it always return ApiResponse
  * @param {import('./types').ApiRequest} req - request object.
  * @param {import('./types').ApiResponse} res - response object.
  * @returns {Promise<import('./types').ApiResponse | null>}
@@ -29,6 +29,8 @@ export async function handleRequest(req, res) {
     const pathBase = urlArray[1];
     const fileRoute = urlArray.slice(1, urlArray.length);
     debug('urlArray', urlArray)
+
+    if (pathBase === 'api') return handleApiRequest(req, res, fileRoute.slice(1));
 
     if (pathBase === 'css') return sendAssetFile(res, fileRoute, 'text/css');
     else if (pathBase === 'js') return sendAssetFile(res, fileRoute, 'application/javascript');
@@ -48,11 +50,6 @@ export async function handleRequest(req, res) {
       return sendAssetFile(res, ['static', pathBase], 'image/x-icon');
     }
 
-    else if (pathBase === 'api') {
-      return await handleApiRequest(req, res);
-    }
-
-
     // 404
     return errorResponse(res, 'Resource not found ' + _url, 404);
   } catch (_err) {
@@ -62,70 +59,7 @@ export async function handleRequest(req, res) {
 }
 
 /**
- * If the request was made to the /api route, it should be handled by this.
- * Would be the second step in the chain
- * @param {import('./types').ApiRequest} req - request object.
- * @param {import('./types').ApiResponse} res - response object.
- * @returns {Promise<import('./types').ApiResponse>}
- */
-async function handleApiRequest(req, res) {
-  const parseResult = await parseRequestData(req);
-  if (parseResult) {
-    return errorResponse(res, parseResult.errMsg, parseResult.status);
-  }
-
-  const apiRequestResult = await apiRouter(req);
-  if (apiRequestResult.data) {
-    return jsonResponse(res, apiRequestResult.data);
-  } else {
-    return errorResponse(res, apiRequestResult.error || 'Error__', apiRequestResult.status);
-  }
-}
-
-
-/**
- * If everything went ok, it returns null, otherwise 
- * returnw object with http status code and error data
- * @param {import('./types').ApiRequest} req - request object
- * @returns {Promise<null | {
- *   status: number,
- *   errMsg: string,
- *   err?: [Error],
- * }>}
-*/
-async function parseRequestData(req) {
-  // Note: Might need not be a promise, but it's practical
-  req.query = new URL(req.url || '', process.env.SERVER_HOST).searchParams;
-  const body = [];
-  req.on('data', chunk => body.push(chunk));
-  return new Promise((resolve, rej) => {
-    req.on('end', async () => {
-      try {
-        // Parse request body
-        switch (req.headers['content-type']) {
-          case 'application/json':
-            req.body = JSON.parse(Buffer.concat(body).toString());
-            resolve(null);
-            break;
-          case 'application/x-www-form-urlencoded':
-            req.body = new URLSearchParams(Buffer.concat(body).toString());
-            resolve(null);
-            break;
-          default:
-            resolve({ status: 400, errMsg: 'Unsupported content type: ' + req.headers['content-type'] });
-            return;
-        }
-      } catch (e) {
-        warn('Error @parseRequestData', e);
-        resolve({ status: 500, err: e, errMsg: 'Invalid payload' });
-      }
-    });
-  });
-}
-
-
-/**
- * Uses the response object to stream static files. 
+ * Uses the response object to stream static files.
  * Returns null.
  * @param {import('./types').ApiResponse} res - response object
  * @param {string[]} fileRoute
@@ -133,11 +67,10 @@ async function parseRequestData(req) {
  * @returns {null}
  */
 function sendAssetFile(res, fileRoute, contentType) {
-  // TODO: Not very fond of this spread
   const filePath = join(PUBLIC_DIR, ...fileRoute);
   fs.stat(filePath, (err, stat) => {
     if (err === null) {
-      res.writeHead(200, { 'content-type': contentType });
+      res.writeHead(200, { 'content-type': contentType, ...SECURITY_HEADERS });
       const stream = fs.createReadStream(filePath);
       stream.pipe(res);
       return;
@@ -145,11 +78,11 @@ function sendAssetFile(res, fileRoute, contentType) {
 
     if (err.code === 'ENOENT') {
       log('---File does not exist @sendAssetFile', filePath);
-      res.writeHead(404);
+      res.writeHead(404, SECURITY_HEADERS);
       res.end();
     } else {
       log('---Error @sendAssetFile', err);
-      res.writeHead(500);
+      res.writeHead(500, SECURITY_HEADERS);
       res.end();
     }
   });

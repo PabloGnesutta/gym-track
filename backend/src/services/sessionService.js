@@ -1,3 +1,4 @@
+import { createExerciseService } from './exerciseService.js';
 import { ServiceError } from './ServiceError.js';
 
 
@@ -46,34 +47,32 @@ function isSameDay(a, b) {
 }
 
 /**
- * Not wired to any HTTP route yet - see CLAUDE.md's "Server-side database
- * (scaffolding)" section. Mirrors `frontend/js/local-db/set-db.js`'s
- * `createSet`/`getSessionsForExercise`/`deleteSession`, adapted for SQL.
+ * Mirrors `frontend/js/local-db/set-db.js`'s `createSet`/
+ * `getSessionsForExercise`/`deleteSession`, adapted for SQL and scoped by
+ * `userId`. Takes an `exerciseService` (defaulting to a real one over the
+ * same `db`) purely so ownership checks go through
+ * `getOwnedExerciseRow` instead of duplicating that query here - same
+ * cross-service reuse shape as fridge-track's `syncService` reusing
+ * `homeService`'s `assertHomeMembership`.
  * @param {import('node:sqlite').DatabaseSync} db
+ * @param {ReturnType<typeof createExerciseService>} [exerciseService]
  */
-function createSessionService(db) {
-  /**
-   * @param {number} exerciseId
-   */
-  function assertExerciseExists(exerciseId) {
-    const exists = db.prepare('SELECT 1 FROM exercises WHERE id = ?').get(exerciseId);
-    if (!exists) { throw new ServiceError('Ejercicio no encontrado'); }
-  }
-
+function createSessionService(db, exerciseService = createExerciseService(db)) {
   /**
    * Appends a set to today's Session for the Exercise, creating it if it
    * doesn't exist yet. Within a Session, sets sharing the same weight are
    * grouped into one row's `r` array - same rule as `createSet` client-side.
+   * @param {number} userId
    * @param {number} exerciseId
    * @param {{weight: number, reps: number}} setData
    * @param {number} [date] Epoch ms; defaults to now.
    */
-  function addSet(exerciseId, setData, date = Date.now()) {
-    assertExerciseExists(exerciseId);
+  function addSet(userId, exerciseId, setData, date = Date.now()) {
+    exerciseService.getOwnedExerciseRow(userId, exerciseId);
 
     const existing = db.prepare(
-      'SELECT * FROM sessions WHERE exercise_id = ? ORDER BY date DESC LIMIT 1'
-    ).get(exerciseId);
+      'SELECT * FROM sessions WHERE exercise_id = ? AND user_id = ? ORDER BY date DESC LIMIT 1'
+    ).get(exerciseId, userId);
 
     const now = Date.now();
 
@@ -86,35 +85,37 @@ function createSessionService(db) {
       }
       weightRow.r.push(setData.reps);
 
-      db.prepare('UPDATE sessions SET sets = ?, updated_at = ? WHERE id = ?')
-        .run(JSON.stringify(session.sets), now, session.id);
+      db.prepare('UPDATE sessions SET sets = ?, updated_at = ? WHERE id = ? AND user_id = ?')
+        .run(JSON.stringify(session.sets), now, session.id, userId);
 
-      return getSession(session.id);
+      return getSession(userId, session.id);
     }
 
     const sets = [{ w: setData.weight, r: [setData.reps] }];
     const info = db.prepare(
-      'INSERT INTO sessions (exercise_id, date, sets, notes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
-    ).run(exerciseId, date, JSON.stringify(sets), '', now, now);
+      'INSERT INTO sessions (user_id, exercise_id, date, sets, notes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).run(userId, exerciseId, date, JSON.stringify(sets), '', now, now);
 
-    return getSession(Number(info.lastInsertRowid));
+    return getSession(userId, Number(info.lastInsertRowid));
   }
 
   /**
+   * @param {number} userId
    * @param {number} id
    */
-  function getSession(id) {
-    const row = db.prepare('SELECT * FROM sessions WHERE id = ?').get(id);
+  function getSession(userId, id) {
+    const row = db.prepare('SELECT * FROM sessions WHERE id = ? AND user_id = ?').get(id, userId);
     if (!row) { throw new ServiceError('Sesión no encontrada'); }
     return toSession(row);
   }
 
   /**
+   * @param {number} userId
    * @param {number} exerciseId
    */
-  function listSessionsForExercise(exerciseId) {
-    assertExerciseExists(exerciseId);
-    const rows = db.prepare('SELECT * FROM sessions WHERE exercise_id = ? ORDER BY date DESC').all(exerciseId);
+  function listSessionsForExercise(userId, exerciseId) {
+    exerciseService.getOwnedExerciseRow(userId, exerciseId);
+    const rows = db.prepare('SELECT * FROM sessions WHERE exercise_id = ? AND user_id = ? ORDER BY date DESC').all(exerciseId, userId);
     return rows.map(toSession);
   }
 
@@ -122,27 +123,29 @@ function createSessionService(db) {
    * Full replace of a Session's sets/notes, mirroring `set-ui.js`'s
    * `submitSession` (which overwrites `session.sets` wholesale from the
    * edit form rather than patching individual rows).
+   * @param {number} userId
    * @param {number} id
    * @param {{sets?: WeightRow[], notes?: string}} patch
    */
-  function updateSession(id, patch) {
-    const session = getSession(id);
+  function updateSession(userId, id, patch) {
+    const session = getSession(userId, id);
     const sets = patch.sets !== undefined ? patch.sets : session.sets;
     const notes = patch.notes !== undefined ? patch.notes : session.notes;
     const now = Date.now();
 
-    db.prepare('UPDATE sessions SET sets = ?, notes = ?, updated_at = ? WHERE id = ?')
-      .run(JSON.stringify(sets), notes, now, id);
+    db.prepare('UPDATE sessions SET sets = ?, notes = ?, updated_at = ? WHERE id = ? AND user_id = ?')
+      .run(JSON.stringify(sets), notes, now, id, userId);
 
-    return getSession(id);
+    return getSession(userId, id);
   }
 
   /**
+   * @param {number} userId
    * @param {number} id
    */
-  function deleteSession(id) {
-    getSession(id);
-    db.prepare('DELETE FROM sessions WHERE id = ?').run(id);
+  function deleteSession(userId, id) {
+    getSession(userId, id);
+    db.prepare('DELETE FROM sessions WHERE id = ? AND user_id = ?').run(id, userId);
   }
 
   return { addSet, getSession, listSessionsForExercise, updateSession, deleteSession };

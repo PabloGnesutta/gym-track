@@ -13,8 +13,5 @@
     "dotenv": "^16.3.1",
     "nodemon": "^3.1.10",
     "typescript": "^5.7.3"
-  },
-  "dependencies": {
-    "jsonwebtoken": "^9.0.2"
   }
 }

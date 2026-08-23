@@ -1,10 +1,13 @@
 import { test, expect } from '@playwright/test';
+import { ensureAuth } from './helpers.js';
 
 
 test.beforeEach(async ({ page }) => {
   // Each test gets its own browser context (Playwright default), so
-  // IndexedDB starts empty every time - no per-test cleanup needed.
+  // IndexedDB starts empty every time - no per-test cleanup needed. The app
+  // now gates behind login, so every test signs up a fresh account first.
   await page.goto('/');
+  await ensureAuth(page);
   await expect(page.locator('#exerciseListView')).toBeVisible();
 });
 

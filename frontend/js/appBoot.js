@@ -1,6 +1,7 @@
 import { apiLogout, isLoggedIn } from "./api-caller/apiCaller.js";
-import { setAuthStage } from "./common/state.js";
+import { dataState, setAuthStage } from "./common/state.js";
 import { fetchAndRenderExercises, openExerciseList } from "./ui/exercise-ui.js";
+import { maybeImportLegacyData } from "./local-db/legacyImport.js";
 
 
 /**
@@ -19,20 +20,28 @@ async function bootApp() {
 
 /**
  * Runs right after a successful login/signup, and on every subsequent boot
- * while already logged in. Exercise/session data still lives entirely in
- * IndexedDB (unchanged) - the account only gates entry to the app for now.
- * Wiring this data to the server-side API (backend/src/http/apiRouter.js's
- * exercises/sessions routes, already built and tested) is the natural next
- * step, not done here.
+ * while already logged in. Exercise/session data now lives server-side
+ * (local-db/exercise-db.js and set-db.js call the API, not IndexedDB);
+ * maybeImportLegacyData() offers a one-time upload of whatever this device
+ * still has sitting in IndexedDB from before accounts existed.
  */
 async function afterLogin() {
   setAuthStage('ready');
+  await maybeImportLegacyData();
   await fetchAndRenderExercises();
   openExerciseList();
 }
 
 async function logout() {
   await apiLogout();
+
+  // dbStore.exercises/sessions are cleared by fetchAndRenderExercises()
+  // itself on the next afterLogin() (see its own doc comment) - dataState
+  // still needs clearing here so a stale reference to the previous
+  // account's exercise/session doesn't linger in the meantime.
+  dataState.currentExercise = null;
+  dataState.currentSession = null;
+
   setAuthStage('login');
 }
 

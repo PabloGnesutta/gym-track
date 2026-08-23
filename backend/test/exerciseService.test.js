@@ -74,6 +74,30 @@ test('listExercises only returns the calling user\'s exercises', () => {
   assert.equal(exercisesA[0].name, 'Sentadilla');
 });
 
+test('listExercises returns lastSession: null for an exercise with no sessions', () => {
+  const { authService, exerciseService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  exerciseService.createExercise(userId, 'Sentadilla');
+
+  const [exercise] = exerciseService.listExercises(userId);
+  assert.equal(exercise.lastSession, null);
+});
+
+test('listExercises includes each exercise\'s most recent session', () => {
+  const { authService, exerciseService, sessionService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  const exercise = exerciseService.createExercise(userId, 'Sentadilla');
+  const now = Date.now();
+  const DAY_MS = 24 * 60 * 60 * 1000;
+
+  sessionService.addSet(userId, exercise.id, { weight: 60, reps: 8 }, now - DAY_MS);
+  const latest = sessionService.addSet(userId, exercise.id, { weight: 65, reps: 5 }, now);
+
+  const [listed] = exerciseService.listExercises(userId);
+  assert.equal(listed.lastSession.id, latest.id);
+  assert.deepEqual(listed.lastSession.sets, [{ w: 65, r: [5] }]);
+});
+
 test('getExercise throws for a nonexistent id', () => {
   const { authService, exerciseService, db } = makeServices();
   const userId = makeUser(authService, db, 'a@test.local');

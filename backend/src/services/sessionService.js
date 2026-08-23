@@ -75,6 +75,12 @@ function createSessionService(db, exerciseService = createExerciseService(db)) {
     ).get(exerciseId, userId);
 
     const now = Date.now();
+    // Mirrors the old client-side createSet's own `updateExercise(exercise,
+    // null, null, date)` call - touches only updated_at (not name/muscles),
+    // using the *set's* date (not necessarily "now") - same as before, so
+    // the exercise list's "most recently used first" sort keeps working now
+    // that the timestamp lives server-side.
+    db.prepare('UPDATE exercises SET updated_at = ? WHERE id = ? AND user_id = ?').run(date, exerciseId, userId);
 
     if (existing && isSameDay(Number(existing.date), date)) {
       const session = toSession(existing);

@@ -91,6 +91,17 @@ test('addSet on a different day starts a new session', () => {
   assert.equal(sessionService.listSessionsForExercise(userId, exercise.id).length, 2);
 });
 
+test('addSet bumps the parent exercise\'s updatedAt to the set\'s date', () => {
+  const { authService, exerciseService, sessionService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  const exercise = exerciseService.createExercise(userId, 'Press banca');
+  const setDate = Date.now() + DAY_MS; // a future/distinct timestamp, easy to assert exactly
+
+  sessionService.addSet(userId, exercise.id, { weight: 40, reps: 10 }, setDate);
+
+  assert.equal(exerciseService.getExercise(userId, exercise.id).updatedAt, setDate);
+});
+
 test('two users\' sessions for same-named exercises never mix', () => {
   const { authService, exerciseService, sessionService, db } = makeServices();
   const userA = makeUser(authService, db, 'a@test.local');

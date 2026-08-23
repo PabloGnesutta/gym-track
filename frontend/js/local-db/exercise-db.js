@@ -1,7 +1,8 @@
 import { dbStore } from "../common/state.js";
 import { normalize } from "../lib/string.js";
 import { _error, _info, _log } from "../lib/logger.js";
-import { deleteOne, getAll, getOneWithIndex, putOne } from "../lib/indexedDb.js";
+import { apiCreateExercise, apiDeleteExercise, apiFetchExercises, apiUpdateExercise } from "../api-caller/apiCaller.js";
+import { sessionFromApi } from "./set-db.js";
 
 
 /**
@@ -10,7 +11,7 @@ import { deleteOne, getAll, getOneWithIndex, putOne } from "../lib/indexedDb.js"
  */
 
 /**
- * @typedef {import("../lib/indexedDb.js").StoreKey} StoreKey
+ * @typedef {number} StoreKey
  * @typedef {import("./set-db.js").Session} Session
  */
 
@@ -20,103 +21,120 @@ import { deleteOne, getAll, getOneWithIndex, putOne } from "../lib/indexedDb.js"
  * @property {string} [normalizedName]
  * @property {string} [normalizedMuscles]
  * @property {string[]} muscles
- * @property {import("./set-db.js").Session | null} lastSession
- * @property {IDBValidKey} [_key]
+ * @property {Session | null} lastSession
+ * @property {StoreKey} [_key]
  * @property {Date} [createdAt]
  * @property {Date} [updatedAt]
  */
 
+/**
+ * @param {*} data - the `data` field of an exercises/* API response
+ * @returns {Exercise}
+ */
+function exerciseFromApi(data) {
+  const muscles = data.muscles || [];
+  return {
+    _key: data.id,
+    name: data.name,
+    normalizedName: normalize(data.name),
+    muscles,
+    normalizedMuscles: normalize(muscles.join(',')),
+    lastSession: data.lastSession ? sessionFromApi({ ...data.lastSession, exerciseId: data.id }) : null,
+    createdAt: new Date(data.createdAt),
+    updatedAt: new Date(data.updatedAt),
+  };
+}
 
 /**
- * Stores Exercise in DB. Updates DBStore
- * @param {string} name 
- * @param {string[]} muscles 
- * @param {Date} date - Date in which the exercise was created 
+ * Creates Exercise via the API. Updates dbStore.
+ * @param {string} name
+ * @param {string[]} muscles
+ * @param {Date} [date] Accepted for call-site compatibility; ignored - the
+ *   server always stamps createdAt/updatedAt with its own "now".
  * @returns {ServiceReturn<Exercise>} The exercise object with its key
  */
-async function createExercise(name, muscles = [], date = new Date()) {
+async function createExercise(name, muscles = [], date) {
   name = name.trim();
   if (!name) {
     return { errorMsg: 'Ingresar nombre' };
   }
-  const nameExists = await getOneWithIndex('exercises', 'name', name);
-  if (nameExists) {
-    return { errorMsg: `El ejercicio "${name}" ya existe` };
+
+  const result = await apiCreateExercise(name, muscles);
+  if (!result.data) {
+    return { errorMsg: result.error };
   }
 
-  /** @type {Exercise} */
-  const exercise = {
-    name,
-    normalizedName: normalize(name),
-    muscles,
-    normalizedMuscles: normalize(muscles.join(',')),
-    createdAt: date,
-    updatedAt: date,
-    lastSession: null,
-  };
-  const _key = await putOne('exercises', exercise);
-  exercise._key = _key;
-
+  const exercise = exerciseFromApi(result.data);
   dbStore.exercises.push(exercise);
   return { data: exercise };
 }
 
 /**
- * Updates DB record. Mutates incoming Exercise object
+ * Updates the Exercise via the API. Mutates the incoming Exercise object.
  * @param {Exercise} exercise will be updated
- * @param {string|null} name 
- * @param {string[]|null} muscles 
- * @param {Date|null} date
+ * @param {string|null} name
+ * @param {string[]|null} muscles
+ * @param {Date|null} [date] Accepted for call-site compatibility; ignored -
+ *   the server always stamps updatedAt with its own "now". Callers that
+ *   only want to bump updatedAt (no name/muscles change) still get that,
+ *   since the server always re-stamps the row regardless of which fields
+ *   the patch includes.
  * @returns {ServiceReturn<Exercise>} The exercise object with its key
  */
 async function updateExercise(exercise, name, muscles, date) {
   if (!exercise || !exercise._key) { return { errorMsg: 'Llave no provista' }; }
-  if (name) {
-    exercise.name = name;
-    exercise.normalizedName = normalize(name);
-    exercise.normalizedMuscles = normalize(exercise.muscles.join(','));
-  }
-  if (muscles && muscles.length) {
-    exercise.muscles = muscles;
-  }
-  exercise.updatedAt = date || new Date();
 
-  const _key = await putOne('exercises', exercise, exercise._key);
-  if (!_key) {
+  /** @type {{name?: string, muscles?: string[]}} */
+  const patch = {};
+  if (name) { patch.name = name; }
+  if (muscles && muscles.length) { patch.muscles = muscles; }
+
+  const result = await apiUpdateExercise(exercise._key, patch);
+  if (!result.data) {
     _error('Error al actualizar ejercicio');
+    return { errorMsg: result.error };
   }
+
+  exercise.name = result.data.name;
+  exercise.normalizedName = normalize(exercise.name);
+  exercise.muscles = result.data.muscles || [];
+  exercise.normalizedMuscles = normalize(exercise.muscles.join(','));
+  exercise.updatedAt = new Date(result.data.updatedAt);
+
   return { data: exercise };
 }
 
 /**
- * @param {StoreKey} exerciseKey 
- * @returns {Promise<StoreKey>}
+ * @param {StoreKey} exerciseKey
  */
 async function deleteExercise(exerciseKey) {
-  return deleteOne('exercises', exerciseKey);
-
+  await apiDeleteExercise(Number(exerciseKey));
 }
 
 
 /**
- * Fetch all exercises,
- * Store then sorted in dbStore.exercises
+ * Fetch all exercises via the API.
+ * Sorted the same way the old IndexedDB-backed version was: exercises with
+ * a recorded set (most recently updated first), then exercises with none
+ * (oldest created first).
  * @returns {Promise<Exercise[]>}
  */
 async function fetchExercises() {
+  const result = await apiFetchExercises();
+  if (!result.data) {
+    _error(' __ Error fetching exercises', result.error);
+    return [];
+  }
+
   /** @type {Exercise[]} */
   const haveSet = [];
   /** @type {Exercise[]} */
   const dontHaveSet = [];
 
-  await getAll(
-    'exercises',
-    /**
-     * Splits the exercises into two arrays, 
-     * one for excersices with sets done, and the other not
-     * @param {Exercise} exercise 
-     */
-    exercise => {
+  result.data.forEach(
+    /** @param {*} raw */
+    raw => {
+      const exercise = exerciseFromApi(raw);
       if (exercise.lastSession) {
         haveSet.push(exercise);
       } else {
@@ -140,4 +158,4 @@ async function fetchExercises() {
 }
 
 
-export { createExercise, fetchExercises, updateExercise, deleteExercise };
+export { createExercise, fetchExercises, updateExercise, deleteExercise, exerciseFromApi };

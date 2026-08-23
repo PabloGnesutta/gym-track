@@ -1,7 +1,7 @@
 import { timeAgo } from "../lib/date.js";
 import { _error, _log } from "../lib/logger.js";
 import { matches, normalize } from "../lib/string.js";
-import { deleteExerciseSessions } from "../local-db/set-db.js";
+import { clearArray, clearObj } from "../lib/utils.js";
 import { $, $form, $getInner, $input, $new, $queryOne, $queryOneInput } from "../lib/dom.js";
 import { appState, dataState, dbStore, setCurrentView, setStateField } from "../common/state.js";
 import { createExercise, deleteExercise, fetchExercises, updateExercise } from "../local-db/exercise-db.js";
@@ -84,8 +84,23 @@ async function openExerciseList() {
  * Fetch all exercises from DB.
  * Render exercise list.
  * Store them in dbstore.
+ *
+ * Idempotent on purpose: clears both the rendered `.list` DOM and the
+ * dbStore caches first, rather than assuming this only ever runs once per
+ * page load. It didn't used to need to - before accounts existed there was
+ * no way to trigger a second boot cycle without a full page reload (which
+ * naturally resets both) - but appBoot.js's afterLogin() can now run again
+ * after a logout/login within the same page, and without this the list
+ * (and dbStore.exercises) would just accumulate duplicate rows across
+ * accounts. dbStore.sessions is cleared too, for the same reason: exercise
+ * ids restart from 1 per account, so a stale cache entry keyed by id could
+ * otherwise leak one account's session data into another's view.
  */
 async function fetchAndRenderExercises() {
+  exerciseList.innerHTML = '';
+  clearArray(dbStore.exercises);
+  clearObj(dbStore.sessions);
+
   const exercises = await fetchExercises();
   exercises.forEach(exercise => {
     appendExerciseRow(exerciseList, exercise);
@@ -225,8 +240,9 @@ async function tryDeleteExercise() {
     return;
   }
 
+  // Server-side deleteExercise already cascades to the exercise's sessions
+  // in one transaction (see backend/src/services/exerciseService.js).
   await deleteExercise(exerciseKey);
-  await deleteExerciseSessions(exerciseKey);
 
   closeSingleExercise();
 

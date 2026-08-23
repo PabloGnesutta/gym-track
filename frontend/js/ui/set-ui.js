@@ -1,10 +1,9 @@
 import { dataState, dbStore, setStateField } from "../common/state.js";
 import { timeAgo, toYYYYMMDD } from "../lib/date.js";
 import { $, $form, $getInner, $getInnerInput, $new, $queryOne } from "../lib/dom.js";
-import { putOne } from "../lib/indexedDb.js";
 import { _error, _log } from "../lib/logger.js";
 import { updateExercise } from "../local-db/exercise-db.js";
-import { createSet, deleteSession, getSessionsForExercise } from "../local-db/set-db.js";
+import { createSet, deleteSession, getSessionsForExercise, updateSessionData } from "../local-db/set-db.js";
 import { svg_notes } from "../svg/svgFn.js";
 import { setExerciseRowLastSetData } from "./exercise-ui.js";
 
@@ -196,7 +195,10 @@ async function submitSession(e) {
   }
   session.sets = weightRows;
 
-  await putOne('sessions', session, session._key);
+  const result = await updateSessionData(session, weightRows, session.notes);
+  if (!result.data) {
+    return _error(result.errorMsg);
+  }
 }
 
 /**

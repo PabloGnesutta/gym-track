@@ -73,3 +73,36 @@ test('a session persists across a page reload', async ({ page }) => {
   await expect(page.locator('#exerciseListView')).toBeVisible();
   await expect(page.locator('#authView')).not.toBeVisible();
 });
+
+test('an exercise created under one account is visible from a fresh browser context logged into the same account (proves server-side, not just IndexedDB, persistence)', async ({ browser }) => {
+  const email = `e2e+${Date.now()}@test.local`;
+  const password = 'password123';
+  allowTestEmail(email);
+
+  const contextA = await browser.newContext();
+  const pageA = await contextA.newPage();
+  await pageA.goto('/');
+  await pageA.click('#authModeToggle');
+  await pageA.fill('#authForm input[name="authEmail"]', email);
+  await pageA.fill('#authForm input[name="authPassword"]', password);
+  await pageA.locator('#authForm .submit').getByText('Crear Cuenta').click();
+  await expect(pageA.locator('#exerciseListView')).toBeVisible();
+
+  await pageA.locator('#newExerciseBtn').click();
+  await pageA.locator('#exerciseForm input[name="exerciseName"]').fill('Press banca');
+  await pageA.locator('#exerciseForm .submit').getByText('Crear Ejercicio').click();
+  await expect(pageA.locator('.row', { hasText: 'Press banca' })).toBeVisible();
+  await contextA.close();
+
+  // A second, unrelated browser context - empty IndexedDB, no cached
+  // session - logs into the *same* account.
+  const contextB = await browser.newContext();
+  const pageB = await contextB.newPage();
+  await pageB.goto('/');
+  await pageB.fill('#authForm input[name="authEmail"]', email);
+  await pageB.fill('#authForm input[name="authPassword"]', password);
+  await pageB.locator('#authForm .submit').getByText('Iniciar Sesión').click();
+
+  await expect(pageB.locator('.row', { hasText: 'Press banca' })).toBeVisible();
+  await contextB.close();
+});

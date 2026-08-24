@@ -84,12 +84,16 @@ test('importing an exercise with session history uploads both past sessions, and
   await expect(page.locator('#authView')).toBeVisible();
   await seedLegacyExerciseWithSessions(page);
 
-  page.on('dialog', dialog => dialog.accept());
-
   await page.click('#authModeToggle');
   await page.fill('#authForm input[name="authEmail"]', email);
   await page.fill('#authForm input[name="authPassword"]', 'password123');
   await page.locator('#authForm .submit').getByText('Crear Cuenta').click();
+
+  await expect(page.locator('#dialogOverlay')).toBeVisible();
+  await page.locator('#dialogConfirmBtn').click(); // confirm the import offer
+  await expect(page.locator('#dialogOverlay')).toBeVisible();
+  await page.locator('#dialogConfirmBtn').click(); // dismiss the "imported N" result alert
+
   await expect(page.locator('.row', { hasText: 'Ejercicio Legado' })).toBeVisible();
 
   await page.locator('.row', { hasText: 'Ejercicio Legado' }).click();
@@ -112,6 +116,11 @@ test('importing an exercise with session history uploads both past sessions, and
   await page.reload();
   await expect(page.locator('#exerciseListView')).toBeVisible();
 
+  // Idempotent retry creates nothing new (everything's already imported), so
+  // the result alert - gated on exercisesCreated || sessionsCreated - never
+  // fires this time.
+  await expect(page.locator('#dialogOverlay')).not.toBeVisible();
+
   await expect(page.locator('#exerciseListView .row')).toHaveCount(1);
   await page.locator('.row', { hasText: 'Ejercicio Legado' }).click();
   await expect(page.locator('#singleExerciseView')).toBeVisible();
@@ -128,12 +137,15 @@ test('a device with pre-existing IndexedDB data is offered a one-time import on 
   await expect(page.locator('#authView')).toBeVisible();
   await seedLegacyExercise(page);
 
-  page.on('dialog', dialog => dialog.accept());
-
   await page.click('#authModeToggle');
   await page.fill('#authForm input[name="authEmail"]', email);
   await page.fill('#authForm input[name="authPassword"]', 'password123');
   await page.locator('#authForm .submit').getByText('Crear Cuenta').click();
+
+  await expect(page.locator('#dialogOverlay')).toBeVisible();
+  await page.locator('#dialogConfirmBtn').click(); // confirm the import offer
+  await expect(page.locator('#dialogOverlay')).toBeVisible();
+  await page.locator('#dialogConfirmBtn').click(); // dismiss the "imported N" result alert
 
   await expect(page.locator('.row', { hasText: 'Ejercicio Legado' })).toBeVisible();
 });
@@ -146,12 +158,14 @@ test('declining the import leaves the account with no exercises', async ({ page 
   await expect(page.locator('#authView')).toBeVisible();
   await seedLegacyExercise(page);
 
-  page.on('dialog', dialog => dialog.dismiss());
-
   await page.click('#authModeToggle');
   await page.fill('#authForm input[name="authEmail"]', email);
   await page.fill('#authForm input[name="authPassword"]', 'password123');
   await page.locator('#authForm .submit').getByText('Crear Cuenta').click();
+
+  await expect(page.locator('#dialogOverlay')).toBeVisible();
+  await page.locator('#dialogCancelBtn').click();
+  await expect(page.locator('#dialogOverlay')).not.toBeVisible(); // decline returns immediately, no follow-up alert
 
   await expect(page.locator('#exerciseListView')).toBeVisible();
   await expect(page.locator('#exerciseListView .row')).toHaveCount(0);
@@ -165,17 +179,16 @@ test('the import is only offered once - a second login on the same device does n
   await expect(page.locator('#authView')).toBeVisible();
   await seedLegacyExercise(page);
 
-  page.on('dialog', dialog => dialog.accept());
-
   await page.click('#authModeToggle');
   await page.fill('#authForm input[name="authEmail"]', email);
   await page.fill('#authForm input[name="authPassword"]', 'password123');
   await page.locator('#authForm .submit').getByText('Crear Cuenta').click();
-  await expect(page.locator('.row', { hasText: 'Ejercicio Legado' })).toBeVisible();
 
-  let dialogFired = false;
-  page.removeAllListeners('dialog');
-  page.on('dialog', dialog => { dialogFired = true; dialog.dismiss(); });
+  await expect(page.locator('#dialogOverlay')).toBeVisible();
+  await page.locator('#dialogConfirmBtn').click(); // confirm the import offer
+  await expect(page.locator('#dialogOverlay')).toBeVisible();
+  await page.locator('#dialogConfirmBtn').click(); // dismiss the "imported N" result alert
+  await expect(page.locator('.row', { hasText: 'Ejercicio Legado' })).toBeVisible();
 
   await logOut(page);
   await expect(page.locator('#authView')).toBeVisible();
@@ -184,5 +197,5 @@ test('the import is only offered once - a second login on the same device does n
   await page.locator('#authForm .submit').getByText('Iniciar Sesión').click();
 
   await expect(page.locator('.row', { hasText: 'Ejercicio Legado' })).toBeVisible();
-  expect(dialogFired).toBe(false);
+  await expect(page.locator('#dialogOverlay')).not.toBeVisible();
 });

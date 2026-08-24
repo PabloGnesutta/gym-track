@@ -1,5 +1,6 @@
 import { openExerciseList, openSingleExercise } from "../ui/exercise-ui.js";
 import { openAnalytics } from "../ui/analytics-ui.js";
+import { openMuscles } from "../ui/muscle-ui.js";
 import { parseRoute } from "./routeMatch.js";
 
 
@@ -34,6 +35,8 @@ function renderSpecificRoute(route) {
     openSingleExercise(route.exerciseKey);
   } else if (route.view === 'Analytics') {
     openAnalytics();
+  } else if (route.view === 'Muscles') {
+    openMuscles();
   } else {
     openExerciseList();
   }

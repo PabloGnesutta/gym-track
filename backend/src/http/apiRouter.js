@@ -5,6 +5,7 @@ import { createAuthService } from '../services/authService.js';
 import { createExerciseService } from '../services/exerciseService.js';
 import { createSessionService } from '../services/sessionService.js';
 import { createAnalyticsService } from '../services/analyticsService.js';
+import { createMuscleService } from '../services/muscleService.js';
 import { ServiceError } from '../services/ServiceError.js';
 import { error } from '../logger/logger.js';
 
@@ -13,6 +14,7 @@ const authService = createAuthService(db);
 const exerciseService = createExerciseService(db);
 const sessionService = createSessionService(db, exerciseService);
 const analyticsService = createAnalyticsService(db);
+const muscleService = createMuscleService(db);
 
 /**
  * @param {import('./types').ApiRequest} req
@@ -62,6 +64,13 @@ export async function handleApiRequest(req, res, segments) {
     if (route === 'exercises/update') { return successResponse(res, exerciseService.updateExercise(user.id, body.exerciseId, body)); }
     if (route === 'exercises/delete') {
       exerciseService.deleteExercise(user.id, body.exerciseId);
+      return successResponse(res, { ok: true });
+    }
+
+    if (route === 'muscles/fetch') { return successResponse(res, muscleService.listMuscles(user.id)); }
+    if (route === 'muscles/rename') { return successResponse(res, muscleService.renameMuscle(user.id, body.muscleId, body.name)); }
+    if (route === 'muscles/delete') {
+      muscleService.deleteMuscle(user.id, body.muscleId);
       return successResponse(res, { ok: true });
     }
 

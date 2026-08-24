@@ -1,5 +1,5 @@
 /**
- * @typedef {{ view: 'ExerciseList' } | { view: 'SingleExercise', exerciseKey: string } | { view: 'Analytics' }} Route
+ * @typedef {{ view: 'ExerciseList' } | { view: 'SingleExercise', exerciseKey: string } | { view: 'Analytics' } | { view: 'Muscles' }} Route
  */
 
 /**
@@ -13,6 +13,7 @@ function parseRoute(pathname) {
   const exerciseMatch = pathname.match(/^\/exercise\/([^/]+)\/?$/);
   if (exerciseMatch) { return { view: 'SingleExercise', exerciseKey: exerciseMatch[1] }; }
   if (pathname.match(/^\/analytics\/?$/)) { return { view: 'Analytics' }; }
+  if (pathname.match(/^\/muscles\/?$/)) { return { view: 'Muscles' }; }
   return { view: 'ExerciseList' };
 }
 

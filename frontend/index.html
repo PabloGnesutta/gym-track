@@ -25,6 +25,8 @@
   <link rel="stylesheet" href="/css/session.css" />
   <link rel="stylesheet" href="/css/auth.css" />
   <link rel="stylesheet" href="/css/analytics.css" />
+  <link rel="stylesheet" href="/css/dialog.css" />
+  <link rel="stylesheet" href="/css/muscles.css" />
 
   <script src="/js/app.js" type="module" defer></script>
 </head>
@@ -62,6 +64,7 @@
         <div id="headerMenu" class="header-menu">
           <div id="headerMenuBtn"></div>
           <div class="header-menu-panel display-none">
+            <div id="musclesMenuBtn" class="header-menu-item"></div>
             <div id="viewLogsBtn" class="header-menu-item"></div>
             <div id="logoutBtn" class="header-menu-item"></div>
             <div id="headerMenuUserEmail" class="header-menu-email"></div>
@@ -139,6 +142,13 @@
           <div class="pr-list"><!--  --></div>
         </div>
       </div>
+
+      <!-- Muscles -->
+      <div id="musclesView" class="page">
+        <div class="list muscles-list">
+          <!--  -->
+        </div>
+      </div>
     </div>
 
     <!-- Modal -->
@@ -184,6 +194,19 @@
           </div>
           <div class="submit"><!--  --></div>
         </form>
+      </div>
+    </div>
+
+    <!-- Confirm/Alert Dialog (reusable, replaces every native confirm()/alert()) -->
+    <div id="dialogOverlay" class="dialog-overlay display-none">
+      <div class="dialog-backdrop"></div>
+      <div class="dialog-box">
+        <h3 class="dialog-title display-none"></h3>
+        <p class="dialog-message"></p>
+        <div class="dialog-actions">
+          <button type="button" id="dialogCancelBtn" class="dialog-btn dialog-btn-cancel">Cancelar</button>
+          <button type="button" id="dialogConfirmBtn" class="dialog-btn dialog-btn-confirm">Confirmar</button>
+        </div>
       </div>
     </div>
 

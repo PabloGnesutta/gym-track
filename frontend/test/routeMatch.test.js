@@ -27,3 +27,11 @@ test('parseRoute: /analytics maps to the Analytics view', () => {
 test('parseRoute: trailing slash on /analytics is tolerated', () => {
   assert.deepEqual(parseRoute('/analytics/'), { view: 'Analytics' });
 });
+
+test('parseRoute: /muscles maps to the Muscles view', () => {
+  assert.deepEqual(parseRoute('/muscles'), { view: 'Muscles' });
+});
+
+test('parseRoute: trailing slash on /muscles is tolerated', () => {
+  assert.deepEqual(parseRoute('/muscles/'), { view: 'Muscles' });
+});

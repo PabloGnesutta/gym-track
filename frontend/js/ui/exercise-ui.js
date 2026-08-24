@@ -5,6 +5,7 @@ import { clearArray, clearObj } from "../lib/utils.js";
 import { $, $form, $getInner, $input, $new, $queryOne, $queryOneInput } from "../lib/dom.js";
 import { appState, dataState, dbStore, setCurrentView, setStateField } from "../common/state.js";
 import { syncUrl } from "../common/router.js";
+import { showConfirm } from "../lib/dialog.js";
 import { createExercise, deleteExercise, fetchExercises, updateExercise } from "../local-db/exercise-db.js";
 import { pageTitle } from "./ui.js";
 import { populateSetData } from "./set-ui.js";
@@ -241,7 +242,12 @@ async function tryDeleteExercise() {
   if (!exerciseKey) {
     return;
   }
-  if (!confirm(`¿Seguro que querés borrar el ejercicio ${exercise.name}?`)) {
+  const confirmed = await showConfirm({
+    title: 'Borrar ejercicio',
+    message: `¿Seguro que querés borrar el ejercicio ${exercise.name}?`,
+    confirmLabel: 'Borrar',
+  });
+  if (!confirmed) {
     return;
   }
 

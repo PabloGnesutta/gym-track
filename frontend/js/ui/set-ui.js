@@ -2,6 +2,7 @@ import { dataState, dbStore, setStateField } from "../common/state.js";
 import { timeAgo, toYYYYMMDD } from "../lib/date.js";
 import { $, $form, $getInner, $getInnerInput, $new, $queryOne } from "../lib/dom.js";
 import { _error, _log } from "../lib/logger.js";
+import { showConfirm } from "../lib/dialog.js";
 import { updateExercise } from "../local-db/exercise-db.js";
 import { createSet, deleteSession, getSessionsForExercise, updateSessionData } from "../local-db/set-db.js";
 import { svg_notes } from "../svg/svgFn.js";
@@ -262,7 +263,12 @@ async function openSessionForm(sessionKey) {
 */
 async function tryDeleteSession(e) {
   e.preventDefault();
-  if (!confirm('Seguro que querés borrar esta sesión?')) { return; }
+  const confirmed = await showConfirm({
+    title: 'Borrar sesión',
+    message: 'Seguro que querés borrar esta sesión?',
+    confirmLabel: 'Borrar',
+  });
+  if (!confirmed) { return; }
 
   const session = dataState.currentSession;
   if (!session) { return; }

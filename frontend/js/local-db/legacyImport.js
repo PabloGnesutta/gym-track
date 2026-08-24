@@ -1,6 +1,7 @@
 import { getAll } from "../lib/indexedDb.js";
 import { importBatch } from "./importBatch.js";
 import { _error, _info } from "../lib/logger.js";
+import { showConfirm, showAlert } from "../lib/dialog.js";
 
 
 // A JSON-string status object, not a plain boolean - see maybeImportLegacyData.
@@ -70,9 +71,10 @@ async function maybeImportLegacyData() {
   }
 
   if (!existingStatus) {
-    const confirmed = confirm(
-      'Encontramos ejercicios guardados en este dispositivo de una versión anterior. ¿Querés importarlos a tu cuenta?'
-    );
+    const confirmed = await showConfirm({
+      title: 'Importar datos',
+      message: 'Encontramos ejercicios guardados en este dispositivo de una versión anterior. ¿Querés importarlos a tu cuenta?',
+    });
     if (!confirmed) {
       writeStatus({ status: 'declined' });
       return;
@@ -92,14 +94,18 @@ async function maybeImportLegacyData() {
   if (failed === 0) {
     writeStatus({ status: 'complete' });
     if (counts.exercisesCreated || counts.sessionsCreated) {
-      alert(`Se importaron ${counts.exercisesCreated} ejercicios y ${counts.sessionsCreated} sesiones.`);
+      await showAlert({
+        title: 'Importación completa',
+        message: `Se importaron ${counts.exercisesCreated} ejercicios y ${counts.sessionsCreated} sesiones.`,
+      });
     }
   } else {
     // Left as 'pending' - retried automatically on the next login.
-    alert(
-      `Se importaron ${counts.exercisesCreated} ejercicios y ${counts.sessionsCreated} sesiones, `
-      + `pero ${failed} no se pudieron subir (revisá tu conexión). Vamos a reintentar la próxima vez que abras la app.`
-    );
+    await showAlert({
+      title: 'Importación parcial',
+      message: `Se importaron ${counts.exercisesCreated} ejercicios y ${counts.sessionsCreated} sesiones, `
+        + `pero ${failed} no se pudieron subir (revisá tu conexión). Vamos a reintentar la próxima vez que abras la app.`,
+    });
   }
 }
 

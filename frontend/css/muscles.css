@@ -1,0 +1,36 @@
+#musclesView {
+  padding: 0.5rem 0.25rem;
+}
+
+.muscle-row-name {
+  flex: 1;
+  font-size: 18px;
+  text-transform: capitalize; /* muscles.name is stored lowercase, same display convention as analytics.css's .muscle-name */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.muscle-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.muscle-row-count {
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  margin-right: 0.25rem;
+}
+
+.muscle-row-actions .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.muscle-row-input {
+  flex: 1;
+  font-size: 16px;
+  padding: 6px 8px;
+}

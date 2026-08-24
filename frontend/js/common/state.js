@@ -17,7 +17,7 @@ import { _log } from "../lib/logger.js";
  * @property {Views} currentView
  * @property {AuthStage} authStage
  *
- * @typedef {'ExerciseList'|'SingleExercise'|'Analytics'} Views
+ * @typedef {'ExerciseList'|'SingleExercise'|'Analytics'|'Muscles'} Views
  * @typedef {'checking'|'login'|'ready'} AuthStage
  *
  * @typedef {object} DataState

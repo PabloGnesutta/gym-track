@@ -42,3 +42,25 @@ test('adding a second set at the same weight groups reps under one row', async (
   await expect(page.locator('.current-date-log .row')).toHaveCount(1);
   await expect(page.locator('.current-date-log .row')).toContainText('40kg X 10,8');
 });
+
+test('deleting a session removes it, with a confirm/cancel dialog', async ({ page }) => {
+  await page.locator('#createSetForm input[name="weight"]').fill('40');
+  await page.locator('#createSetForm input[name="reps"]').fill('10');
+  await page.locator('#createSetForm .submit').getByText('Agregar Set').click();
+  await page.locator('.current-date-log .row').click();
+
+  // Cancel first - the session edit modal (still open behind the dialog)
+  // should be untouched.
+  await page.locator('#sessionForm .delete .btn').click();
+  await expect(page.locator('#dialogOverlay')).toBeVisible();
+  await page.locator('#dialogCancelBtn').click();
+  await expect(page.locator('#dialogOverlay')).not.toBeVisible();
+  await expect(page.locator('#sessionForm')).toBeVisible();
+
+  // Then confirm, from the same still-open session form.
+  await page.locator('#sessionForm .delete .btn').click();
+  await expect(page.locator('#dialogOverlay')).toBeVisible();
+  await page.locator('#dialogConfirmBtn').click();
+
+  await expect(page.locator('.current-date-log .row')).toHaveCount(0);
+});

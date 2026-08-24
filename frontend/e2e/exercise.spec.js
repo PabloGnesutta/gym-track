@@ -58,8 +58,6 @@ test('search filters the exercise list by name and by muscle tag', async ({ page
 });
 
 test('deleting an exercise removes it from the list', async ({ page }) => {
-  page.on('dialog', dialog => dialog.accept());
-
   await page.locator('#newExerciseBtn').click();
   await page.locator('#exerciseForm input[name="exerciseName"]').fill('Press banca');
   await page.locator('#exerciseForm .submit').getByText('Crear Ejercicio').click();
@@ -68,7 +66,28 @@ test('deleting an exercise removes it from the list', async ({ page }) => {
   await expect(page.locator('#singleExerciseView')).toBeVisible();
 
   await page.locator('#singleExerciseView .delete-btn .btn').click();
+  await expect(page.locator('#dialogOverlay')).toBeVisible();
+  await page.locator('#dialogConfirmBtn').click();
 
   await expect(page.locator('#exerciseListView')).toBeVisible();
   await expect(page.locator('.row', { hasText: 'Press banca' })).toHaveCount(0);
+});
+
+test('cancelling the delete confirmation leaves the exercise in place', async ({ page }) => {
+  await page.locator('#newExerciseBtn').click();
+  await page.locator('#exerciseForm input[name="exerciseName"]').fill('Press banca');
+  await page.locator('#exerciseForm .submit').getByText('Crear Ejercicio').click();
+
+  await page.locator('.row', { hasText: 'Press banca' }).click();
+  await expect(page.locator('#singleExerciseView')).toBeVisible();
+
+  await page.locator('#singleExerciseView .delete-btn .btn').click();
+  await expect(page.locator('#dialogOverlay')).toBeVisible();
+  await page.locator('#dialogCancelBtn').click();
+
+  await expect(page.locator('#dialogOverlay')).not.toBeVisible();
+  await expect(page.locator('#singleExerciseView')).toBeVisible();
+
+  await page.locator('#goBack2 .btn').click();
+  await expect(page.locator('.row', { hasText: 'Press banca' })).toBeVisible();
 });

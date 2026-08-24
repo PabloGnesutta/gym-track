@@ -164,10 +164,30 @@ async function apiFetchAnalyticsSummary() {
   return apiCall('analytics/summary', {});
 }
 
+async function apiFetchMuscles() {
+  return apiCall('muscles/fetch', {});
+}
+
+/**
+ * @param {number} muscleId
+ * @param {string} name
+ */
+async function apiRenameMuscle(muscleId, name) {
+  return apiCall('muscles/rename', { muscleId, name });
+}
+
+/**
+ * @param {number} muscleId
+ */
+async function apiDeleteMuscle(muscleId) {
+  return apiCall('muscles/delete', { muscleId });
+}
+
 
 export {
   apiCall, apiSignup, apiLogin, apiLogout, isLoggedIn, getAccessToken, getUserEmail, clearSession,
   apiCreateExercise, apiFetchExercises, apiUpdateExercise, apiDeleteExercise,
   apiFetchSessions, apiAddSet, apiUpdateSession, apiDeleteSession,
   apiFetchAnalyticsSummary,
+  apiFetchMuscles, apiRenameMuscle, apiDeleteMuscle,
 };

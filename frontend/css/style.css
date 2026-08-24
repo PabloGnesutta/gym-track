@@ -396,7 +396,8 @@ svg {
 /* Views state */
 #app:not([data-current-view='ExerciseList']) #exerciseListView,
 #app:not([data-current-view='SingleExercise']) #singleExerciseView,
-#app:not([data-current-view='Analytics']) #analyticsView {
+#app:not([data-current-view='Analytics']) #analyticsView,
+#app:not([data-current-view='Muscles']) #musclesView {
   display: none;
 }
 

@@ -2,10 +2,11 @@ import { appState, setStateField } from "../common/state.js";
 import { $, $button, $getInner, $queryOne } from "../lib/dom.js";
 import { _warn, openLogs } from "../lib/logger.js";
 import { getUserEmail } from "../api-caller/apiCaller.js";
-import { arrow_left, pen_solid, svg_trash, svg_logout, svg_menu, svg_list, svg_chart, svg_notes } from "../svg/svgFn.js";
+import { arrow_left, pen_solid, svg_trash, svg_logout, svg_menu, svg_list, svg_chart, svg_notes, svg_tag } from "../svg/svgFn.js";
 import { closeSingleExercise, openExerciseForm, openExerciseList, openSingleExercise, submitExercise, submitExerciseBtn, tryDeleteExercise } from "./exercise-ui.js";
 import { openSessionForm, submitSession, submitSet, tryDeleteSession } from "./set-ui.js";
 import { openAnalytics } from "./analytics-ui.js";
+import { openMuscles } from "./muscle-ui.js";
 import { resetAuthMode } from "./auth-ui.js";
 import { logout } from "../appBoot.js";
 
@@ -52,6 +53,9 @@ function initUi() {
           case 'SingleExercise':
             closeSingleExercise();
             break;
+          case 'Muscles':
+            openExerciseList();
+            break;
           default: break;
         }
       }
@@ -62,6 +66,14 @@ function initUi() {
     appendTo: $('headerMenuBtn'),
     svgFn: svg_menu,
     listener: { fn: toggleHeaderMenu },
+  });
+
+  $button({
+    class: 'horizontal',
+    label: 'Músculos',
+    svgFn: svg_tag,
+    appendTo: $('musclesMenuBtn'),
+    listener: { fn: () => openMuscles() },
   });
 
   $button({

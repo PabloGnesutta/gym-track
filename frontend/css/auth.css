@@ -16,11 +16,8 @@
 }
 
 #app:not([data-auth-stage='ready']) #mainHeader,
-#app:not([data-auth-stage='ready']) .views {
-  display: none;
-}
-
-#app:not([data-auth-stage='ready']) .logout-btn {
+#app:not([data-auth-stage='ready']) .views,
+#app:not([data-auth-stage='ready']) #mainFooter {
   display: none;
 }
 
@@ -46,4 +43,46 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.header-menu {
+  position: relative;
+}
+
+.header-menu-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background-color: var(--surface-2);
+  border: 1px solid var(--surface-4);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow);
+  overflow: hidden;
+  z-index: 20;
+  min-width: 200px;
+}
+
+.header-menu-item .btn {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0.75rem 1rem;
+  border-radius: 0;
+}
+
+.header-menu-item .btn .label {
+  white-space: nowrap;
+}
+
+.header-menu-item .btn .icon {
+  width: 20px;
+  height: 20px;
+}
+
+.header-menu-email {
+  padding: 0.5rem 1rem 0.75rem;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--surface-3);
+  word-break: break-all;
 }

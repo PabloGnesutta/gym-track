@@ -4,6 +4,7 @@ import { matches, normalize } from "../lib/string.js";
 import { clearArray, clearObj } from "../lib/utils.js";
 import { $, $form, $getInner, $input, $new, $queryOne, $queryOneInput } from "../lib/dom.js";
 import { appState, dataState, dbStore, setCurrentView, setStateField } from "../common/state.js";
+import { syncUrl } from "../common/router.js";
 import { createExercise, deleteExercise, fetchExercises, updateExercise } from "../local-db/exercise-db.js";
 import { pageTitle } from "./ui.js";
 import { populateSetData } from "./set-ui.js";
@@ -78,6 +79,10 @@ function openExerciseForm(isEdit) {
 async function openExerciseList() {
   setCurrentView('ExerciseList');
   pageTitle.innerText = 'Ejercicios';
+  // Replace, not push - bouncing back to the list (e.g. after deleting the
+  // exercise being viewed) shouldn't pile up history entries the way
+  // drilling into an exercise does.
+  syncUrl('/', { replace: true });
 }
 
 /**
@@ -274,13 +279,20 @@ async function openSingleExercise(exerciseKey) {
     exercise = dbStore.exercises.find(e => e._key === key);
   }
 
-  if (!exercise) { return _error('Exercise not found'); }
+  if (!exercise) {
+    // Reachable via a deep link/refresh on a stale or bad /exercise/:key
+    // URL (deleted exercise, mistyped id, another account's id) - fall back
+    // to the list instead of leaving the UI on a blank/broken view.
+    _error('Exercise not found');
+    return openExerciseList();
+  }
 
   setCurrentView('SingleExercise');
   pageTitle.innerText = 'Ejercicio actual';
 
   dataState.currentExercise = exercise;
   exerciseName.innerText = exercise.name;
+  syncUrl(`/exercise/${exercise._key}`);
   await populateSetData(exercise);
 }
 

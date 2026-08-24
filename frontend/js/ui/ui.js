@@ -1,15 +1,17 @@
-import { appState, dataState, dbStore, setStateField } from "../common/state.js";
+import { appState, setStateField } from "../common/state.js";
 import { $, $button, $getInner, $queryOne } from "../lib/dom.js";
-import { _info, _log, _warn, openLogs } from "../lib/logger.js";
-import { arrow_left, pen_solid, svg_trash, svg_logout } from "../svg/svgFn.js";
-import { closeSingleExercise, openExerciseForm, openSingleExercise, submitExercise, submitExerciseBtn, tryDeleteExercise } from "./exercise-ui.js";
+import { _warn, openLogs } from "../lib/logger.js";
+import { getUserEmail } from "../api-caller/apiCaller.js";
+import { arrow_left, pen_solid, svg_trash, svg_logout, svg_menu, svg_list, svg_chart, svg_notes } from "../svg/svgFn.js";
+import { closeSingleExercise, openExerciseForm, openExerciseList, openSingleExercise, submitExercise, submitExerciseBtn, tryDeleteExercise } from "./exercise-ui.js";
 import { openSessionForm, submitSession, submitSet, tryDeleteSession } from "./set-ui.js";
+import { openAnalytics } from "./analytics-ui.js";
 import { resetAuthMode } from "./auth-ui.js";
 import { logout } from "../appBoot.js";
 
 
 /**
- * TODO (event delegation): Use some kind of map for events so it grabs the 
+ * TODO (event delegation): Use some kind of map for events so it grabs the
  * function using the clickAction dataset point as the function name.
  * This requires standardizing the input of the target functions:
  *   Something like always receiving a dataset, and having the function know what to do with it
@@ -21,6 +23,23 @@ import { logout } from "../appBoot.js";
 
 const mainHeader = $('mainHeader');
 const pageTitle = $getInner(mainHeader, '.page-title');
+const headerMenuPanel = $queryOne('#headerMenu .header-menu-panel');
+
+function toggleHeaderMenu() {
+  const opening = headerMenuPanel.classList.contains('display-none');
+  headerMenuPanel.classList.toggle('display-none');
+  // Refreshed on every open, not just once at boot, since logging out and
+  // back in as a different account never reloads the page.
+  if (opening) { refreshHeaderMenuEmail(); }
+}
+
+function closeHeaderMenu() {
+  headerMenuPanel.classList.add('display-none');
+}
+
+function refreshHeaderMenuEmail() {
+  $('headerMenuUserEmail').innerText = getUserEmail() || '';
+}
 
 function initUi() {
   // Go Back Button
@@ -30,8 +49,6 @@ function initUi() {
     listener: {
       fn: e => {
         switch (appState.currentView) {
-          case 'ExerciseList':
-            break;
           case 'SingleExercise':
             closeSingleExercise();
             break;
@@ -42,14 +59,47 @@ function initUi() {
   });
 
   $button({
-    appendTo: $('logoutBtn'),
+    appendTo: $('headerMenuBtn'),
+    svgFn: svg_menu,
+    listener: { fn: toggleHeaderMenu },
+  });
+
+  $button({
+    class: 'horizontal',
+    label: 'Ver logs',
+    svgFn: svg_notes,
+    appendTo: $('viewLogsBtn'),
+    listener: { fn: () => openLogs() },
+  });
+
+  $button({
+    class: 'horizontal',
+    label: 'Cerrar sesión',
     svgFn: svg_logout,
+    appendTo: $('logoutBtn'),
     listener: {
       fn: async () => {
         await logout();
         resetAuthMode(false); // always land back on the login form, not wherever the mode was left
       }
     }
+  });
+
+  // Bottom tab bar - navigation triggers wired purely through data-click-
+  // action (see the delegation switch below), no per-button listener.
+  $button({
+    appendTo: $('tabExercisesBtn'),
+    svgFn: svg_list,
+    label: 'Ejercicios',
+    class: 'tab-btn',
+    dataset: [['clickAction', 'openExerciseList'], ['tab', 'exercises']],
+  });
+  $button({
+    appendTo: $('tabAnalyticsBtn'),
+    svgFn: svg_chart,
+    label: 'Análisis',
+    class: 'tab-btn',
+    dataset: [['clickAction', 'openAnalytics'], ['tab', 'analytics']],
   });
 
   $('newExerciseBtn').addEventListener('click', () => { openExerciseForm(false); });
@@ -94,6 +144,22 @@ function initUi() {
 
   modalBackdropHandler();
 
+  // Close the header menu on any click outside it - the hamburger button
+  // itself is inside #headerMenu, so the same click that opens the menu
+  // can't also immediately close it here.
+  $('app').addEventListener('click', e => {
+    if (headerMenuPanel.classList.contains('display-none')) { return; }
+    if (!(e.target instanceof Element) || !e.target.closest('#headerMenu')) {
+      closeHeaderMenu();
+    }
+  });
+
+  // Every menu item is a one-shot action (view logs, log out) rather than
+  // something that opens further UI the menu needs to stay open behind - so
+  // any click inside the panel closes it too, instead of requiring each
+  // item's own handler to remember to.
+  headerMenuPanel.addEventListener('click', closeHeaderMenu);
+
   // Click Event Delegation
   $('app').addEventListener('click', e => {
     const target = e.target;
@@ -116,6 +182,12 @@ function initUi() {
       case 'openSessionForm':
         openSessionForm(dataset.sessionKey || '');
         break;
+      case 'openExerciseList':
+        openExerciseList();
+        break;
+      case 'openAnalytics':
+        openAnalytics();
+        break;
       default:
         return _warn(' :: clickAction not defined: ' + dataset.clickAction);
     }
@@ -136,25 +208,4 @@ function modalBackdropHandler() {
 }
 
 
-function dbugBtns() {
-  const mainFooter = $('mainFooter');
-  $button({
-    label: 'State',
-    appendTo: mainFooter,
-    listener: {
-      fn: e => {
-        _log('dbStore', dbStore);
-        _log('dataState', dataState);
-        openLogs()
-      }
-    }
-  });
-  $button({
-    label: 'Logs',
-    appendTo: mainFooter,
-    listener: { fn: e => openLogs() }
-  });
-}
-
-
-export { initUi, dbugBtns, pageTitle };
+export { initUi, pageTitle };

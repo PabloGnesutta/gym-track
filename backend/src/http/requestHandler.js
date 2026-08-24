@@ -20,12 +20,18 @@ const PUBLIC_DIR = join(__dirname, '../', '../', '../', 'frontend');
  */
 export async function handleRequest(req, res) {
   const _url = req.url || '/'
+  // Every check below is pathname-based (root check, the static-asset
+  // prefixes, the "does the last segment have a dot" SPA-fallback
+  // heuristic) - split off the query string first, or a query value that
+  // happens to contain a dot corrupts that last check and wrongly 404s a
+  // real client route.
+  const pathname = _url.split('?')[0];
   try {
-    if (_url === '/') {
+    if (pathname === '/') {
       return sendAssetFile(res, ['index.html'], 'text/html');
     }
 
-    const urlArray = _url.split('/');
+    const urlArray = pathname.split('/');
     const pathBase = urlArray[1];
     const fileRoute = urlArray.slice(1, urlArray.length);
     debug('urlArray', urlArray)
@@ -48,6 +54,14 @@ export async function handleRequest(req, res) {
     }
     else if (pathBase === 'favicon.ico') {
       return sendAssetFile(res, ['static', pathBase], 'image/x-icon');
+    }
+
+    // Client-side routes (e.g. /exercise/42): the last path segment has no
+    // file extension, so it isn't a static asset request - serve the app
+    // shell and let the frontend router (common/router.js) resolve the URL.
+    const lastSegment = fileRoute[fileRoute.length - 1] || '';
+    if (!lastSegment.includes('.')) {
+      return sendAssetFile(res, ['index.html'], 'text/html');
     }
 
     // 404

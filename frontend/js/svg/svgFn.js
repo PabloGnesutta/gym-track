@@ -8,5 +8,11 @@ const svg_notes = () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64
 
 const svg_logout = () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M377.9 105.9c-9.5-9.9-25.1-10.2-35-.7s-10.2 25.1-.7 35L446.1 240H208c-13.3 0-24 10.7-24 24s10.7 24 24 24H446.1L342.1 391.7c-9.9 9.5-10.2 25.1-.7 35s25.1 10.2 35 .7l128-123.4c5-4.8 7.9-11.5 7.9-18.5s-2.9-13.6-7.9-18.5l-128-123.4zM160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32H96C43 32 0 75 0 128V384c0 53 43 96 96 96h64c17.7 0 32-14.3 32-32s-14.3-32-32-32H96c-17.7 0-32-14.3-32-32V128c0-17.7 14.3-32 32-32h64z"/></svg>`;
 
+const svg_menu = () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`;
 
-export { arrow_left, pen_solid, svg_trash, svg_notes, svg_logout };
+const svg_list = () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><rect x="96" y="144" width="448" height="64" rx="16" fill="currentColor"/><rect x="96" y="288" width="448" height="64" rx="16" fill="currentColor"/><rect x="96" y="432" width="448" height="64" rx="16" fill="currentColor"/></svg>`;
+
+const svg_chart = () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M12 20V4"/><path d="M20 20v-7"/></svg>`;
+
+
+export { arrow_left, pen_solid, svg_trash, svg_notes, svg_logout, svg_menu, svg_list, svg_chart };

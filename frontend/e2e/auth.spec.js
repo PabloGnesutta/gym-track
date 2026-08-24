@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { allowTestEmail, ensureAuth } from './helpers.js';
+import { allowTestEmail, ensureAuth, logOut } from './helpers.js';
 
 
 test.beforeEach(async ({ page }) => {
@@ -26,7 +26,7 @@ test('logging out returns to the login form', async ({ page }) => {
   await ensureAuth(page);
   await expect(page.locator('#exerciseListView')).toBeVisible();
 
-  await page.locator('#logoutBtn .btn').click();
+  await logOut(page);
 
   await expect(page.locator('#authView')).toBeVisible();
   await expect(page.locator('#exerciseListView')).not.toBeVisible();
@@ -43,7 +43,7 @@ test('logging back in with the right password succeeds', async ({ page }) => {
   await page.locator('#authForm .submit').getByText('Crear Cuenta').click();
   await expect(page.locator('#exerciseListView')).toBeVisible();
 
-  await page.locator('#logoutBtn .btn').click();
+  await logOut(page);
   await expect(page.locator('#authView')).toBeVisible();
 
   await page.fill('#authForm input[name="authEmail"]', email);

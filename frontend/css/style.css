@@ -116,26 +116,50 @@ svg {
 }
 
 .views .page {
-  min-height: calc(100dvh - var(--header-heigt) - var(--footer-heigt));
+  min-height: calc(100dvh - var(--header-heigt));
+  /* Fixed #mainFooter overlays the bottom of every page - this keeps its
+     last row of content from being hidden underneath it. */
+  padding-bottom: calc(var(--footer-heigt) + 1rem);
 }
 
+/* Bottom tab bar navigation */
 #mainFooter {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--footer-heigt);
   background-color: var(--surface-1);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 1dvw;
+  align-items: stretch;
+  justify-content: space-around;
+  box-shadow: 0 -2px 8px var(--shadow);
+  z-index: 5;
 }
 
-#mainFooter .btn {
-  padding: 3dvw;
-  color: var(--text-primary);
+#mainFooter .tab-btn {
+  flex: 1;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 11px;
+  gap: 2px;
+}
+
+#mainFooter .tab-btn .icon {
+  width: 22px;
+  height: 22px;
+}
+
+#app[data-current-view='ExerciseList'] #mainFooter [data-tab='exercises'],
+#app[data-current-view='SingleExercise'] #mainFooter [data-tab='exercises'],
+#app[data-current-view='Analytics'] #mainFooter [data-tab='analytics'] {
+  color: var(--accent);
 }
 
 #exerciseListView {
   --list-row-bg: var(--surface-2);
-  padding-bottom: 4.5rem;
+  /* Clears both the fixed footer and the floating FAB. */
+  padding-bottom: 5.5rem;
 }
 
 #exerciseListView .list {
@@ -371,11 +395,26 @@ svg {
 
 /* Views state */
 #app:not([data-current-view='ExerciseList']) #exerciseListView,
-#app:not([data-current-view='SingleExercise']) #singleExerciseView {
+#app:not([data-current-view='SingleExercise']) #singleExerciseView,
+#app:not([data-current-view='Analytics']) #analyticsView {
   display: none;
 }
 
-/* Go Back button visibility */
-#app[data-current-view='ExerciseList'] .go-back {
+/* Go Back button visibility - hidden on every top-level tab (nothing to
+   go back to), shown only while drilled into a sub-page. */
+#app[data-current-view='ExerciseList'] .go-back,
+#app[data-current-view='Analytics'] .go-back {
   visibility: hidden;
+}
+
+/* Analytics placeholder */
+#analyticsView .placeholder-message {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+#analyticsView .placeholder-message h2 {
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
 }

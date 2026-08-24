@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { allowTestEmail } from './helpers.js';
+import { allowTestEmail, logOut } from './helpers.js';
 
 
 /**
@@ -96,6 +96,13 @@ test('importing an exercise with session history uploads both past sessions, and
   await expect(page.locator('#singleExerciseView')).toBeVisible();
   await expect(page.locator('.previous-days-log .row')).toHaveCount(2);
 
+  // Back to the list first, so the reload below (which now preserves
+  // whatever URL it happens at - see routing.spec.js) lands on the list
+  // rather than re-opening this same exercise, which isn't what this test
+  // is about.
+  await page.locator('#goBack2 .btn').click();
+  await expect(page.locator('#exerciseListView')).toBeVisible();
+
   // Force the status back to 'pending' (as if a prior run had failed
   // partway) and reload - this re-triggers maybeImportLegacyData() with no
   // re-prompt (status isn't unset), exercising the exact retry path the
@@ -170,7 +177,7 @@ test('the import is only offered once - a second login on the same device does n
   page.removeAllListeners('dialog');
   page.on('dialog', dialog => { dialogFired = true; dialog.dismiss(); });
 
-  await page.locator('#logoutBtn .btn').click();
+  await logOut(page);
   await expect(page.locator('#authView')).toBeVisible();
   await page.fill('#authForm input[name="authEmail"]', email);
   await page.fill('#authForm input[name="authPassword"]', 'password123');

@@ -45,4 +45,15 @@ async function ensureAuth(page) {
   await page.waitForSelector('#authForm', { state: 'hidden' });
 }
 
-export { allowTestEmail, ensureAuth };
+/**
+ * Opens the header hamburger menu and clicks "Cerrar sesión" - the logout
+ * button lives inside that menu's (initially hidden) panel, not as a
+ * standalone header icon.
+ * @param {import('@playwright/test').Page} page
+ */
+async function logOut(page) {
+  await page.locator('#headerMenuBtn .btn').click();
+  await page.locator('#logoutBtn .btn').click();
+}
+
+export { allowTestEmail, ensureAuth, logOut };

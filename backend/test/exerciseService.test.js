@@ -38,6 +38,56 @@ test('createExercise stores name and muscles', () => {
   assert.ok(exercise.id);
 });
 
+test('createExercise normalizes muscle tag casing/whitespace', () => {
+  const { authService, exerciseService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+
+  const exercise = exerciseService.createExercise(userId, 'Press banca', ['Pecho', '  TRICEPS ']);
+
+  assert.deepEqual(exercise.muscles, ['pecho', 'triceps']);
+});
+
+test('createExercise deduplicates a muscle tag repeated with different casing', () => {
+  const { authService, exerciseService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+
+  const exercise = exerciseService.createExercise(userId, 'Press banca', ['pecho', 'Pecho', 'PECHO']);
+
+  assert.deepEqual(exercise.muscles, ['pecho']);
+});
+
+test('two exercises tagged with different casings of the same muscle share one underlying muscle row', () => {
+  const { authService, exerciseService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+
+  exerciseService.createExercise(userId, 'Sentadilla', ['Piernas']);
+  exerciseService.createExercise(userId, 'Zancadas', ['piernas']);
+
+  /** @type {{count: number}} */ // @ts-ignore
+  const { count } = db.prepare('SELECT COUNT(*) as count FROM muscles WHERE user_id = ?').get(userId);
+  assert.equal(count, 1);
+});
+
+test('updateExercise fully replaces muscle tags, normalized, and does not leak the old ones', () => {
+  const { authService, exerciseService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  const exercise = exerciseService.createExercise(userId, 'Press banca', ['pecho']);
+
+  const updated = exerciseService.updateExercise(userId, exercise.id, { muscles: ['Espalda', 'Biceps'] });
+
+  assert.deepEqual(updated.muscles, ['biceps', 'espalda']);
+});
+
+test('updateExercise without a muscles field leaves existing tags untouched', () => {
+  const { authService, exerciseService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  const exercise = exerciseService.createExercise(userId, 'Press banca', ['pecho']);
+
+  const updated = exerciseService.updateExercise(userId, exercise.id, { name: 'Press banca inclinado' });
+
+  assert.deepEqual(updated.muscles, ['pecho']);
+});
+
 test('createExercise rejects an empty name', () => {
   const { authService, exerciseService, db } = makeServices();
   const userId = makeUser(authService, db, 'a@test.local');

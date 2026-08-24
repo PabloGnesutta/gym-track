@@ -59,6 +59,18 @@ test('getMuscleBalance counts sets (not weight rows) per muscle, most-worked fir
   ]);
 });
 
+test('getMuscleBalance merges tags that differ only by casing into one entry', () => {
+  const { authService, exerciseService, sessionService, analyticsService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  const squat = exerciseService.createExercise(userId, 'Sentadilla', ['Piernas']);
+  const lunge = exerciseService.createExercise(userId, 'Zancadas', ['piernas']);
+
+  sessionService.addSet(userId, squat.id, { weight: 60, reps: 8 });
+  sessionService.addSet(userId, lunge.id, { weight: 20, reps: 10 });
+
+  assert.deepEqual(analyticsService.getMuscleBalance(userId), [{ muscle: 'piernas', sets: 2 }]);
+});
+
 test('getMuscleBalance excludes sessions older than the window', () => {
   const { authService, exerciseService, sessionService, analyticsService, db } = makeServices();
   const userId = makeUser(authService, db, 'a@test.local');

@@ -42,13 +42,16 @@ function estimatedOneRepMax(weight, reps) {
 }
 
 /**
- * Aggregation queries backing the Analytics page. Deliberately hybrid: SQL
- * does the cheap part (scope to `userId`, join in `muscles`/`name`, and for
- * frequency/PRs a date-range filter), the actual counting/bucketing happens
- * in JS - `muscles` is a comma-joined string and `sets` is a JSON blob on
- * `sessions`, and unpacking both in raw SQL would need json_each() plus a
- * recursive CTE for the comma-split, for no real benefit at this app's data
- * volume (a personal, single-user history - hundreds of sessions at most).
+ * Aggregation queries backing the Analytics page. Mostly hybrid - SQL does
+ * the cheap part (scope to `userId`, a date-range filter), the actual
+ * counting/bucketing happens in JS, since `sets` is a JSON blob on
+ * `sessions` and unpacking it in raw SQL (`json_each()`) would buy nothing
+ * at this app's data volume (a personal, single-user history - hundreds of
+ * sessions at most). `getMuscleBalance` is the exception: since muscles
+ * moved to a real `muscles`/`exercise_muscles` relationship (migration
+ * `003_muscles.js`), joining them in is a normal SQL join, not string
+ * parsing - `muscles.name` is already the canonical (trimmed, lowercased)
+ * form, so no normalization is needed on the read side either.
  * @param {import('node:sqlite').DatabaseSync} db
  */
 function createAnalyticsService(db) {
@@ -62,20 +65,18 @@ function createAnalyticsService(db) {
   function getMuscleBalance(userId, days = 30) {
     const sinceMs = Date.now() - days * DAY_MS;
     const rows = db.prepare(
-      `SELECT e.muscles, s.sets FROM sessions s
-       JOIN exercises e ON e.id = s.exercise_id
+      `SELECT m.name as muscle, s.sets FROM sessions s
+       JOIN exercise_muscles em ON em.exercise_id = s.exercise_id
+       JOIN muscles m ON m.id = em.muscle_id
        WHERE s.user_id = ? AND s.date >= ?`
     ).all(userId, sinceMs);
 
     /** @type {Map<string, number>} */
     const setsByMuscle = new Map();
     for (const row of rows) {
-      const muscles = row.muscles ? String(row.muscles).split(',').filter(Boolean) : [];
-      if (!muscles.length) { continue; }
+      const muscle = String(row.muscle);
       const setCount = countSets(JSON.parse(String(row.sets)));
-      for (const muscle of muscles) {
-        setsByMuscle.set(muscle, (setsByMuscle.get(muscle) || 0) + setCount);
-      }
+      setsByMuscle.set(muscle, (setsByMuscle.get(muscle) || 0) + setCount);
     }
 
     return Array.from(setsByMuscle, ([muscle, sets]) => ({ muscle, sets }))

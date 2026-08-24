@@ -4,6 +4,7 @@ import { errorResponse, successResponse } from './httpResponses.js';
 import { createAuthService } from '../services/authService.js';
 import { createExerciseService } from '../services/exerciseService.js';
 import { createSessionService } from '../services/sessionService.js';
+import { createAnalyticsService } from '../services/analyticsService.js';
 import { ServiceError } from '../services/ServiceError.js';
 import { error } from '../logger/logger.js';
 
@@ -11,6 +12,7 @@ import { error } from '../logger/logger.js';
 const authService = createAuthService(db);
 const exerciseService = createExerciseService(db);
 const sessionService = createSessionService(db, exerciseService);
+const analyticsService = createAnalyticsService(db);
 
 /**
  * @param {import('./types').ApiRequest} req
@@ -72,6 +74,8 @@ export async function handleApiRequest(req, res, segments) {
       sessionService.deleteSession(user.id, body.sessionId);
       return successResponse(res, { ok: true });
     }
+
+    if (route === 'analytics/summary') { return successResponse(res, analyticsService.getSummary(user.id)); }
 
     return errorResponse(res, 'Ruta de API no encontrada: ' + route, 404);
   } catch (err) {

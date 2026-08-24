@@ -160,9 +160,14 @@ async function apiDeleteSession(sessionId) {
   return apiCall('sessions/delete', { sessionId });
 }
 
+async function apiFetchAnalyticsSummary() {
+  return apiCall('analytics/summary', {});
+}
+
 
 export {
   apiCall, apiSignup, apiLogin, apiLogout, isLoggedIn, getAccessToken, getUserEmail, clearSession,
   apiCreateExercise, apiFetchExercises, apiUpdateExercise, apiDeleteExercise,
   apiFetchSessions, apiAddSet, apiUpdateSession, apiDeleteSession,
+  apiFetchAnalyticsSummary,
 };

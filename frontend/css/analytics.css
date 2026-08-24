@@ -1,0 +1,143 @@
+#analyticsView {
+  padding: 1rem;
+}
+
+.analytics-section {
+  background-color: var(--surface-2);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.analytics-section h2 {
+  font-size: 20px;
+  color: var(--text-primary);
+}
+
+.analytics-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.analytics-empty {
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 0.5rem 0;
+}
+
+/* Muscle balance - horizontal bars */
+.muscle-balance-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 32px;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.muscle-name {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-transform: capitalize;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.muscle-bar {
+  height: 10px;
+  background-color: var(--surface-3);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.muscle-bar-fill {
+  height: 100%;
+  background-color: var(--accent);
+  border-radius: 999px;
+}
+
+.muscle-count {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+/* Training frequency - vertical bars */
+.frequency-chart {
+  display: flex;
+  align-items: flex-end;
+  height: 100px;
+  gap: 6px;
+}
+
+.frequency-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.frequency-bar-track {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.frequency-bar {
+  width: 100%;
+  min-height: 3px;
+  background-color: var(--surface-4);
+  border-radius: 3px 3px 0 0;
+}
+
+.frequency-bar.current {
+  background-color: var(--accent);
+}
+
+.frequency-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Personal records */
+.pr-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--surface-3);
+}
+
+.pr-row:last-child {
+  border-bottom: none;
+}
+
+.pr-name {
+  font-size: 15px;
+  color: var(--text-primary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pr-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.pr-date {
+  font-size: 12px;
+  color: var(--text-muted);
+  min-width: 52px;
+  text-align: right;
+}

@@ -406,15 +406,3 @@ svg {
 #app[data-current-view='Analytics'] .go-back {
   visibility: hidden;
 }
-
-/* Analytics placeholder */
-#analyticsView .placeholder-message {
-  padding: 3rem 1.5rem;
-  text-align: center;
-  color: var(--text-secondary);
-}
-
-#analyticsView .placeholder-message h2 {
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-}

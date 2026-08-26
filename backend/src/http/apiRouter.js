@@ -13,7 +13,7 @@ import { error } from '../logger/logger.js';
 const authService = createAuthService(db);
 const exerciseService = createExerciseService(db);
 const sessionService = createSessionService(db, exerciseService);
-const analyticsService = createAnalyticsService(db);
+const analyticsService = createAnalyticsService(db, exerciseService);
 const muscleService = createMuscleService(db);
 
 /**
@@ -85,6 +85,9 @@ export async function handleApiRequest(req, res, segments) {
     }
 
     if (route === 'analytics/summary') { return successResponse(res, analyticsService.getSummary(user.id)); }
+    if (route === 'analytics/exerciseHistory') {
+      return successResponse(res, analyticsService.getExerciseHistory(user.id, body.exerciseId));
+    }
 
     return errorResponse(res, 'Ruta de API no encontrada: ' + route, 404);
   } catch (err) {

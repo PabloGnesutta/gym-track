@@ -53,8 +53,9 @@ function estimatedOneRepMax(weight, reps) {
  * parsing - `muscles.name` is already the canonical (trimmed, lowercased)
  * form, so no normalization is needed on the read side either.
  * @param {import('node:sqlite').DatabaseSync} db
+ * @param {ReturnType<typeof import('./exerciseService.js').createExerciseService>} exerciseService
  */
-function createAnalyticsService(db) {
+function createAnalyticsService(db, exerciseService) {
   /**
    * Sets logged per muscle tag over the trailing `days` days, most-worked
    * first - a quick "have I been skipping a muscle group" check using the
@@ -160,6 +161,28 @@ function createAnalyticsService(db) {
   }
 
   /**
+   * One point per session for this exercise, chronological (oldest first),
+   * each point's weight being the heaviest single set logged that session -
+   * the same "PR-style" reading `getPersonalRecords` uses (max across every
+   * weight row), just per-session instead of all-time.
+   * @param {number} userId
+   * @param {number} exerciseId
+   */
+  function getExerciseHistory(userId, exerciseId) {
+    exerciseService.getOwnedExerciseRow(userId, exerciseId);
+
+    const rows = db.prepare(
+      `SELECT date, sets FROM sessions WHERE user_id = ? AND exercise_id = ? ORDER BY date ASC`
+    ).all(userId, exerciseId);
+
+    return rows.map(row => {
+      const sets = JSON.parse(String(row.sets));
+      const maxWeight = sets.reduce((max, weightRow) => Math.max(max, weightRow.w), 0);
+      return { date: Number(row.date), weight: maxWeight };
+    });
+  }
+
+  /**
    * @param {number} userId
    */
   function getSummary(userId) {
@@ -170,7 +193,7 @@ function createAnalyticsService(db) {
     };
   }
 
-  return { getMuscleBalance, getTrainingFrequency, getPersonalRecords, getSummary };
+  return { getMuscleBalance, getTrainingFrequency, getPersonalRecords, getExerciseHistory, getSummary };
 }
 
 export { createAnalyticsService };

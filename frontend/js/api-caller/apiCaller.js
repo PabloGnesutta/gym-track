@@ -164,6 +164,13 @@ async function apiFetchAnalyticsSummary() {
   return apiCall('analytics/summary', {});
 }
 
+/**
+ * @param {number} exerciseId
+ */
+async function apiGetExerciseHistory(exerciseId) {
+  return apiCall('analytics/exerciseHistory', { exerciseId });
+}
+
 async function apiFetchMuscles() {
   return apiCall('muscles/fetch', {});
 }
@@ -188,6 +195,6 @@ export {
   apiCall, apiSignup, apiLogin, apiLogout, isLoggedIn, getAccessToken, getUserEmail, clearSession,
   apiCreateExercise, apiFetchExercises, apiUpdateExercise, apiDeleteExercise,
   apiFetchSessions, apiAddSet, apiUpdateSession, apiDeleteSession,
-  apiFetchAnalyticsSummary,
+  apiFetchAnalyticsSummary, apiGetExerciseHistory,
   apiFetchMuscles, apiRenameMuscle, apiDeleteMuscle,
 };

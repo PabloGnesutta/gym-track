@@ -220,6 +220,39 @@ svg {
   align-items: center;
 }
 
+#singleExerciseView .exercise-history-section {
+  background-color: var(--surface-1);
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+#singleExerciseView .exercise-history-section h4 {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.exercise-history-chart {
+  height: 120px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.exercise-history-svg {
+  overflow: visible;
+}
+
+.chart-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-point {
+  fill: var(--accent-strong);
+}
+
 #singleExerciseView .session-history-container {
   background-color: var(--surface-1);
   padding-bottom: 0.125rem;

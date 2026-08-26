@@ -6,6 +6,8 @@ import { showConfirm } from "../lib/dialog.js";
 import { updateExercise } from "../local-db/exercise-db.js";
 import { createSet, deleteSession, getSessionsForExercise, updateSessionData } from "../local-db/set-db.js";
 import { svg_notes } from "../svg/svgFn.js";
+import { buildWeightHistoryChart } from "../lib/svgChart.js";
+import { apiGetExerciseHistory } from "../api-caller/apiCaller.js";
 import { setExerciseRowLastSetData } from "./exercise-ui.js";
 
 
@@ -18,6 +20,7 @@ import { setExerciseRowLastSetData } from "./exercise-ui.js";
 const singleExerciseView = $('singleExerciseView');
 const currentDateLog = $getInner(singleExerciseView, '.current-date-log');
 const previousDaysLog = $getInner(singleExerciseView, '.previous-days-log');
+const historyChart = $getInner(singleExerciseView, '.exercise-history-chart');
 const setForm = $form('createSetForm');
 const sessionForm = $form('sessionForm');
 
@@ -70,6 +73,41 @@ async function populateSetData(exercise) {
       }
     }
   }
+
+  await populateHistoryChart(exercise);
+}
+
+/**
+ * Fetches and renders the exercise's weight-over-time chart. Always
+ * fetched fresh (no dbStore cache), so it reflects a set just logged.
+ * Calls apiGetExerciseHistory directly rather than through local-db/, same
+ * as analytics-ui.js does for its summary fetch - this data has no dbStore
+ * cache to keep in sync, so the usual ui -> local-db -> apiCaller flow
+ * would just be a pass-through with nothing to mutate.
+ * @param {Exercise} exercise
+ */
+async function populateHistoryChart(exercise) {
+  historyChart.innerHTML = '';
+  const result = await apiGetExerciseHistory(Number(exercise._key));
+  if (!result.data) {
+    _error(result.error);
+    return;
+  }
+
+  if (result.data.length < 2) {
+    historyChart.innerHTML = result.data.length === 0
+      ? 'Todavía no hay sets registrados para este ejercicio'
+      : 'Registrá al menos una sesión más para ver la evolución';
+    return;
+  }
+
+  // Set innerHTML directly (not via $new's wrapper div) so the <svg> is a
+  // direct child of historyChart - its height:100% (style.css's global
+  // `svg` rule) needs historyChart's own explicit height to resolve
+  // against; an intermediate wrapper div with no height of its own would
+  // make the percentage indefinite, and the svg would fall back to a 1:1
+  // square instead of filling the container.
+  historyChart.innerHTML = buildWeightHistoryChart(result.data);
 }
 
 /**
@@ -134,6 +172,7 @@ async function submitSet(e) {
     currentDateLog.innerHTML = '';
     appendSessionHistoryRow(currentDateLog, result.data);
     setExerciseRowLastSetData(exercise);
+    await populateHistoryChart(exercise);
   } else {
     _error(result.errorMsg);
   }
@@ -199,6 +238,10 @@ async function submitSession(e) {
   const result = await updateSessionData(session, weightRows, session.notes);
   if (!result.data) {
     return _error(result.errorMsg);
+  }
+
+  if (dataState.currentExercise) {
+    await populateHistoryChart(dataState.currentExercise);
   }
 }
 
@@ -286,6 +329,7 @@ async function tryDeleteSession(e) {
     exercise.lastSession = null;
     await updateExercise(exercise, null, null, new Date());
   }
+  await populateHistoryChart(exercise);
   setStateField('showSessionForm', false);
 }
 

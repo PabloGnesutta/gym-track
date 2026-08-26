@@ -18,7 +18,7 @@ function makeServices() {
     authService: createAuthService(db),
     exerciseService,
     sessionService: createSessionService(db, exerciseService),
-    analyticsService: createAnalyticsService(db),
+    analyticsService: createAnalyticsService(db, exerciseService),
     db,
   };
 }
@@ -215,6 +215,53 @@ test('getPersonalRecords only scopes to the calling user\'s own exercises', () =
   sessionService.addSet(userA, exerciseA.id, { weight: 80, reps: 5 });
 
   assert.equal(analyticsService.getPersonalRecords(userB).length, 0);
+});
+
+// --- getExerciseHistory ---
+
+test('getExerciseHistory returns an empty array for an exercise with no sessions', () => {
+  const { authService, exerciseService, analyticsService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  const exercise = exerciseService.createExercise(userId, 'Sentadilla');
+  assert.deepEqual(analyticsService.getExerciseHistory(userId, exercise.id), []);
+});
+
+test('getExerciseHistory returns one point per session, chronological, using the top-set weight', () => {
+  const { authService, exerciseService, sessionService, analyticsService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  const exercise = exerciseService.createExercise(userId, 'Sentadilla');
+  const now = Date.now();
+
+  sessionService.addSet(userId, exercise.id, { weight: 60, reps: 8 }, now - 2 * DAY_MS);
+  sessionService.addSet(userId, exercise.id, { weight: 40, reps: 10 }, now - 2 * DAY_MS); // same session, lower weight - ignored
+  sessionService.addSet(userId, exercise.id, { weight: 65, reps: 5 }, now - 1 * DAY_MS);
+
+  const history = analyticsService.getExerciseHistory(userId, exercise.id);
+  assert.equal(history.length, 2);
+  assert.equal(history[0].weight, 60);
+  assert.equal(history[1].weight, 65);
+  assert.ok(history[0].date < history[1].date);
+});
+
+test('getExerciseHistory only counts sessions for that exercise, not others', () => {
+  const { authService, exerciseService, sessionService, analyticsService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  const squat = exerciseService.createExercise(userId, 'Sentadilla');
+  const curl = exerciseService.createExercise(userId, 'Curl');
+
+  sessionService.addSet(userId, squat.id, { weight: 60, reps: 8 });
+  sessionService.addSet(userId, curl.id, { weight: 12, reps: 10 });
+
+  assert.equal(analyticsService.getExerciseHistory(userId, squat.id).length, 1);
+});
+
+test('getExerciseHistory throws for an exercise owned by another account', () => {
+  const { authService, exerciseService, analyticsService, db } = makeServices();
+  const ownerId = makeUser(authService, db, 'owner@test.local');
+  const otherId = makeUser(authService, db, 'other@test.local');
+  const exercise = exerciseService.createExercise(ownerId, 'Sentadilla');
+
+  assert.throws(() => analyticsService.getExerciseHistory(otherId, exercise.id));
 });
 
 // --- getSummary ---

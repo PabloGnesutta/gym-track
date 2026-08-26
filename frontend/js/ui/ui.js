@@ -1,5 +1,5 @@
 import { appState, setStateField } from "../common/state.js";
-import { $, $button, $getInner, $queryOne } from "../lib/dom.js";
+import { $, $button, $getInner, $new, $queryOne } from "../lib/dom.js";
 import { _warn, openLogs } from "../lib/logger.js";
 import { getUserEmail } from "../api-caller/apiCaller.js";
 import { arrow_left, pen_solid, svg_trash, svg_logout, svg_menu, svg_list, svg_chart, svg_notes, svg_tag } from "../svg/svgFn.js";
@@ -9,6 +9,7 @@ import { openAnalytics } from "./analytics-ui.js";
 import { openMuscles } from "./muscle-ui.js";
 import { resetAuthMode } from "./auth-ui.js";
 import { logout } from "../appBoot.js";
+import { adjustRestTimer, skipRestTimer, clearRestTimer, isRestTimerEnabled, setRestTimerEnabled } from "./restTimer-ui.js";
 
 
 /**
@@ -82,6 +83,28 @@ function initUi() {
     svgFn: svg_notes,
     appendTo: $('viewLogsBtn'),
     listener: { fn: () => openLogs() },
+  });
+
+  // Built with plain $new (not $button) since this row needs a label *and*
+  // a switch indicator, not $button's fixed icon+label shape. Reusing the
+  // .btn.base-button classes still picks up the same .header-menu-item .btn
+  // row styling (padding, full width, hover overlay) every other item gets.
+  const restTimerSwitch = $new({ class: 'switch', children: [$new({ class: 'switch-knob' })] });
+  restTimerSwitch.classList.toggle('on', isRestTimerEnabled());
+  $('restTimerToggleBtn').append(
+    $new({
+      class: 'btn base-button horizontal',
+      children: [
+        $new({ class: 'label', text: 'Timer de descanso' }),
+        restTimerSwitch,
+      ],
+    })
+  );
+  $('restTimerToggleBtn').addEventListener('click', () => {
+    const enabled = !isRestTimerEnabled();
+    setRestTimerEnabled(enabled);
+    restTimerSwitch.classList.toggle('on', enabled);
+    if (!enabled) { clearRestTimer(); } // turning it off immediately hides/stops anything currently running
   });
 
   $button({
@@ -199,6 +222,12 @@ function initUi() {
         break;
       case 'openAnalytics':
         openAnalytics();
+        break;
+      case 'adjustRestTimer':
+        adjustRestTimer(Number(dataset.delta));
+        break;
+      case 'skipRestTimer':
+        skipRestTimer();
         break;
       default:
         return _warn(' :: clickAction not defined: ' + dataset.clickAction);

@@ -8,6 +8,7 @@ import { createSet, deleteSession, getSessionsForExercise, updateSessionData } f
 import { svg_notes } from "../svg/svgFn.js";
 import { renderWeightHistoryChart } from "./exerciseHistoryChart.js";
 import { apiGetExerciseHistory } from "../api-caller/apiCaller.js";
+import { startRestTimer, clearRestTimer } from "./restTimer-ui.js";
 import { setExerciseRowLastSetData } from "./exercise-ui.js";
 
 
@@ -30,6 +31,8 @@ const sessionForm = $form('sessionForm');
  * @param {Exercise} exercise 
  */
 async function populateSetData(exercise) {
+  clearRestTimer(); // never leak a previous exercise's running/visible timer into this one
+
   input: {
     setForm.dataset.exerciseKey = (exercise._key || '').toString();
     const lastSession = exercise.lastSession;
@@ -167,6 +170,7 @@ async function submitSet(e) {
     appendSessionHistoryRow(currentDateLog, result.data);
     setExerciseRowLastSetData(exercise);
     await populateHistoryChart(exercise);
+    startRestTimer();
   } else {
     _error(result.errorMsg);
   }

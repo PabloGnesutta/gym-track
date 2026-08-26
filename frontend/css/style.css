@@ -220,6 +220,57 @@ svg {
   align-items: center;
 }
 
+.rest-timer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background-color: var(--surface-2);
+  border: 1px solid var(--accent-soft);
+  border-radius: 10px;
+  padding: 0.6rem 0.85rem;
+  margin: 0.75rem 0;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.rest-timer.done {
+  animation: restTimerFlash 0.6s ease-in-out 2;
+}
+
+@keyframes restTimerFlash {
+  0%, 100% { background-color: var(--surface-2); }
+  50% { background-color: var(--accent-soft); }
+}
+
+.rest-timer-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.rest-timer-time {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 3ch;
+}
+
+.rest-timer-controls {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.rest-timer-btn {
+  font-size: 12px;
+  color: var(--text-primary);
+  background-color: var(--surface-3);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
 #singleExerciseView .exercise-history-section {
   background-color: var(--surface-1);
   padding: 0.75rem;

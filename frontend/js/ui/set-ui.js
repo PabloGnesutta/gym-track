@@ -6,7 +6,7 @@ import { showConfirm } from "../lib/dialog.js";
 import { updateExercise } from "../local-db/exercise-db.js";
 import { createSet, deleteSession, getSessionsForExercise, updateSessionData } from "../local-db/set-db.js";
 import { svg_notes } from "../svg/svgFn.js";
-import { buildWeightHistoryChart } from "../lib/svgChart.js";
+import { renderWeightHistoryChart } from "./exerciseHistoryChart.js";
 import { apiGetExerciseHistory } from "../api-caller/apiCaller.js";
 import { setExerciseRowLastSetData } from "./exercise-ui.js";
 
@@ -101,13 +101,7 @@ async function populateHistoryChart(exercise) {
     return;
   }
 
-  // Set innerHTML directly (not via $new's wrapper div) so the <svg> is a
-  // direct child of historyChart - its height:100% (style.css's global
-  // `svg` rule) needs historyChart's own explicit height to resolve
-  // against; an intermediate wrapper div with no height of its own would
-  // make the percentage indefinite, and the svg would fall back to a 1:1
-  // square instead of filling the container.
-  historyChart.innerHTML = buildWeightHistoryChart(result.data);
+  renderWeightHistoryChart(historyChart, result.data);
 }
 
 /**

@@ -233,24 +233,15 @@ svg {
 }
 
 .exercise-history-chart {
-  height: 120px;
+  height: 150px;
   color: var(--text-muted);
   font-size: 14px;
 }
 
-.exercise-history-svg {
-  overflow: visible;
-}
-
-.chart-line {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 1.5;
-  vector-effect: non-scaling-stroke;
-}
-
-.chart-point {
-  fill: var(--accent-strong);
+.exercise-history-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 #singleExerciseView .session-history-container {

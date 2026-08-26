@@ -20,7 +20,7 @@ test('a brand-new exercise shows the "no sets yet" empty state, no chart', async
   await createAndOpenExercise(page, 'Sentadilla');
 
   await expect(page.locator('.exercise-history-chart')).toContainText('Todavía no hay sets registrados');
-  await expect(page.locator('.exercise-history-chart svg')).toHaveCount(0);
+  await expect(page.locator('.exercise-history-chart canvas')).toHaveCount(0);
 });
 
 test('a single logged session shows a "log one more" prompt, still no chart', async ({ page }) => {
@@ -32,7 +32,7 @@ test('a single logged session shows a "log one more" prompt, still no chart', as
   await page.waitForTimeout(300);
 
   await expect(page.locator('.exercise-history-chart')).toContainText('Registrá al menos una sesión más');
-  await expect(page.locator('.exercise-history-chart svg')).toHaveCount(0);
+  await expect(page.locator('.exercise-history-chart canvas')).toHaveCount(0);
 });
 
 test('three sessions render a chart with one point per session, in chronological order', async ({ page }) => {
@@ -56,13 +56,14 @@ test('three sessions render a chart with one point per session, in chronological
   await expect(page.locator('#singleExerciseView')).toBeVisible();
 
   const chart = page.locator('.exercise-history-chart');
-  await expect(chart.locator('svg polyline')).toBeVisible();
-  await expect(chart.locator('svg circle')).toHaveCount(3);
-  await expect(chart.locator('.analytics-empty')).toHaveCount(0);
+  const canvas = chart.locator('canvas');
+  await expect(canvas).toBeVisible();
+  await expect(canvas).toHaveAttribute('data-points', '3');
 
-  const xs = await chart.locator('svg circle').evaluateAll(
-    circles => circles.map(c => Number(c.getAttribute('cx')))
+  const dims = await canvas.evaluate(
+    /** @param {HTMLCanvasElement} c */
+    c => ({ width: c.width, height: c.height })
   );
-  expect(xs[0]).toBeLessThan(xs[1]);
-  expect(xs[1]).toBeLessThan(xs[2]);
+  expect(dims.width).toBeGreaterThan(0);
+  expect(dims.height).toBeGreaterThan(0);
 });

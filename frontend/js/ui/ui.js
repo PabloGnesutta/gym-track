@@ -115,7 +115,7 @@ function initUi() {
     listener: {
       fn: async () => {
         await logout();
-        resetAuthMode(false); // always land back on the login form, not wherever the mode was left
+        resetAuthMode('login'); // always land back on the login form, not wherever the mode was left
       }
     }
   });

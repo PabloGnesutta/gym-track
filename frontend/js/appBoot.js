@@ -28,6 +28,15 @@ let pendingInitialRoute = null;
 async function bootApp(initialRoute) {
   pendingInitialRoute = initialRoute;
 
+  // A password-reset link must always land on the reset form, regardless of
+  // whether this browser also happens to have a valid session (its own, or
+  // a different account's) - auth-ui.js's initAuthUi() is what actually
+  // reads the token and switches to reset mode, right after this resolves.
+  if (new URLSearchParams(location.search).has('resetToken')) {
+    setAuthStage('login');
+    return;
+  }
+
   if (!isLoggedIn()) {
     setAuthStage('login');
     return;

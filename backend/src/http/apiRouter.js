@@ -47,6 +47,12 @@ export async function handleApiRequest(req, res, segments) {
       const accessToken = authService.createSession(user.id);
       return successResponse(res, { accessToken, userId: user.id, email: user.email, name: user.name });
     }
+    if (route === 'requestPasswordReset') {
+      return successResponse(res, await authService.requestPasswordReset(body.email));
+    }
+    if (route === 'resetPassword') {
+      return successResponse(res, authService.resetPassword(body.token, body.newPassword));
+    }
 
     // Every route below requires a valid bearer token.
     const user = getBearerUser(req);

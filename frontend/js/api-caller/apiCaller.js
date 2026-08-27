@@ -104,6 +104,21 @@ async function apiLogout() {
 }
 
 /**
+ * @param {string} email
+ */
+async function apiRequestPasswordReset(email) {
+  return apiCall('requestPasswordReset', { email });
+}
+
+/**
+ * @param {string} token
+ * @param {string} newPassword
+ */
+async function apiResetPassword(token, newPassword) {
+  return apiCall('resetPassword', { token, newPassword });
+}
+
+/**
  * @param {string} name
  * @param {string[]} [muscles]
  */
@@ -193,6 +208,7 @@ async function apiDeleteMuscle(muscleId) {
 
 export {
   apiCall, apiSignup, apiLogin, apiLogout, isLoggedIn, getAccessToken, getUserEmail, clearSession,
+  apiRequestPasswordReset, apiResetPassword,
   apiCreateExercise, apiFetchExercises, apiUpdateExercise, apiDeleteExercise,
   apiFetchSessions, apiAddSet, apiUpdateSession, apiDeleteSession,
   apiFetchAnalyticsSummary, apiGetExerciseHistory,

@@ -43,15 +43,24 @@
             <label for="authName">Nombre</label>
             <input type="text" name="authName" placeholder="Tu nombre" autocomplete="name" />
           </div>
-          <div class="form-control">
+          <div id="authEmailField" class="form-control">
             <label for="authEmail">Email</label>
             <input type="email" name="authEmail" placeholder="tu@email.com" autocomplete="email" />
           </div>
-          <div class="form-control">
+          <div id="authPasswordField" class="form-control">
             <label for="authPassword">Contraseña</label>
             <input type="password" name="authPassword" placeholder="Contraseña" autocomplete="current-password" />
           </div>
+          <div id="authNewPasswordField" class="form-control display-none">
+            <label for="authNewPassword">Nueva contraseña</label>
+            <input type="password" name="authNewPassword" placeholder="Nueva contraseña" autocomplete="new-password" />
+          </div>
+          <div id="authNewPasswordConfirmField" class="form-control display-none">
+            <label for="authNewPasswordConfirm">Repetir contraseña</label>
+            <input type="password" name="authNewPasswordConfirm" placeholder="Repetir contraseña" autocomplete="new-password" />
+          </div>
           <div class="submit"><!--  --></div>
+          <button type="button" id="authForgotPasswordBtn" class="mode-toggle">¿Olvidaste tu contraseña?</button>
           <button type="button" id="authModeToggle" class="mode-toggle">¿No tenés cuenta? Creá una</button>
         </div>
       </form>

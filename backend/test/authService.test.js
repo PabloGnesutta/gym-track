@@ -8,10 +8,27 @@ import { createAuthService } from '../src/services/authService.js';
 import { ServiceError } from '../src/services/ServiceError.js';
 
 
+/**
+ * Records every call instead of hitting real SMTP - matches emailService.js's
+ * real sendEmail() contract (resolves a boolean, never throws).
+ */
+function makeFakeEmailService() {
+  /** @type {{to: string, subject: string, text: string}[]} */
+  const sent = [];
+  return {
+    sent,
+    async sendEmail({ to, subject, text }) {
+      sent.push({ to, subject, text });
+      return true;
+    },
+  };
+}
+
 function makeServices() {
   const db = new DatabaseSync(':memory:');
   runMigrations(db, migrations);
-  return { authService: createAuthService(db), db };
+  const emailService = makeFakeEmailService();
+  return { authService: createAuthService(db, emailService), db, emailService };
 }
 
 test('createUser rejects an email not on the allow-list', () => {
@@ -86,4 +103,70 @@ test('deleteSession invalidates the token', () => {
   authService.deleteSession(token);
 
   assert.equal(authService.getUserBySessionToken(token), null);
+});
+
+// --- requestPasswordReset / resetPassword ---
+
+test('requestPasswordReset sends an email and resolves {ok:true} for an existing account', async () => {
+  const { authService, db, emailService } = makeServices();
+  addAllowedEmail(db, 'a@test.local');
+  authService.createUser('a@test.local', 'password123');
+
+  const result = await authService.requestPasswordReset('A@Test.Local');
+
+  assert.deepEqual(result, { ok: true });
+  assert.equal(emailService.sent.length, 1);
+  assert.equal(emailService.sent[0].to, 'a@test.local');
+});
+
+test('requestPasswordReset resolves {ok:true} without sending an email for a nonexistent account', async () => {
+  const { authService, emailService } = makeServices();
+
+  const result = await authService.requestPasswordReset('nobody@test.local');
+
+  assert.deepEqual(result, { ok: true });
+  assert.equal(emailService.sent.length, 0);
+});
+
+test('resetPassword changes the password and invalidates existing sessions', async () => {
+  const { authService, db, emailService } = makeServices();
+  addAllowedEmail(db, 'a@test.local');
+  authService.createUser('a@test.local', 'password123');
+  const oldToken = authService.createSession(
+    /** @type {{id: number}} */(db.prepare('SELECT id FROM users WHERE email = ?').get('a@test.local')).id
+  );
+
+  await authService.requestPasswordReset('a@test.local');
+  const resetLink = emailService.sent[0].text;
+  const resetToken = /** @type {RegExpMatchArray} */(resetLink.match(/resetToken=([a-f0-9]+)/))[1];
+
+  const result = authService.resetPassword(resetToken, 'newPassword456');
+  assert.deepEqual(result, { ok: true });
+
+  assert.throws(() => authService.verifyLogin('a@test.local', 'password123'));
+  assert.equal(authService.verifyLogin('a@test.local', 'newPassword456').email, 'a@test.local');
+  assert.equal(authService.getUserBySessionToken(oldToken), null);
+});
+
+test('resetPassword rejects a bogus or expired token', () => {
+  const { authService, db } = makeServices();
+  addAllowedEmail(db, 'a@test.local');
+  const user = authService.createUser('a@test.local', 'password123');
+
+  assert.throws(() => authService.resetPassword('bogus-token', 'newPassword456'), ServiceError);
+
+  db.prepare(
+    'UPDATE users SET password_reset_token = ?, password_reset_expires_at = ? WHERE id = ?'
+  ).run('expired-token', Date.now() - 1000, user.id);
+  assert.throws(() => authService.resetPassword('expired-token', 'newPassword456'), ServiceError);
+});
+
+test('resetPassword rejects an empty new password', async () => {
+  const { authService, db, emailService } = makeServices();
+  addAllowedEmail(db, 'a@test.local');
+  authService.createUser('a@test.local', 'password123');
+  await authService.requestPasswordReset('a@test.local');
+  const resetToken = /** @type {RegExpMatchArray} */(emailService.sent[0].text.match(/resetToken=([a-f0-9]+)/))[1];
+
+  assert.throws(() => authService.resetPassword(resetToken, ''), ServiceError);
 });

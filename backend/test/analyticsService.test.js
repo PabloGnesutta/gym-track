@@ -152,6 +152,68 @@ test('getTrainingFrequency excludes a session older than the window', () => {
   assert.ok(frequency.every(bucket => bucket.daysTrained === 0));
 });
 
+// --- getVolumeTrend ---
+
+test('getVolumeTrend returns `weeks` buckets, all zero, for an account with no sessions', () => {
+  const { authService, analyticsService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+
+  const trend = analyticsService.getVolumeTrend(userId, 8);
+
+  assert.equal(trend.length, 8);
+  assert.ok(trend.every(bucket => bucket.volume === 0));
+});
+
+test('getVolumeTrend sums weight x reps across every set into the current week\'s bucket', () => {
+  const { authService, exerciseService, sessionService, analyticsService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  const exercise = exerciseService.createExercise(userId, 'Sentadilla');
+
+  sessionService.addSet(userId, exercise.id, { weight: 40, reps: 10 }); // 400
+  sessionService.addSet(userId, exercise.id, { weight: 40, reps: 8 });  // 320, same session/weight row
+
+  const trend = analyticsService.getVolumeTrend(userId, 8);
+  assert.equal(trend[7].volume, 720);
+  assert.ok(trend.slice(0, 7).every(bucket => bucket.volume === 0));
+});
+
+test('getVolumeTrend counts two exercises trained the same day as separate volume, unlike day-based frequency', () => {
+  const { authService, exerciseService, sessionService, analyticsService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  const squat = exerciseService.createExercise(userId, 'Sentadilla');
+  const curl = exerciseService.createExercise(userId, 'Curl');
+  const now = Date.now();
+
+  sessionService.addSet(userId, squat.id, { weight: 60, reps: 8 }, now); // 480
+  sessionService.addSet(userId, curl.id, { weight: 12, reps: 10 }, now + 1000); // 120
+
+  const trend = analyticsService.getVolumeTrend(userId, 8);
+  assert.equal(trend[7].volume, 600);
+});
+
+test('getVolumeTrend places an older session in its own earlier week bucket', () => {
+  const { authService, exerciseService, sessionService, analyticsService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  const exercise = exerciseService.createExercise(userId, 'Sentadilla');
+
+  sessionService.addSet(userId, exercise.id, { weight: 60, reps: 8 }, Date.now() - 3 * WEEK_MS); // 480
+
+  const trend = analyticsService.getVolumeTrend(userId, 8);
+  assert.equal(trend[4].volume, 480); // 3 weeks ago -> index (8 - 1 - 3) = 4
+  assert.equal(trend[7].volume, 0);
+});
+
+test('getVolumeTrend excludes a session older than the window', () => {
+  const { authService, exerciseService, sessionService, analyticsService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  const exercise = exerciseService.createExercise(userId, 'Sentadilla');
+
+  sessionService.addSet(userId, exercise.id, { weight: 60, reps: 8 }, Date.now() - 20 * WEEK_MS);
+
+  const trend = analyticsService.getVolumeTrend(userId, 8);
+  assert.ok(trend.every(bucket => bucket.volume === 0));
+});
+
 // --- getPersonalRecords ---
 
 test('getPersonalRecords returns an empty array for an account with no sessions', () => {
@@ -276,5 +338,7 @@ test('getSummary combines all three into one object', () => {
 
   assert.deepEqual(summary.muscleBalance, [{ muscle: 'piernas', sets: 1 }]);
   assert.equal(summary.frequency.length, 8);
+  assert.equal(summary.volumeTrend.length, 8);
+  assert.equal(summary.volumeTrend[7].volume, 480);
   assert.equal(summary.personalRecords.length, 1);
 });

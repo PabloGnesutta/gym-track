@@ -1,7 +1,7 @@
 import { dbStore } from "../common/state.js";
 import { normalize } from "../lib/string.js";
 import { _error, _info, _log } from "../lib/logger.js";
-import { apiCreateExercise, apiDeleteExercise, apiFetchExercises, apiUpdateExercise } from "../api-caller/apiCaller.js";
+import { apiCreateExercise, apiDeleteExercise, apiFetchExercises, apiSetExerciseFavorite, apiUpdateExercise } from "../api-caller/apiCaller.js";
 import { sessionFromApi } from "./set-db.js";
 
 
@@ -22,6 +22,7 @@ import { sessionFromApi } from "./set-db.js";
  * @property {string} [normalizedMuscles]
  * @property {string[]} muscles
  * @property {Session | null} lastSession
+ * @property {boolean} [isFavorite]
  * @property {StoreKey} [_key]
  * @property {Date} [createdAt]
  * @property {Date} [updatedAt]
@@ -42,6 +43,7 @@ function exerciseFromApi(data) {
     lastSession: data.lastSession ? sessionFromApi({ ...data.lastSession, exerciseId: data.id }) : null,
     createdAt: new Date(data.createdAt),
     updatedAt: new Date(data.updatedAt),
+    isFavorite: !!data.isFavorite,
   };
 }
 
@@ -105,6 +107,28 @@ async function updateExercise(exercise, name, muscles, date) {
 }
 
 /**
+ * Pins/unpins the Exercise via the API. Mutates the incoming Exercise object,
+ * same convention as `updateExercise` - a dedicated call (not folded into
+ * `updateExercise`'s patch) since the server intentionally doesn't bump
+ * `updatedAt` for a favorite toggle (see exerciseService.js's `setFavorite`).
+ * @param {Exercise} exercise will be updated
+ * @param {boolean} isFavorite
+ * @returns {ServiceReturn<Exercise>} The exercise object with its key
+ */
+async function setExerciseFavorite(exercise, isFavorite) {
+  if (!exercise || !exercise._key) { return { errorMsg: 'Llave no provista' }; }
+
+  const result = await apiSetExerciseFavorite(exercise._key, isFavorite);
+  if (!result.data) {
+    _error('Error al marcar ejercicio como favorito');
+    return { errorMsg: result.error };
+  }
+
+  exercise.isFavorite = !!result.data.isFavorite;
+  return { data: exercise };
+}
+
+/**
  * @param {StoreKey} exerciseKey
  */
 async function deleteExercise(exerciseKey) {
@@ -116,7 +140,11 @@ async function deleteExercise(exerciseKey) {
  * Fetch all exercises via the API.
  * Sorted the same way the old IndexedDB-backed version was: exercises with
  * a recorded set (most recently updated first), then exercises with none
- * (oldest created first).
+ * (oldest created first) - except favorited exercises, which are pinned
+ * above both groups. The favorites bucket isn't re-sorted client-side: the
+ * server already returns rows `is_favorite DESC, updated_at DESC` (see
+ * exerciseService.js's `listExercises`), and `push` preserves that relative
+ * order.
  * @returns {Promise<Exercise[]>}
  */
 async function fetchExercises() {
@@ -127,6 +155,8 @@ async function fetchExercises() {
   }
 
   /** @type {Exercise[]} */
+  const favorites = [];
+  /** @type {Exercise[]} */
   const haveSet = [];
   /** @type {Exercise[]} */
   const dontHaveSet = [];
@@ -135,7 +165,9 @@ async function fetchExercises() {
     /** @param {*} raw */
     raw => {
       const exercise = exerciseFromApi(raw);
-      if (exercise.lastSession) {
+      if (exercise.isFavorite) {
+        favorites.push(exercise);
+      } else if (exercise.lastSession) {
         haveSet.push(exercise);
       } else {
         dontHaveSet.push(exercise);
@@ -153,9 +185,9 @@ async function fetchExercises() {
     return a.createdAt <= b.createdAt ? -1 : 1;
   });
 
-  const exercises = haveSet.concat(dontHaveSet);
+  const exercises = favorites.concat(haveSet, dontHaveSet);
   return exercises;
 }
 
 
-export { createExercise, fetchExercises, updateExercise, deleteExercise, exerciseFromApi };
+export { createExercise, fetchExercises, updateExercise, setExerciseFavorite, deleteExercise, exerciseFromApi };

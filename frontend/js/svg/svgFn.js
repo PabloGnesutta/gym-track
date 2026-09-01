@@ -20,8 +20,10 @@ const svg_check = () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24
 
 const svg_close = () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 
+const svg_star = () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2.5 15.09 9.05 22 9.9 16.9 14.65 18.35 21.5 12 17.9 5.65 21.5 7.1 14.65 2 9.9 8.91 9.05 12 2.5"/></svg>`;
+
 
 export {
   arrow_left, pen_solid, svg_trash, svg_notes, svg_logout, svg_menu, svg_list, svg_chart,
-  svg_tag, svg_check, svg_close,
+  svg_tag, svg_check, svg_close, svg_star,
 };

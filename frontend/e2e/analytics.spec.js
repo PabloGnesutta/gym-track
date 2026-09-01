@@ -15,6 +15,7 @@ test('a fresh account shows the empty state in every analytics section', async (
   await expect(page.locator('.muscle-balance-list .analytics-empty')).toBeVisible();
   await expect(page.locator('.pr-list .analytics-empty')).toBeVisible();
   await expect(page.locator('.frequency-chart .frequency-col')).toHaveCount(8);
+  await expect(page.locator('.volume-chart .analytics-empty')).toBeVisible();
 });
 
 test('logging sets today shows up in muscle balance, this week\'s frequency bar, and personal records', async ({ page }) => {
@@ -52,4 +53,9 @@ test('logging sets today shows up in muscle balance, this week\'s frequency bar,
   const prRow = page.locator('.pr-row', { hasText: 'Press banca' });
   await expect(prRow).toBeVisible();
   await expect(prRow.locator('.pr-stats')).toContainText('60kg máx');
+
+  // Volume: 60kg x 8 + 60kg x 6 = 480 + 360 = 840kg, all in the current week.
+  const lastVolumeCol = page.locator('.volume-col').last();
+  await expect(lastVolumeCol.locator('.volume-count')).toHaveText('840kg');
+  await expect(lastVolumeCol.locator('.volume-bar')).toHaveClass(/current/);
 });

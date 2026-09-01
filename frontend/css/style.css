@@ -381,6 +381,34 @@ svg {
   border-left-color: var(--status-today);
 }
 
+/* Favorited rows float above "hoy" rows too - an explicit pin should win
+   over the passive "trained today" highlight. Matches the "hoy" rule's own
+   #exerciseListView-prefixed specificity above, otherwise that rule's
+   order: -1 would win the cascade over this order: -2 despite being a less
+   negative (weaker) value - `order` doesn't itself factor into specificity. */
+#exerciseListView .list .row.favorited {
+  order: -2;
+}
+
+.list .row .favorite-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  color: var(--text-faint);
+}
+
+.list .row .favorite-btn svg {
+  width: 100%;
+  height: 100%;
+}
+
+.list .row .favorite-btn.active {
+  color: var(--accent);
+}
+
 .list .row:active {
   background-color: var(--press-bg);
   border-color: var(--overlay-strong);

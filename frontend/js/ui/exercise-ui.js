@@ -6,7 +6,8 @@ import { $, $form, $getInner, $input, $new, $queryOne, $queryOneInput } from "..
 import { appState, dataState, dbStore, setCurrentView, setStateField } from "../common/state.js";
 import { syncUrl } from "../common/router.js";
 import { showConfirm } from "../lib/dialog.js";
-import { createExercise, deleteExercise, fetchExercises, updateExercise } from "../local-db/exercise-db.js";
+import { svg_star } from "../svg/svgFn.js";
+import { createExercise, deleteExercise, fetchExercises, setExerciseFavorite, updateExercise } from "../local-db/exercise-db.js";
 import { pageTitle } from "./ui.js";
 import { populateSetData } from "./set-ui.js";
 
@@ -186,13 +187,22 @@ function appendExerciseRow(container, exercise, prepend = false) {
   const lastSetData = $new({ class: 'last-set-data' });
   const timestamp = $new({ class: 'timestamp' });
   const lastSetDataContainer = $new({ class: 'right-side', children: [timestamp, lastSetData] });
+
+  const favoriteBtn = $new({ class: 'favorite-btn' + (exercise.isFavorite ? ' active' : '') });
+  favoriteBtn.innerHTML = svg_star();
+  favoriteBtn.addEventListener('click', e => {
+    e.stopPropagation(); // the row itself opens the exercise on click - this button shouldn't
+    toggleExerciseFavoriteFromRow(exercise);
+  });
+
   const exerciseRow = $new({
-    class: 'row',
+    class: 'row' + (exercise.isFavorite ? ' favorited' : ''),
     dataset: [
       ['clickAction', 'openSingleExercise'],
       ['exerciseKey', key],
     ],
     children: [
+      favoriteBtn,
       $new({ class: 'exerciseName', text: exercise.name }),
       lastSetDataContainer,
     ],
@@ -205,6 +215,62 @@ function appendExerciseRow(container, exercise, prepend = false) {
   }
 
   setExerciseRowLastSetData(exercise, exerciseRow);
+}
+
+/**
+ * Toggles favorite state from the list row's own star button (see
+ * `appendExerciseRow`). Also keeps the single-exercise view's own favorite
+ * button in sync, in case that exercise happens to be open.
+ * @param {Exercise} exercise
+ */
+async function toggleExerciseFavoriteFromRow(exercise) {
+  const result = await setExerciseFavorite(exercise, !exercise.isFavorite);
+  if (!result.data) {
+    _error(result.errorMsg);
+    return;
+  }
+  updateExerciseRowFavoriteState(exercise);
+  if (dataState.currentExercise?._key === exercise._key) {
+    setSingleExerciseFavoriteState(exercise.isFavorite);
+  }
+}
+
+/**
+ * Toggles favorite state from the single-exercise view's own favorite
+ * button (wired in ui.js, mirroring the edit/delete buttons there). Also
+ * keeps the list row's star in sync, in case the list is still rendered
+ * behind this view.
+ */
+async function toggleCurrentExerciseFavorite() {
+  const exercise = dataState.currentExercise;
+  if (!exercise) { return; }
+
+  const result = await setExerciseFavorite(exercise, !exercise.isFavorite);
+  if (!result.data) {
+    _error(result.errorMsg);
+    return;
+  }
+  setSingleExerciseFavoriteState(exercise.isFavorite);
+  updateExerciseRowFavoriteState(exercise);
+}
+
+/**
+ * @param {boolean} [isFavorite]
+ */
+function setSingleExerciseFavoriteState(isFavorite) {
+  $queryOne('#singleExerciseView .favorite-btn').classList.toggle('active', !!isFavorite);
+}
+
+/**
+ * @param {Exercise} exercise
+ */
+function updateExerciseRowFavoriteState(exercise) {
+  /** @type {HTMLElement|null} */
+  const row = document.querySelector(`.row[data-exercise-key="${exercise._key}"]`);
+  if (!row) { return; }
+  row.classList.toggle('favorited', !!exercise.isFavorite);
+  const btn = row.querySelector('.favorite-btn');
+  if (btn) { btn.classList.toggle('active', !!exercise.isFavorite); }
 }
 
 /**
@@ -298,6 +364,7 @@ async function openSingleExercise(exerciseKey) {
 
   dataState.currentExercise = exercise;
   exerciseName.innerText = exercise.name;
+  setSingleExerciseFavoriteState(exercise.isFavorite);
   syncUrl(`/exercise/${exercise._key}`);
   await populateSetData(exercise);
 }
@@ -313,5 +380,5 @@ function closeSingleExercise() {
 
 export {
   fetchAndRenderExercises, openExerciseList, openSingleExercise, openExerciseForm, appendExerciseRow, submitExercise, setExerciseRowLastSetData,
-  tryDeleteExercise, closeSingleExercise, submitExerciseBtn
+  tryDeleteExercise, closeSingleExercise, submitExerciseBtn, toggleCurrentExerciseFavorite
 };

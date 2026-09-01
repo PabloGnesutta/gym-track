@@ -9,6 +9,7 @@ import { pageTitle } from "./ui.js";
 
 const muscleBalanceList = $queryOne('#analyticsView .muscle-balance-list');
 const frequencyChart = $queryOne('#analyticsView .frequency-chart');
+const volumeChart = $queryOne('#analyticsView .volume-chart');
 const personalRecordsList = $queryOne('#analyticsView .pr-list');
 
 const DAYS_PER_WEEK = 7;
@@ -34,6 +35,7 @@ async function renderAnalytics() {
   }
   renderMuscleBalance(result.data.muscleBalance);
   renderFrequency(result.data.frequency);
+  renderVolumeTrend(result.data.volumeTrend);
   renderPersonalRecords(result.data.personalRecords);
 }
 
@@ -84,6 +86,40 @@ function renderFrequency(frequency) {
       children: [
         $new({ class: 'frequency-bar-track', children: [bar] }),
         $new({ class: 'frequency-count', text: String(daysTrained) }),
+      ],
+    }));
+  });
+}
+
+/**
+ * @param {{weekStart: number, volume: number}[]} trend Oldest to newest; the
+ *   last entry is the current (possibly still in-progress) week. Same
+ *   vertical-bar layout as `renderFrequency`, scaled to this widget's own max
+ *   instead of a fixed denominator (days trained maxes out at 7; volume has
+ *   no natural ceiling).
+ */
+function renderVolumeTrend(trend) {
+  volumeChart.innerHTML = '';
+  if (!trend.length || trend.every(({ volume }) => volume === 0)) {
+    volumeChart.append($new({
+      class: 'analytics-empty',
+      text: 'Todavía no hay volumen registrado en las últimas semanas.',
+    }));
+    return;
+  }
+
+  const maxVolume = Math.max(...trend.map(({ volume }) => volume));
+  trend.forEach(({ volume }, i) => {
+    const isCurrentWeek = i === trend.length - 1;
+
+    const bar = $new({ class: 'volume-bar' + (isCurrentWeek ? ' current' : '') });
+    bar.style.height = `${(volume / maxVolume) * 100}%`;
+
+    volumeChart.append($new({
+      class: 'volume-col',
+      children: [
+        $new({ class: 'volume-bar-track', children: [bar] }),
+        $new({ class: 'volume-count', text: `${Math.round(volume)}kg` }),
       ],
     }));
   });

@@ -15,6 +15,7 @@ import { ServiceError } from './ServiceError.js';
  * @property {string} name
  * @property {number} createdAt
  * @property {number} updatedAt
+ * @property {boolean} isFavorite
  * @property {LastSession | null} [lastSession]
  */
 
@@ -30,6 +31,7 @@ function toExercise(row, muscles) {
     muscles,
     createdAt: Number(row.created_at),
     updatedAt: Number(row.updated_at),
+    isFavorite: !!row.is_favorite,
   };
 }
 
@@ -177,7 +179,7 @@ function createExerciseService(db) {
          SELECT s.id FROM sessions s WHERE s.exercise_id = e.id ORDER BY s.date DESC LIMIT 1
        )
        WHERE e.user_id = ?
-       ORDER BY e.updated_at DESC`
+       ORDER BY e.is_favorite DESC, e.updated_at DESC`
     ).all(userId);
     return rows.map(row => ({
       ...toExercise(row, row.muscle_names ? String(row.muscle_names).split(',') : []),
@@ -218,6 +220,22 @@ function createExerciseService(db) {
   }
 
   /**
+   * Pins/unpins an exercise, independent of `updateExercise`'s patch shape
+   * specifically so toggling it never bumps `updated_at` - that timestamp
+   * doubles as the "last used" caption a favorited-but-never-logged exercise
+   * would otherwise show a misleading "hace unos segundos" for.
+   * @param {number} userId
+   * @param {number} id
+   * @param {boolean} isFavorite
+   */
+  function setFavorite(userId, id, isFavorite) {
+    getOwnedExerciseRow(userId, id);
+    db.prepare('UPDATE exercises SET is_favorite = ? WHERE id = ? AND user_id = ?')
+      .run(isFavorite ? 1 : 0, id, userId);
+    return getExercise(userId, id);
+  }
+
+  /**
    * Also removes every Session belonging to this Exercise, mirroring
    * `exercise-ui.js`'s `tryDeleteExercise` calling both `deleteExercise` and
    * `deleteExerciseSessions` client-side. Leaves `muscles` rows themselves
@@ -232,7 +250,7 @@ function createExerciseService(db) {
     db.prepare('DELETE FROM exercises WHERE id = ? AND user_id = ?').run(id, userId);
   }
 
-  return { createExercise, getExercise, listExercises, updateExercise, deleteExercise, getOwnedExerciseRow };
+  return { createExercise, getExercise, listExercises, updateExercise, setFavorite, deleteExercise, getOwnedExerciseRow };
 }
 
 export { createExerciseService };

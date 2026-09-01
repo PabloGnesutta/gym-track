@@ -116,6 +116,41 @@ function createAnalyticsService(db, exerciseService) {
   }
 
   /**
+   * Total training volume (kg x reps, summed across every individual set)
+   * per week, oldest to newest, over the trailing `weeks` weeks - same
+   * bucketing as `getTrainingFrequency`, but summed by session date rather
+   * than deduped by day, since two exercises trained the same day should
+   * both count fully toward volume (unlike day-counting, where that's one
+   * day of consistency, not two).
+   * @param {number} userId
+   * @param {number} [weeks]
+   */
+  function getVolumeTrend(userId, weeks = 8) {
+    const sinceMs = Date.now() - weeks * WEEK_MS;
+    const rows = db.prepare('SELECT date, sets FROM sessions WHERE user_id = ? AND date >= ?').all(userId, sinceMs);
+
+    const todayStart = dayStart(Date.now());
+    const buckets = Array.from({ length: weeks }, (_, i) => ({
+      weekStart: todayStart - (weeks - 1 - i) * WEEK_MS,
+      volume: 0,
+    }));
+
+    for (const row of rows) {
+      const weeksAgo = Math.floor((todayStart - dayStart(Number(row.date))) / WEEK_MS);
+      if (weeksAgo < 0 || weeksAgo >= weeks) { continue; }
+
+      const sets = JSON.parse(String(row.sets));
+      const sessionVolume = sets.reduce(
+        (sum, weightRow) => sum + weightRow.w * weightRow.r.reduce((s, reps) => s + reps, 0),
+        0
+      );
+      buckets[weeks - 1 - weeksAgo].volume += sessionVolume;
+    }
+
+    return buckets.map(b => ({ ...b, volume: Math.round(b.volume * 10) / 10 }));
+  }
+
+  /**
    * Per exercise: the heaviest single set ever logged, and the best
    * estimated one-rep max across every individual set. Sorted by whichever
    * PR was set most recently, so it reads like a small "recent
@@ -189,11 +224,12 @@ function createAnalyticsService(db, exerciseService) {
     return {
       muscleBalance: getMuscleBalance(userId),
       frequency: getTrainingFrequency(userId),
+      volumeTrend: getVolumeTrend(userId),
       personalRecords: getPersonalRecords(userId),
     };
   }
 
-  return { getMuscleBalance, getTrainingFrequency, getPersonalRecords, getExerciseHistory, getSummary };
+  return { getMuscleBalance, getTrainingFrequency, getVolumeTrend, getPersonalRecords, getExerciseHistory, getSummary };
 }
 
 export { createAnalyticsService };

@@ -88,6 +88,58 @@ test('updateExercise without a muscles field leaves existing tags untouched', ()
   assert.deepEqual(updated.muscles, ['pecho']);
 });
 
+test('createExercise defaults isFavorite to false', () => {
+  const { authService, exerciseService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  const exercise = exerciseService.createExercise(userId, 'Press banca');
+  assert.equal(exercise.isFavorite, false);
+});
+
+test('setFavorite pins and unpins an exercise', () => {
+  const { authService, exerciseService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  const exercise = exerciseService.createExercise(userId, 'Press banca');
+
+  const pinned = exerciseService.setFavorite(userId, exercise.id, true);
+  assert.equal(pinned.isFavorite, true);
+
+  const unpinned = exerciseService.setFavorite(userId, exercise.id, false);
+  assert.equal(unpinned.isFavorite, false);
+});
+
+test('setFavorite does not change updated_at (would otherwise fake a "just used" timestamp)', () => {
+  const { authService, exerciseService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  const exercise = exerciseService.createExercise(userId, 'Press banca');
+
+  const pinned = exerciseService.setFavorite(userId, exercise.id, true);
+
+  assert.equal(pinned.updatedAt, exercise.updatedAt);
+});
+
+test('setFavorite cannot pin another user\'s exercise', () => {
+  const { authService, exerciseService, db } = makeServices();
+  const userA = makeUser(authService, db, 'a@test.local');
+  const userB = makeUser(authService, db, 'b@test.local');
+  const exercise = exerciseService.createExercise(userA, 'Press banca');
+
+  assert.throws(() => exerciseService.setFavorite(userB, exercise.id, true), ServiceError);
+});
+
+test('listExercises sorts favorites first, ahead of the most-recently-used sort', () => {
+  const { authService, exerciseService, sessionService, db } = makeServices();
+  const userId = makeUser(authService, db, 'a@test.local');
+  const squat = exerciseService.createExercise(userId, 'Sentadilla');
+  const curl = exerciseService.createExercise(userId, 'Curl');
+  sessionService.addSet(userId, squat.id, { weight: 60, reps: 8 }); // more recently used, but not favorited
+
+  exerciseService.setFavorite(userId, curl.id, true);
+
+  const [first] = exerciseService.listExercises(userId);
+  assert.equal(first.name, 'Curl');
+  assert.equal(first.isFavorite, true);
+});
+
 test('createExercise rejects an empty name', () => {
   const { authService, exerciseService, db } = makeServices();
   const userId = makeUser(authService, db, 'a@test.local');

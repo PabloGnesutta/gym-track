@@ -147,6 +147,14 @@ async function apiDeleteExercise(exerciseId) {
 
 /**
  * @param {number} exerciseId
+ * @param {boolean} isFavorite
+ */
+async function apiSetExerciseFavorite(exerciseId, isFavorite) {
+  return apiCall('exercises/favorite', { exerciseId, isFavorite });
+}
+
+/**
+ * @param {number} exerciseId
  */
 async function apiFetchSessions(exerciseId) {
   return apiCall('sessions/fetch', { exerciseId });
@@ -209,7 +217,7 @@ async function apiDeleteMuscle(muscleId) {
 export {
   apiCall, apiSignup, apiLogin, apiLogout, isLoggedIn, getAccessToken, getUserEmail, clearSession,
   apiRequestPasswordReset, apiResetPassword,
-  apiCreateExercise, apiFetchExercises, apiUpdateExercise, apiDeleteExercise,
+  apiCreateExercise, apiFetchExercises, apiUpdateExercise, apiSetExerciseFavorite, apiDeleteExercise,
   apiFetchSessions, apiAddSet, apiUpdateSession, apiDeleteSession,
   apiFetchAnalyticsSummary, apiGetExerciseHistory,
   apiFetchMuscles, apiRenameMuscle, apiDeleteMuscle,

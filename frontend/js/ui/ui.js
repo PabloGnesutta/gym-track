@@ -2,8 +2,8 @@ import { appState, setStateField } from "../common/state.js";
 import { $, $button, $getInner, $new, $queryOne } from "../lib/dom.js";
 import { _warn, openLogs } from "../lib/logger.js";
 import { getUserEmail } from "../api-caller/apiCaller.js";
-import { arrow_left, pen_solid, svg_trash, svg_logout, svg_menu, svg_list, svg_chart, svg_notes, svg_tag } from "../svg/svgFn.js";
-import { closeSingleExercise, openExerciseForm, openExerciseList, openSingleExercise, submitExercise, submitExerciseBtn, tryDeleteExercise } from "./exercise-ui.js";
+import { arrow_left, pen_solid, svg_trash, svg_logout, svg_menu, svg_list, svg_chart, svg_notes, svg_tag, svg_star } from "../svg/svgFn.js";
+import { closeSingleExercise, openExerciseForm, openExerciseList, openSingleExercise, submitExercise, submitExerciseBtn, toggleCurrentExerciseFavorite, tryDeleteExercise } from "./exercise-ui.js";
 import { openSessionForm, submitSession, submitSet, tryDeleteSession } from "./set-ui.js";
 import { openAnalytics } from "./analytics-ui.js";
 import { openMuscles } from "./muscle-ui.js";
@@ -145,6 +145,12 @@ function initUi() {
     appendTo: submitExerciseBtn,
   });
 
+  $button({
+    // Favorito / Pin
+    listener: { fn: toggleCurrentExerciseFavorite },
+    svgFn: svg_star,
+    appendTo: $queryOne('#singleExerciseView .favorite-btn'),
+  });
   $button({
     // Editar Ejercicio
     listener: { fn: () => openExerciseForm(true) },

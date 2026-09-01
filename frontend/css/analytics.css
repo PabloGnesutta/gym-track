@@ -103,6 +103,46 @@
   margin-top: 4px;
 }
 
+/* Training volume - vertical bars, same layout as training frequency */
+.volume-chart {
+  display: flex;
+  align-items: flex-end;
+  height: 100px;
+  gap: 6px;
+}
+
+.volume-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.volume-bar-track {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.volume-bar {
+  width: 100%;
+  min-height: 3px;
+  background-color: var(--surface-4);
+  border-radius: 3px 3px 0 0;
+}
+
+.volume-bar.current {
+  background-color: var(--accent);
+}
+
+.volume-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
 /* Personal records */
 .pr-row {
   display: flex;

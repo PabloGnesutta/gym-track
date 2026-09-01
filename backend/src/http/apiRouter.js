@@ -68,6 +68,9 @@ export async function handleApiRequest(req, res, segments) {
     if (route === 'exercises/fetch') { return successResponse(res, exerciseService.listExercises(user.id)); }
     if (route === 'exercises/create') { return successResponse(res, exerciseService.createExercise(user.id, body.name, body.muscles)); }
     if (route === 'exercises/update') { return successResponse(res, exerciseService.updateExercise(user.id, body.exerciseId, body)); }
+    if (route === 'exercises/favorite') {
+      return successResponse(res, exerciseService.setFavorite(user.id, body.exerciseId, !!body.isFavorite));
+    }
     if (route === 'exercises/delete') {
       exerciseService.deleteExercise(user.id, body.exerciseId);
       return successResponse(res, { ok: true });

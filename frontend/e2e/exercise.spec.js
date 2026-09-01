@@ -73,6 +73,68 @@ test('deleting an exercise removes it from the list', async ({ page }) => {
   await expect(page.locator('.row', { hasText: 'Press banca' })).toHaveCount(0);
 });
 
+test('favoriting an exercise from the list pins it above a more recently created one', async ({ page }) => {
+  await page.locator('#newExerciseBtn').click();
+  await page.locator('#exerciseForm input[name="exerciseName"]').fill('Sentadilla');
+  await page.locator('#exerciseForm .submit').getByText('Crear Ejercicio').click();
+
+  await page.locator('#newExerciseBtn').click();
+  await page.locator('#exerciseForm input[name="exerciseName"]').fill('Press banca');
+  await page.locator('#exerciseForm .submit').getByText('Crear Ejercicio').click();
+
+  const sentadillaRow = page.locator('.row[data-exercise-key]', { hasText: 'Sentadilla' });
+  const pressRow = page.locator('.row[data-exercise-key]', { hasText: 'Press banca' });
+  await pressRow.locator('.favorite-btn').click();
+  await expect(pressRow).toHaveClass(/favorited/);
+
+  // The list is a flex column reordered via CSS `order`, not DOM position
+  // (see style.css's `.favorited`/`[data-timestamp="hoy"]` rules) - so the
+  // pin-to-top has to be asserted on computed style, not locator .first().
+  const pressOrder = await pressRow.evaluate(el => Number(getComputedStyle(el).order));
+  const sentadillaOrder = await sentadillaRow.evaluate(el => Number(getComputedStyle(el).order));
+  expect(pressOrder).toBeLessThan(sentadillaOrder);
+});
+
+test('unfavoriting an exercise drops it back out of the pinned position', async ({ page }) => {
+  await page.locator('#newExerciseBtn').click();
+  await page.locator('#exerciseForm input[name="exerciseName"]').fill('Press banca');
+  await page.locator('#exerciseForm .submit').getByText('Crear Ejercicio').click();
+
+  const row = page.locator('.row[data-exercise-key]', { hasText: 'Press banca' });
+  await row.locator('.favorite-btn').click();
+  await expect(row).toHaveClass(/favorited/);
+
+  await row.locator('.favorite-btn').click();
+  await expect(row).not.toHaveClass(/favorited/);
+});
+
+test('toggling favorite from the single-exercise view stays in sync with the list row', async ({ page }) => {
+  await page.locator('#newExerciseBtn').click();
+  await page.locator('#exerciseForm input[name="exerciseName"]').fill('Press banca');
+  await page.locator('#exerciseForm .submit').getByText('Crear Ejercicio').click();
+
+  await page.locator('.row', { hasText: 'Press banca' }).click();
+  await expect(page.locator('#singleExerciseView')).toBeVisible();
+
+  await page.locator('#singleExerciseView .favorite-btn .btn').click();
+  await expect(page.locator('#singleExerciseView .favorite-btn')).toHaveClass(/active/);
+
+  await page.locator('#goBack2 .btn').click();
+  await expect(page.locator('.row[data-exercise-key]', { hasText: 'Press banca' })).toHaveClass(/favorited/);
+});
+
+test('a favorited exercise stays favorited after a page reload', async ({ page }) => {
+  await page.locator('#newExerciseBtn').click();
+  await page.locator('#exerciseForm input[name="exerciseName"]').fill('Press banca');
+  await page.locator('#exerciseForm .submit').getByText('Crear Ejercicio').click();
+
+  await page.locator('.row[data-exercise-key]', { hasText: 'Press banca' }).locator('.favorite-btn').click();
+
+  await page.reload();
+  await expect(page.locator('#exerciseListView')).toBeVisible();
+  await expect(page.locator('.row[data-exercise-key]', { hasText: 'Press banca' })).toHaveClass(/favorited/);
+});
+
 test('cancelling the delete confirmation leaves the exercise in place', async ({ page }) => {
   await page.locator('#newExerciseBtn').click();
   await page.locator('#exerciseForm input[name="exerciseName"]').fill('Press banca');

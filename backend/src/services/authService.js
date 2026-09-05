@@ -10,6 +10,15 @@ import { createEmailService } from './emailService.js';
 // in their own inbox.
 const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 
+// A generous but finite ceiling on a bearer session token's lifetime - a
+// personal, allow-listed app doesn't need short-lived sessions, but an
+// unbounded one (the previous behavior) turns any leaked token into a
+// forever-valid credential. Also expires normally via logout/password-reset
+// before this, same as before.
+const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+const MIN_PASSWORD_LENGTH = 8;
+
 /**
  * @param {import('node:sqlite').DatabaseSync} db
  * @param {{sendEmail: (opts: {to: string, subject: string, text: string, appName?: string}) => Promise<boolean>}} [emailService]
@@ -28,6 +37,9 @@ function createAuthService(db, emailService = createEmailService()) {
   function createUser(email, password, name = '') {
     email = String(email || '').trim().toLowerCase();
     if (!email || !password) { throw new ServiceError('Email y contraseña requeridos'); }
+    if (String(password).length < MIN_PASSWORD_LENGTH) {
+      throw new ServiceError(`La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres`);
+    }
     if (!isEmailAllowed(db, email)) { throw new ServiceError('Este email no está autorizado para crear una cuenta'); }
 
     const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
@@ -62,26 +74,38 @@ function createAuthService(db, emailService = createEmailService()) {
    */
   function createSession(userId) {
     const token = randomBytes(32).toString('hex');
+    const now = Date.now();
     db.prepare(
-      'INSERT INTO auth_sessions (token, user_id, created_at) VALUES (?, ?, ?)'
-    ).run(token, userId, Date.now());
+      'INSERT INTO auth_sessions (token, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)'
+    ).run(token, userId, now, now + SESSION_TTL_MS);
     return token;
   }
 
   /**
+   * A NULL `expires_at` means the row predates migration 006 (every session
+   * created before this TTL existed) - treated as already-expired rather
+   * than grandfathered in as unlimited-lifetime, since an indefinitely-valid
+   * token is exactly what this migration exists to close off.
    * @param {string} token
    * @returns {{id: number, email: string, name: string} | null}
    */
   function getUserBySessionToken(token) {
     if (!token) { return null; }
-    const user = db.prepare(
-      `SELECT users.id, users.email, users.name FROM auth_sessions
+    const row = db.prepare(
+      `SELECT users.id, users.email, users.name, auth_sessions.expires_at FROM auth_sessions
        JOIN users ON users.id = auth_sessions.user_id
        WHERE auth_sessions.token = ?`
     ).get(token);
+    if (!row) { return null; }
+
+    if (row.expires_at == null || Date.now() > Number(row.expires_at)) {
+      deleteSession(token);
+      return null;
+    }
+
     // @ts-ignore - node:sqlite types every column as SQLOutputValue; the
     // schema guarantees these shapes.
-    return user || null;
+    return { id: row.id, email: row.email, name: row.name };
   }
 
   /**
@@ -127,6 +151,9 @@ function createAuthService(db, emailService = createEmailService()) {
     token = String(token || '').trim();
     if (!token) { throw new ServiceError('Token inválido o vencido'); }
     if (!newPassword) { throw new ServiceError('Ingresá una contraseña nueva'); }
+    if (String(newPassword).length < MIN_PASSWORD_LENGTH) {
+      throw new ServiceError(`La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres`);
+    }
 
     const user = db.prepare('SELECT * FROM users WHERE password_reset_token = ?').get(token);
     if (!user || !user.password_reset_expires_at || Date.now() > Number(user.password_reset_expires_at)) {

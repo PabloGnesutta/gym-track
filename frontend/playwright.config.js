@@ -27,6 +27,10 @@ export default defineConfig({
     env: {
       PORT: TEST_PORT,
       DB_NAME: 'gymtrack.test.db',
+      // Signs up dozens of accounts from the same loopback address across a
+      // full e2e run - disables the auth-route rate limiter (rateLimit.js)
+      // for this backend instance, same isolation reasoning as DB_NAME above.
+      NODE_ENV: 'test',
     },
   },
 });

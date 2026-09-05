@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve, sep } from 'node:path';
 import { debug, log } from '../logger/logger.js';
 import { errorResponse } from './httpResponses.js';
 import { SECURITY_HEADERS } from './securityHeaders.js';
@@ -9,7 +9,7 @@ import { handleApiRequest } from './apiRouter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const PUBLIC_DIR = join(__dirname, '../', '../', '../', 'frontend');
+const PUBLIC_DIR = resolve(join(__dirname, '../', '../', '../', 'frontend'));
 
 /**
  * Main handler of the request.
@@ -76,12 +76,23 @@ export async function handleRequest(req, res) {
  * Uses the response object to stream static files.
  * Returns null.
  * @param {import('./types').ApiResponse} res - response object
- * @param {string[]} fileRoute
+ * @param {string[]} fileRoute - raw URL path segments, attacker-controlled
  * @param {string} contentType - Should pobably be an enum
  * @returns {null}
  */
 function sendAssetFile(res, fileRoute, contentType) {
-  const filePath = join(PUBLIC_DIR, ...fileRoute);
+  // path.join() resolves ".." segments, so a naive join(PUBLIC_DIR, ...fileRoute)
+  // lets a URL like /js/../../backend/.env escape PUBLIC_DIR entirely and read
+  // any file the process can access. Resolve the final path and reject
+  // anything that doesn't land back inside PUBLIC_DIR.
+  const filePath = resolve(join(PUBLIC_DIR, ...fileRoute));
+  if (filePath !== PUBLIC_DIR && !filePath.startsWith(PUBLIC_DIR + sep)) {
+    log('---Path traversal attempt @sendAssetFile', fileRoute.join('/'));
+    res.writeHead(404, SECURITY_HEADERS);
+    res.end();
+    return null;
+  }
+
   fs.stat(filePath, (err, stat) => {
     if (err === null) {
       res.writeHead(200, { 'content-type': contentType, ...SECURITY_HEADERS });

@@ -3,6 +3,7 @@ import { sql as accounts } from './002_accounts.js';
 import { migrate as muscles } from './003_muscles.js';
 import { sql as passwordReset } from './004_password_reset.js';
 import { sql as exerciseFavorites } from './005_exercise_favorites.js';
+import { sql as sessionExpiry } from './006_session_expiry.js';
 
 /**
  * Ordered, explicit registry (no directory-scanning) - add new migrations
@@ -18,6 +19,7 @@ const migrations = [
   { version: 3, name: 'muscles', migrate: muscles },
   { version: 4, name: 'password_reset', sql: passwordReset },
   { version: 5, name: 'exercise_favorites', sql: exerciseFavorites },
+  { version: 6, name: 'session_expiry', sql: sessionExpiry },
 ];
 
 export { migrations };

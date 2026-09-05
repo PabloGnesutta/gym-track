@@ -1,5 +1,5 @@
 import { db } from '../db/db.js';
-import { readJsonBody, INVALID_JSON_MESSAGE } from './bodyParser.js';
+import { readJsonBody, INVALID_JSON_MESSAGE, PAYLOAD_TOO_LARGE_MESSAGE } from './bodyParser.js';
 import { errorResponse, successResponse } from './httpResponses.js';
 import { createAuthService } from '../services/authService.js';
 import { createExerciseService } from '../services/exerciseService.js';
@@ -7,6 +7,7 @@ import { createSessionService } from '../services/sessionService.js';
 import { createAnalyticsService } from '../services/analyticsService.js';
 import { createMuscleService } from '../services/muscleService.js';
 import { ServiceError } from '../services/ServiceError.js';
+import { isRateLimited } from './rateLimit.js';
 import { error } from '../logger/logger.js';
 
 
@@ -16,6 +17,15 @@ const sessionService = createSessionService(db, exerciseService);
 const analyticsService = createAnalyticsService(db, exerciseService);
 const muscleService = createMuscleService(db);
 
+const TOO_MANY_ATTEMPTS_MESSAGE = 'Demasiados intentos. Probá de nuevo más tarde.';
+// Login is throttled per-email (catches an attacker brute-forcing one
+// account regardless of source IP); signup/password-reset are throttled
+// per-IP (there's no account to key on yet, or the target of the attempt is
+// someone else's inbox/allow-list slot, not the caller's).
+const LOGIN_RATE_LIMIT = { max: 10, windowMs: 15 * 60 * 1000 };
+const SIGNUP_RATE_LIMIT = { max: 10, windowMs: 60 * 60 * 1000 };
+const PASSWORD_RESET_RATE_LIMIT = { max: 10, windowMs: 60 * 60 * 1000 };
+
 /**
  * @param {import('./types').ApiRequest} req
  */
@@ -23,6 +33,14 @@ function getBearerUser(req) {
   const authHeader = req.headers['authorization'] || '';
   const [, token] = authHeader.split(' ');
   return token ? authService.getUserBySessionToken(token) : null;
+}
+
+/**
+ * @param {import('./types').ApiRequest} req
+ * @returns {string}
+ */
+function getClientIp(req) {
+  return req.socket?.remoteAddress || 'unknown';
 }
 
 /**
@@ -38,19 +56,32 @@ export async function handleApiRequest(req, res, segments) {
     const body = await readJsonBody(req);
 
     if (route === 'signup') {
+      if (isRateLimited('signup:' + getClientIp(req), SIGNUP_RATE_LIMIT.max, SIGNUP_RATE_LIMIT.windowMs)) {
+        return errorResponse(res, TOO_MANY_ATTEMPTS_MESSAGE, 429);
+      }
       const user = authService.createUser(body.email, body.password, body.name);
       const accessToken = authService.createSession(user.id);
       return successResponse(res, { accessToken, userId: user.id, email: user.email, name: user.name });
     }
     if (route === 'login') {
+      const emailKey = String(body.email || '').trim().toLowerCase();
+      if (isRateLimited('login:' + emailKey, LOGIN_RATE_LIMIT.max, LOGIN_RATE_LIMIT.windowMs)) {
+        return errorResponse(res, TOO_MANY_ATTEMPTS_MESSAGE, 429);
+      }
       const user = authService.verifyLogin(body.email, body.password);
       const accessToken = authService.createSession(user.id);
       return successResponse(res, { accessToken, userId: user.id, email: user.email, name: user.name });
     }
     if (route === 'requestPasswordReset') {
+      if (isRateLimited('resetRequest:' + getClientIp(req), PASSWORD_RESET_RATE_LIMIT.max, PASSWORD_RESET_RATE_LIMIT.windowMs)) {
+        return errorResponse(res, TOO_MANY_ATTEMPTS_MESSAGE, 429);
+      }
       return successResponse(res, await authService.requestPasswordReset(body.email));
     }
     if (route === 'resetPassword') {
+      if (isRateLimited('resetPassword:' + getClientIp(req), PASSWORD_RESET_RATE_LIMIT.max, PASSWORD_RESET_RATE_LIMIT.windowMs)) {
+        return errorResponse(res, TOO_MANY_ATTEMPTS_MESSAGE, 429);
+      }
       return successResponse(res, authService.resetPassword(body.token, body.newPassword));
     }
 
@@ -103,6 +134,9 @@ export async function handleApiRequest(req, res, segments) {
     if (err instanceof ServiceError) { return errorResponse(res, err.message, 400); }
     if (err instanceof Error && err.message === INVALID_JSON_MESSAGE) {
       return errorResponse(res, err.message, 400);
+    }
+    if (err instanceof Error && err.message === PAYLOAD_TOO_LARGE_MESSAGE) {
+      return errorResponse(res, err.message, 413);
     }
     error('---Error @handleApiRequest', err);
     return errorResponse(res, 'Something went wrong', 500);
